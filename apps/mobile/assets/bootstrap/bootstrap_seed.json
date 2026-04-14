@@ -1,0 +1,378 @@
+{
+  "app": {
+    "name": "Lo Renaciente",
+    "tagline": "Autoconocimiento, guía y consultas en un mismo lugar.",
+    "market": "Perú / Latam",
+    "timezone": "America/Lima"
+  },
+  "user": {
+    "id": "user-mark",
+    "firstName": "Mark",
+    "lastName": "Lore",
+    "nickname": "mark",
+    "email": "mark@example.com",
+    "location": "Lima, Perú",
+    "timezone": "America/Lima",
+    "zodiacSign": "Sagitario",
+    "planId": "free",
+    "natalChart": {
+      "subjectName": "Mark",
+      "birthDate": "2000-11-28",
+      "birthTime": "01:40",
+      "birthTimeUnknown": false,
+      "city": "Lima",
+      "state": "Lima",
+      "country": "Perú",
+      "timeZoneId": "America/Lima",
+      "utcOffset": "-05:00",
+      "latitude": -12.0464,
+      "longitude": -77.0428
+    },
+    "preferences": {
+      "focusAreas": ["claridad", "propósito", "vínculos"],
+      "preferredSessionModes": ["chat", "video"],
+      "receivesPush": true
+    }
+  },
+  "home": {
+    "welcomeTitle": "Hola, Mark",
+    "welcomeSubtitle": "Tu espacio diario para tarot, astrología, consultas y contenido premium.",
+    "cardOfTheDay": {
+      "title": "Carta del día",
+      "cardName": "La Estrella",
+      "message": "Hoy conviene bajar el ruido, recuperar fe en tu proceso y tomar una acción pequeña pero coherente.",
+      "ritual": "Escribe una intención breve antes de iniciar tu jornada."
+    },
+    "astrologicalEnergy": {
+      "title": "Energía astrológica",
+      "summary": "La Luna favorece conversaciones honestas, cierre emocional y orden interno.",
+      "advice": "No fuerces definiciones si todavía necesitas más contexto.",
+      "intensity": "media-alta"
+    },
+    "quickActions": [
+      {
+        "id": "quick-tarot",
+        "label": "Portal Tarot",
+        "description": "Carta del día, lecturas y especialistas",
+        "type": "content"
+      },
+      {
+        "id": "quick-reading",
+        "label": "Lectura diaria",
+        "description": "Carta del día y tirada interactiva",
+        "type": "content"
+      },
+      {
+        "id": "quick-numerology",
+        "label": "Numerología",
+        "description": "Perfil, ciclos y nombre natal",
+        "type": "content"
+      },
+      {
+        "id": "quick-booking",
+        "label": "Agendar consulta",
+        "description": "Reserva con un especialista",
+        "type": "booking"
+      },
+      {
+        "id": "quick-premium",
+        "label": "Ver Premium",
+        "description": "Desbloquea biblioteca y chat",
+        "type": "subscription"
+      },
+      {
+        "id": "quick-profile",
+        "label": "Completar perfil astral",
+        "description": "Fecha, hora y lugar de nacimiento",
+        "type": "profile"
+      }
+    ],
+    "upcomingBooking": {
+      "id": "booking-1",
+      "specialistName": "Amaya Rivas",
+      "serviceName": "Lectura de tarot terapéutico",
+      "scheduledAt": "2026-03-24T19:00:00-05:00",
+      "status": "confirmed"
+    },
+    "featuredMessage": "La mejor primera versión prioriza agenda, contenido diario y monetización clara por plataforma."
+  },
+  "plans": [
+    {
+      "id": "free",
+      "name": "Free",
+      "tier": "free",
+      "priceMonthly": 0,
+      "currency": "USD",
+      "isPopular": false,
+      "features": [
+        "Carta del día",
+        "Energía astrológica básica",
+        "Agenda limitada",
+        "Chat con límite mensual"
+      ],
+      "sessionMessageLimit": 20,
+      "consultationAccess": ["tarot", "astrología"]
+    },
+    {
+      "id": "premium",
+      "name": "Premium",
+      "tier": "premium",
+      "priceMonthly": 14.99,
+      "currency": "USD",
+      "isPopular": true,
+      "features": [
+        "Lectura diaria ampliada",
+        "Astrología personalizada",
+        "Cursos premium",
+        "Chat ilimitado",
+        "Acceso a especialistas avanzados"
+      ],
+      "sessionMessageLimit": null,
+      "consultationAccess": [
+        "tarot",
+        "astrología",
+        "numerología",
+        "reiki",
+        "diseños humanos",
+        "feng shui"
+      ]
+    }
+  ],
+  "subscription": {
+    "planId": "free",
+    "planName": "Free",
+    "status": "inactive",
+    "renewsAt": null,
+    "platform": "ios",
+    "billingProvider": "mercado_pago",
+    "entitlements": [
+      "Carta del día",
+      "Energía astrológica básica",
+      "Agenda limitada",
+      "Chat con límite mensual"
+    ]
+  },
+  "payments": {
+    "consultationProvider": "Mercado Pago",
+    "premiumProvider": "Apple In-App Purchase / Google Play Billing",
+    "supportedMethods": [
+      "Tarjetas crédito/débito",
+      "Transferencias",
+      "Pago en efectivo habilitado por Mercado Pago",
+      "Suscripcion mensual o anual en stores"
+    ],
+    "notes": [
+      "Premium y contenido digital se gestionan por billing de tienda.",
+      "Consultas 1:1 pueden evaluarse con Mercado Pago segun el flujo final."
+    ]
+  },
+  "services": [
+    {
+      "id": "service-tarot",
+      "name": "Lectura de tarot terapéutico",
+      "category": "Tarot",
+      "description": "Sesión enfocada en claridad emocional, decisiones y cierres de ciclo.",
+      "durationMinutes": 45,
+      "price": {
+        "amount": 32,
+        "currency": "USD"
+      },
+      "deliveryModes": ["chat", "video"],
+      "premiumIncluded": false,
+      "specialistIds": ["spec-amaya"]
+    },
+    {
+      "id": "service-astro",
+      "name": "Astrología natal personalizada",
+      "category": "Astrología",
+      "description": "Lectura de carta natal con foco en identidad, relaciones y timing.",
+      "durationMinutes": 60,
+      "price": {
+        "amount": 48,
+        "currency": "USD"
+      },
+      "deliveryModes": ["audio", "video"],
+      "premiumIncluded": false,
+      "specialistIds": ["spec-elian"]
+    },
+    {
+      "id": "service-numerologia",
+      "name": "Consulta de numerología",
+      "category": "Numerología",
+      "description": "Interpretación de ciclos, talentos y aprendizajes por vibración numérica.",
+      "durationMinutes": 40,
+      "price": {
+        "amount": 29,
+        "currency": "USD"
+      },
+      "deliveryModes": ["chat", "audio"],
+      "premiumIncluded": false,
+      "specialistIds": ["spec-mila"]
+    }
+  ],
+  "specialists": [
+    {
+      "id": "spec-amaya",
+      "name": "Amaya Rivas",
+      "headline": "Tarot terapéutico y lectura intuitiva",
+      "specialties": ["Tarot", "Procesos emocionales", "Rituales de cierre"],
+      "bio": "Acompaña procesos de cambio con tarot, escucha activa y trabajo simbólico.",
+      "yearsExperience": 8,
+      "sessionModes": ["chat", "video"],
+      "languages": ["es", "pt"],
+      "rating": 4.9,
+      "reviewCount": 128,
+      "featured": true,
+      "nextAvailableAt": "2026-03-24T19:00:00-05:00"
+    },
+    {
+      "id": "spec-elian",
+      "name": "Elian Duarte",
+      "headline": "Astrología natal, sinastría y ciclos",
+      "specialties": ["Astrología natal", "Sinastría", "Revolución solar"],
+      "bio": "Trabaja con mapa natal y tránsitos para ordenar decisiones y tiempos.",
+      "yearsExperience": 11,
+      "sessionModes": ["audio", "video"],
+      "languages": ["es", "en"],
+      "rating": 4.8,
+      "reviewCount": 96,
+      "featured": true,
+      "nextAvailableAt": "2026-03-28T18:30:00-05:00"
+    }
+  ],
+  "courses": [
+    {
+      "id": "course-tarot-sin-ruido",
+      "title": "Tarot sin ruido",
+      "subtitle": "Intuición, símbolo y decisiones sin respuestas literales",
+      "category": "Tarot",
+      "level": "Inicial",
+      "premium": false,
+      "featured": true,
+      "removable": true,
+      "estimatedHours": 3.5,
+      "moduleCount": 4,
+      "lessonCount": 12,
+      "progressPercent": 28,
+      "streakDays": 4,
+      "hook": "Una ruta corta y muy práctica para que el tarot deje de sentirse confuso y empiece a darte claridad accionable.",
+      "description": "Este curso cambia la lógica de predecir por lectura simbólica, foco emocional y decisiones concretas después de cada tirada.",
+      "outcomes": [
+        "Aprender a formular preguntas que abren lectura útil.",
+        "Leer arcanos sin depender de palabras clave rígidas.",
+        "Cerrar cada tirada con una acción observable."
+      ],
+      "modules": [
+        {
+          "id": "course-tarot-sin-ruido-m1",
+          "title": "Bajar el ruido mental",
+          "summary": "Cómo entrar al tarot sin ansiedad por acertar y sin buscar respuestas literales.",
+          "durationMinutes": 48,
+          "lessons": [
+            {
+              "id": "course-tarot-sin-ruido-m1-l1",
+              "title": "La pregunta que abre símbolo",
+              "format": "video",
+              "durationMinutes": 11,
+              "prompt": "Reescribe una pregunta cerrada como una pregunta de claridad."
+            }
+          ]
+        },
+        {
+          "id": "course-tarot-sin-ruido-m2",
+          "title": "Arcanos que sí cambian una decisión",
+          "summary": "Aprende a distinguir energía de fondo, advertencia y oportunidad.",
+          "durationMinutes": 56,
+          "lessons": [
+            {
+              "id": "course-tarot-sin-ruido-m2-l1",
+              "title": "Mayores como bisagra",
+              "format": "video",
+              "durationMinutes": 14,
+              "prompt": "Ubica en qué área de tu vida ya se siente un cambio de etapa."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "course-arquitectura-del-destino",
+      "title": "Arquitectura del destino",
+      "subtitle": "Astrología y numerología para leer tu año sin improvisar",
+      "category": "Astro + Numerología",
+      "level": "Intermedio",
+      "premium": true,
+      "featured": false,
+      "removable": true,
+      "estimatedHours": 5.2,
+      "moduleCount": 5,
+      "lessonCount": 15,
+      "progressPercent": 8,
+      "streakDays": 1,
+      "hook": "Una experiencia con ritmo de serie corta para entender tus ciclos y salir con mapa de acción trimestral.",
+      "description": "Cruza sendero de vida, año personal, Sol, Luna y tránsitos clave para pasar de intuición suelta a estrategia personal con timing.",
+      "outcomes": [
+        "Ubicar tu tema rector del año con astrología y numerología.",
+        "Detectar meses de avance, corrección y repliegue.",
+        "Construir un tablero de decisiones por trimestre."
+      ],
+      "modules": [
+        {
+          "id": "course-arquitectura-del-destino-m1",
+          "title": "Tu mapa rector",
+          "summary": "Junta Sol, Luna, Ascendente y sendero de vida para encontrar el patrón de fondo.",
+          "durationMinutes": 58,
+          "lessons": [
+            {
+              "id": "course-arquitectura-del-destino-m1-l1",
+              "title": "Sol, Luna y Ascendente en lenguaje humano",
+              "format": "video",
+              "durationMinutes": 18,
+              "prompt": "Describe tu energía base, necesidad emocional y forma de entrar al mundo."
+            }
+          ]
+        },
+        {
+          "id": "course-arquitectura-del-destino-m2",
+          "title": "Año personal y tránsitos",
+          "summary": "Cruza timing numerológico con el cielo para detectar presión, expansión y limpieza.",
+          "durationMinutes": 64,
+          "lessons": [
+            {
+              "id": "course-arquitectura-del-destino-m2-l1",
+              "title": "Leer el año personal",
+              "format": "video",
+              "durationMinutes": 16,
+              "prompt": "Identifica el verbo central del año: sembrar, ordenar, exponer o cerrar."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "bookings": [
+    {
+      "id": "booking-1",
+      "userId": "user-mark",
+      "serviceId": "service-tarot",
+      "serviceName": "Lectura de tarot terapéutico",
+      "specialistId": "spec-amaya",
+      "specialistName": "Amaya Rivas",
+      "scheduledAt": "2026-03-24T19:00:00-03:00",
+      "mode": "video",
+      "status": "confirmed",
+      "price": {
+        "amount": 32,
+        "currency": "USD"
+      },
+      "notes": "Quiero trabajar claridad sobre una decisión profesional."
+    }
+  ],
+  "admin": {
+    "activeUsers": 324,
+    "premiumSubscribers": 81,
+    "monthlyBookings": 146,
+    "activeSpecialists": 7,
+    "openIncidents": 2
+  }
+}

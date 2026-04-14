@@ -1,0 +1,28 @@
+{
+  "name": "@lo-renaciente/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "migrate": "tsx src/infrastructure/migrate.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1017.0",
+    "@fastify/cors": "^11.1.0",
+    "@types/pg": "^8.20.0",
+    "astronomy-engine": "^2.1.19",
+    "dotenv": "^17.3.1",
+    "fastify": "^5.3.3",
+    "pg": "^8.20.0",
+    "redis": "^5.11.0",
+    "sweph-wasm": "^2.6.9"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.10",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
+  }
+}

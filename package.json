@@ -1,0 +1,21 @@
+{
+  "name": "lo-renaciente",
+  "private": true,
+  "workspaces": [
+    "apps/api",
+    "apps/web",
+    "apps/admin"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev --workspace @lo-renaciente/api",
+    "build:api": "npm run build --workspace @lo-renaciente/api",
+    "mobile:ios:device": "./scripts/run-ios-device.sh",
+    "dev:web": "npm run dev --workspace @lo-renaciente/web",
+    "build:web": "npm run build --workspace @lo-renaciente/web",
+    "dev:admin": "npm run dev --workspace @lo-renaciente/admin",
+    "build:admin": "npm run build --workspace @lo-renaciente/admin",
+    "api:migrate": "npm run migrate --workspace @lo-renaciente/api",
+    "infra:up": "docker compose up -d postgres redis minio",
+    "infra:down": "docker compose down"
+  }
+}

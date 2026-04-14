@@ -1,0 +1,52 @@
+name: lo_renaciente
+description: Aplicacion movil base para tarot, astrologia y consultas.
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  gallery_saver_plus: ^3.2.9
+  http: ^1.5.0
+  image_picker: ^1.2.0
+  intl: ^0.20.2
+  path_provider: ^2.1.5
+  screenshot: ^3.0.0
+  share_plus: ^11.1.0
+  shared_preferences: ^2.5.3
+  url_launcher: ^6.3.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+dependency_overrides:
+  # path_provider_foundation 2.6.x cambia a FFI nativo via objective_c y nos
+  # genero fallas de firma/arranque en iPhone fisico. Mantener este pin hasta
+  # validar un upgrade estable en dispositivo real.
+  path_provider_foundation: 2.5.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/bootstrap/bootstrap_seed.json
+    - assets/tarot_cards/
+  fonts:
+    - family: CormorantGaramond
+      fonts:
+        - asset: assets/fonts/CormorantGaramond-VF.ttf
+          weight: 300
+        - asset: assets/fonts/CormorantGaramond-VF.ttf
+          weight: 400
+        - asset: assets/fonts/CormorantGaramond-VF.ttf
+          weight: 500
+        - asset: assets/fonts/CormorantGaramond-VF.ttf
+          weight: 600
+        - asset: assets/fonts/CormorantGaramond-VF.ttf
+          weight: 700

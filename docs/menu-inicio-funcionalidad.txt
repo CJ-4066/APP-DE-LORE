@@ -1,0 +1,291 @@
+LO RENACIENTE
+MAPA REAL DEL MENU DE INICIO Y ESTADO FUNCIONAL
+
+Fecha del documento: 24/03/2026
+
+OBJETIVO
+Este documento describe:
+- que aparece en la pantalla de Inicio
+- a donde lleva cada bloque
+- que partes estan funcionando hoy
+- que partes estan parciales
+- que partes sobran o estan prometiendo algo distinto de lo que hacen
+
+
+1. NAVEGACION PRINCIPAL DE LA APP
+
+La barra inferior actual tiene 5 destinos:
+
+- Inicio
+  Muestra el resumen principal de la app y conecta a los modulos clave.
+
+- Tarot
+  Abre el modulo de Tarot con sus subsecciones internas.
+
+- Cursos
+  Abre el campus de cursos, rutas guiadas y progreso de aprendizaje.
+
+- Agenda
+  Abre reservas, estados y el flujo para agendar consultas.
+
+- Perfil
+  Abre datos del usuario, preferencias, idioma, suscripcion y pagos.
+
+
+2. QUE APARECE EN INICIO
+
+2.1 Cabecera
+
+En la parte superior aparecen:
+
+- nombre de la app
+- saludo principal
+- subtitulo de bienvenida
+- chip del plan actual
+
+Estado:
+- nombre de la app: funcional como informacion
+- saludo y subtitulo: funcional como informacion
+- chip del plan: solo informativo, no navega a una pantalla de upgrade
+
+
+2.2 Carrusel de modulos principales
+
+En Inicio aparece un carrusel grande con 2 tarjetas:
+
+- Mapa central
+  Promesa: revisar carta natal, triada, casas, rueda y datos natales
+  Boton principal: abrir Carta Astral
+  Boton secundario: ver Agenda
+  Estado: funcional
+
+- Ciclos aplicados
+  Promesa: abrir Numerologia
+  Boton principal: abrir Numerologia
+  Estado: funcional
+
+
+2.3 Seccion "Explora tu espacio"
+
+Aparecen 2 tarjetas horizontales:
+
+- Carta
+  Lleva a Carta Astral
+  Estado: funcional
+
+- Numerologia
+  Lleva a Numerologia
+  Estado: funcional
+
+
+2.4 Seccion "Pulso del dia"
+
+Tiene 2 tarjetas compactas:
+
+- Tarot
+  Muestra carta del dia, mensaje y ritual breve
+  Estado: informativo
+  Observacion: ya no abre Tarot para evitar accesos duplicados a la pestaña.
+
+- Astrologia
+  Muestra energia astrologica, intensidad y consejo
+  Lleva a Carta Astral
+  Estado: funcional
+
+
+2.5 Seccion "Acciones que si funcionan"
+
+Acciones actuales:
+
+- Numerologia
+  Tipo interno: content
+  Estado: funcional
+  Destino real hoy: Numerologia
+
+- Ver Premium
+  Tipo interno: subscription
+  Destino real hoy: centro de suscripcion
+  Estado: funcional
+
+- Completar perfil astral
+  Tipo interno: profile
+  Destino real hoy: Carta Astral
+  Estado: funcional
+
+
+2.6 Proxima sesion
+
+Si existe una reserva futura, aparece una tarjeta con:
+- especialista
+- servicio
+- fecha
+- estado
+
+Estado:
+- informativo
+- ya no abre Agenda para evitar accesos duplicados a la pestaña
+
+
+2.7 Estado de suscripcion
+
+Aparece un bloque inferior con:
+- nombre del plan
+- estado de suscripcion
+- algunos beneficios
+
+Estado:
+- informativo
+- no abre un flujo real de upgrade o gestion
+
+
+3. QUE MODULOS ESTAN FUNCIONANDO DE VERDAD
+
+3.1 Carta Astral
+
+Funciona hoy:
+- formulario natal
+- ciudad y lugar de nacimiento
+- calculo natal
+- rueda natal
+- tránsitos
+- revoluciones
+- eventos
+- descarga de imagen
+- compartir imagen
+- configuracion profesional basica
+
+Parcial:
+- algunos puntos tecnicos avanzados dependen de efemerides extra
+- la paridad visual fina con el modelo de referencia aun se sigue ajustando
+
+
+3.2 Numerologia
+
+Funciona hoy:
+- generar perfil por nombre y fecha
+- panorama
+- numeros nucleares
+- ciclos
+- especialistas
+- cursos numerologicos
+
+Parcial:
+- se sigue refinando la interfaz visual
+- hay bloques que aun pueden compactarse o simplificarse
+
+
+3.3 Tarot
+
+Funciona hoy:
+- panorama
+- lecturas
+- especialistas
+- cursos
+- ritual
+- reserva de sesiones
+
+Parcial:
+- no existe aun una tirada interactiva tipo spread completa
+- el modulo es editorial + agenda, no un lector de tarot automatizado profundo
+
+
+3.4 Cursos
+
+Funciona hoy:
+- campus visual con progreso
+- cursos seed removibles
+- modulos y checkpoints
+- continuidad de curso
+- filtros por estado y premium
+
+Parcial:
+- aun no existe reproduccion de leccion o tracking persistente por usuario
+- los cursos actuales son seeds para testeo y luego se pueden reemplazar
+
+
+3.5 Agenda
+
+Funciona hoy:
+- ver reservas
+- ver estados
+- acceder a atajos por modalidad
+- crear nueva reserva
+
+Parcial:
+- no esta cerrado aun un flujo rico de reprogramar o cancelar desde UI
+
+
+3.6 Perfil
+
+Funciona hoy:
+- ver datos personales
+- editar perfil
+- cambiar idioma
+- ver datos natales
+- abrir Carta Astral
+- ver suscripcion y pagos como informacion
+
+Parcial o pendiente:
+- gestionar suscripcion no tiene accion real
+- privacidad y soporte aun no tienen accion real
+
+
+4. QUE ESTA DE MAS O DESALINEADO HOY
+
+Estos son los puntos que se corrigieron para evitar duplicacion de pestañas:
+
+- Inicio ya no abre Tarot, Cursos ni Agenda
+  Esas pestañas ahora se abren solo desde la barra inferior.
+
+- Las acciones rapidas ya no duplican accesos a pestañas
+  Quedaron solo Numerologia, Premium y Perfil astral.
+
+- "Ver Premium"
+  Deberia abrir un flujo de upgrade, gestion o comparacion de planes.
+
+- chip del plan actual en cabecera
+  Si se mantiene, seria mejor que abriera el estado de suscripcion o upgrade.
+
+- bloque de suscripcion en Inicio
+  Hoy solo informa; no tiene accion.
+
+- items de Perfil:
+  "Gestionar suscripcion", "Privacidad y datos" y "Soporte"
+  visualmente existen, pero hoy no hacen nada real.
+
+
+5. RESUMEN EJECUTIVO
+
+Lo que si esta bien conectado:
+- Carta Astral
+- Numerologia
+- Tarot
+- Cursos
+- Agenda
+- Editar perfil
+- Cambiar idioma
+
+Lo que esta conectado pero parcial:
+- Cursos aun sin tracking persistente por usuario
+- Numerologia en refinamiento visual
+- Tarot aun sin spread interactivo completo
+- Agenda aun sin reprogramacion/cancelacion avanzada
+
+Lo que debe corregirse porque promete algo distinto:
+- Gestion de premium
+- Gestion de suscripcion desde Perfil
+- Privacidad y Soporte desde Perfil
+
+
+6. CONCLUSION
+
+El menu de Inicio ya sirve como centro real del producto.
+Lo mejor conectado hoy es:
+- Carta Astral
+- Tarot
+- Numerologia
+- Cursos
+- Agenda
+
+Lo mas urgente a corregir en navegacion es:
+- que premium, suscripcion, privacidad y soporte dejen de ser solo texto y pasen a ser flujos reales
