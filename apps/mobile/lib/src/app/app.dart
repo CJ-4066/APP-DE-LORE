@@ -18,6 +18,7 @@ import '../features/shop/shop_screen.dart';
 import '../features/specialist/specialist_workspace_screen.dart';
 import '../features/tarot/tarot_screen.dart';
 import '../models/app_models.dart';
+import '../models/profile_models.dart';
 import '../state/app_controller.dart';
 
 class LoRenacienteApp extends StatefulWidget {
@@ -208,6 +209,22 @@ class _AuthenticatedShell extends StatelessWidget {
       );
     }
 
+    Future<String?> enterSpecialistMode() async {
+      if (data.user.accountType == 'specialist') {
+        controller.setCurrentIndex(0);
+        return null;
+      }
+
+      final error = await controller.updateProfile(
+        UpdateProfileInput(accountType: 'specialist'),
+      );
+      if (error == null) {
+        controller.setCurrentIndex(0);
+      }
+
+      return error;
+    }
+
     final isSpecialist = data.user.accountType == 'specialist';
     final screens = isSpecialist
         ? [
@@ -246,6 +263,7 @@ class _AuthenticatedShell extends StatelessWidget {
               data: data,
               onRefresh: controller.refreshHome,
               onOpenAstralChart: openAstralChart,
+              onEnterSpecialistMode: enterSpecialistMode,
               currentLocale: controller.locale,
               onChangeLocale: controller.setLocale,
               onStartPhoneLogin: controller.goBackToPhoneEntry,
@@ -303,6 +321,7 @@ class _AuthenticatedShell extends StatelessWidget {
               data: data,
               onRefresh: controller.refreshHome,
               onOpenAstralChart: openAstralChart,
+              onEnterSpecialistMode: enterSpecialistMode,
               currentLocale: controller.locale,
               onChangeLocale: controller.setLocale,
               onStartPhoneLogin: controller.goBackToPhoneEntry,

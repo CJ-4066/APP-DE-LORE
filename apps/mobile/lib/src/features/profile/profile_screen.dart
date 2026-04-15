@@ -15,6 +15,7 @@ class ProfileScreen extends StatelessWidget {
     required this.onStartPhoneLogin,
     required this.onLogout,
     required this.onOpenAstralChart,
+    required this.onEnterSpecialistMode,
     required this.currentLocale,
     required this.onChangeLocale,
   });
@@ -25,6 +26,7 @@ class ProfileScreen extends StatelessWidget {
   final VoidCallback onStartPhoneLogin;
   final Future<void> Function() onLogout;
   final Future<void> Function() onOpenAstralChart;
+  final Future<String?> Function() onEnterSpecialistMode;
   final Locale currentLocale;
   final Future<void> Function(Locale locale) onChangeLocale;
 
@@ -182,6 +184,14 @@ class ProfileScreen extends StatelessWidget {
                   ],
                 ),
               ),
+            ),
+            const SizedBox(height: 16),
+            _SpecialistModeCard(
+              user: data.user,
+              isGuestMode: isGuestMode,
+              onStartPhoneLogin: onStartPhoneLogin,
+              onEditProfile: onEditProfile,
+              onEnterSpecialistMode: onEnterSpecialistMode,
             ),
             const SizedBox(height: 16),
             Card(
@@ -448,4 +458,296 @@ class ProfileScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+class _SpecialistModeCard extends StatelessWidget {
+  const _SpecialistModeCard({
+    required this.user,
+    required this.isGuestMode,
+    required this.onStartPhoneLogin,
+    required this.onEditProfile,
+    required this.onEnterSpecialistMode,
+  });
+
+  final UserProfile user;
+  final bool isGuestMode;
+  final VoidCallback onStartPhoneLogin;
+  final Future<void> Function() onEditProfile;
+  final Future<String?> Function() onEnterSpecialistMode;
+
+  @override
+  Widget build(BuildContext context) {
+    final isSpecialist = user.accountType == 'specialist';
+    final hasRequiredProfileData = _hasRequiredSpecialistProfileData(user);
+    final buttonLabel = isSpecialist
+        ? 'Ir al panel especialista'
+        : hasRequiredProfileData
+            ? 'Entrar como especialista'
+            : isGuestMode
+                ? 'Registrarme para administrar'
+                : 'Completar datos para administrar';
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF211821),
+            Color(0xFF5C3B52),
+            Color(0xFF9E694D),
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF5C3B52).withValues(alpha: 0.18),
+            blurRadius: 24,
+            offset: const Offset(0, 14),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.18),
+                  ),
+                ),
+                child: const Icon(
+                  Icons.workspace_premium_outlined,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isSpecialist
+                          ? 'Vista especialista activa'
+                          : 'Administrar como especialista',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                          ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      isSpecialist
+                          ? 'Tu cuenta ya puede gestionar cursos, productos, citas, precios y comunidad desde el panel operativo.'
+                          : 'Usa los mismos datos de tu perfil para habilitar gestión de cursos, productos, citas, precios y comunidad.',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.white.withValues(alpha: 0.82),
+                            height: 1.4,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: const [
+              _SpecialistModePill(label: 'Cursos/PDF'),
+              _SpecialistModePill(label: 'Productos'),
+              _SpecialistModePill(label: 'Citas'),
+              _SpecialistModePill(label: 'Comunidad'),
+            ],
+          ),
+          if (!hasRequiredProfileData && !isSpecialist) ...[
+            const SizedBox(height: 12),
+            Text(
+              isGuestMode
+                  ? 'Para administrar primero necesitas registrarte con teléfono y completar tu perfil.'
+                  : 'Antes de administrar necesitamos nombre, nacimiento, ciudad, país, zona horaria y coordenadas.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: const Color(0xFFFFD8C5),
+                    fontWeight: FontWeight.w700,
+                    height: 1.35,
+                  ),
+            ),
+          ],
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: () => _handleSpecialistModeTap(context),
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: const Color(0xFF211821),
+              ),
+              icon: Icon(
+                isSpecialist
+                    ? Icons.dashboard_customize_outlined
+                    : Icons.arrow_forward_rounded,
+              ),
+              label: Text(buttonLabel),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _handleSpecialistModeTap(BuildContext context) async {
+    if (isGuestMode) {
+      final shouldRegister = await showDialog<bool>(
+            context: context,
+            builder: (dialogContext) {
+              return AlertDialog(
+                title: const Text('Registro requerido'),
+                content: const Text(
+                  'Para administrar cursos, productos, citas y comunidad necesitas registrarte primero con tu teléfono.',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(false),
+                    child: const Text('Cancelar'),
+                  ),
+                  FilledButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(true),
+                    child: const Text('Registrarme'),
+                  ),
+                ],
+              );
+            },
+          ) ??
+          false;
+
+      if (shouldRegister && context.mounted) {
+        onStartPhoneLogin();
+      }
+      return;
+    }
+
+    if (!_hasRequiredSpecialistProfileData(user)) {
+      final shouldEdit = await showDialog<bool>(
+            context: context,
+            builder: (dialogContext) {
+              return AlertDialog(
+                title: const Text('Completa tus datos'),
+                content: const Text(
+                  'Antes de activar la vista especialista necesitamos tus datos base completos. Así podrás administrar cursos, productos, citas, precios y comunidad con una cuenta identificada.',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(false),
+                    child: const Text('Luego'),
+                  ),
+                  FilledButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(true),
+                    child: const Text('Completar perfil'),
+                  ),
+                ],
+              );
+            },
+          ) ??
+          false;
+
+      if (shouldEdit && context.mounted) {
+        await onEditProfile();
+      }
+      return;
+    }
+
+    if (user.accountType != 'specialist') {
+      final confirmed = await showDialog<bool>(
+            context: context,
+            builder: (dialogContext) {
+              return AlertDialog(
+                title: const Text('Activar vista especialista'),
+                content: const Text(
+                  'Se usará este mismo perfil para habilitar el panel de administración de cursos, productos, citas, precios y comunidad.',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(false),
+                    child: const Text('Cancelar'),
+                  ),
+                  FilledButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(true),
+                    child: const Text('Activar'),
+                  ),
+                ],
+              );
+            },
+          ) ??
+          false;
+
+      if (!confirmed) {
+        return;
+      }
+    }
+
+    final error = await onEnterSpecialistMode();
+    if (!context.mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          error ?? 'Vista especialista lista para administrar tu operación.',
+        ),
+      ),
+    );
+  }
+}
+
+class _SpecialistModePill extends StatelessWidget {
+  const _SpecialistModePill({
+    required this.label,
+  });
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.16),
+        ),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+            ),
+      ),
+    );
+  }
+}
+
+bool _hasRequiredSpecialistProfileData(UserProfile user) {
+  return user.id.trim().isNotEmpty &&
+      user.firstName.trim().isNotEmpty &&
+      user.lastName.trim().isNotEmpty &&
+      user.natalChart.birthDate.trim().isNotEmpty &&
+      user.natalChart.birthTime.trim().isNotEmpty &&
+      user.natalChart.city.trim().isNotEmpty &&
+      user.natalChart.country.trim().isNotEmpty &&
+      user.natalChart.timeZoneId.trim().isNotEmpty &&
+      user.natalChart.utcOffset.trim().isNotEmpty &&
+      user.natalChart.latitude != null &&
+      user.natalChart.longitude != null;
 }
