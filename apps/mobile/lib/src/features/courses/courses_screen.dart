@@ -13,10 +13,12 @@ class CoursesScreen extends StatefulWidget {
     super.key,
     required this.data,
     required this.onRefresh,
+    this.canManageCourses = false,
   });
 
   final AppBootstrap data;
   final Future<void> Function() onRefresh;
+  final bool canManageCourses;
 
   @override
   State<CoursesScreen> createState() => _CoursesScreenState();
@@ -27,6 +29,13 @@ class _CoursesScreenState extends State<CoursesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.canManageCourses) {
+      return _CourseManagerView(
+        data: widget.data,
+        onRefresh: widget.onRefresh,
+      );
+    }
+
     final ritualsCount = 4;
     final coursesCount = widget.data.courses.length;
 
@@ -115,6 +124,334 @@ class _CoursesScreenState extends State<CoursesScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _CourseManagerView extends StatelessWidget {
+  const _CourseManagerView({
+    required this.data,
+    required this.onRefresh,
+  });
+
+  final AppBootstrap data;
+  final Future<void> Function() onRefresh;
+
+  @override
+  Widget build(BuildContext context) {
+    final courses = data.courses;
+    final lessonCount = courses.fold<int>(
+      0,
+      (sum, course) => sum + course.lessonCount,
+    );
+    final featuredCount = courses.where((course) => course.featured).length;
+    final premiumCount = courses.where((course) => course.premium).length;
+
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFFFFF8F1),
+            Color(0xFFF8F3ED),
+          ],
+        ),
+      ),
+      child: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: onRefresh,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
+            children: [
+              MysticBannerCard(
+                eyebrow: 'Gestión académica',
+                title: 'Cursos y PDFs',
+                subtitle:
+                    'Administra rutas formativas, lecciones, materiales descargables y estado de publicación.',
+                glyphKind: MysticGlyphKind.course,
+                gradient: const [
+                  Color(0xFF1B2029),
+                  Color(0xFF5B4B41),
+                  Color(0xFFB68B61),
+                ],
+                tags: [
+                  '${courses.length} cursos',
+                  '$lessonCount lecciones',
+                  '$featuredCount destacados',
+                  '$premiumCount premium',
+                ],
+                primaryLabel: 'Actualizar',
+                onPrimaryTap: () {
+                  onRefresh();
+                },
+              ),
+              const SizedBox(height: 18),
+              _CourseManagerMetrics(
+                courseCount: courses.length,
+                lessonCount: lessonCount,
+                featuredCount: featuredCount,
+                premiumCount: premiumCount,
+              ),
+              const SizedBox(height: 22),
+              Text(
+                'Contenido publicado',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: const Color(0xFF241D22),
+                      fontWeight: FontWeight.w900,
+                    ),
+              ),
+              const SizedBox(height: 12),
+              if (courses.isEmpty)
+                const MysticMiniBanner(
+                  title: 'Sin cursos cargados',
+                  subtitle:
+                      'Cuando se conecte la creación de cursos, aquí se administrarán PDFs, módulos y lecciones.',
+                  glyphKind: MysticGlyphKind.course,
+                  accent: Color(0xFF5C7A72),
+                )
+              else
+                ...courses.map(
+                  (course) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _CourseAdminCard(course: course),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CourseManagerMetrics extends StatelessWidget {
+  const _CourseManagerMetrics({
+    required this.courseCount,
+    required this.lessonCount,
+    required this.featuredCount,
+    required this.premiumCount,
+  });
+
+  final int courseCount;
+  final int lessonCount;
+  final int featuredCount;
+  final int premiumCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = (constraints.maxWidth - 12) / 2;
+        return Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            _CourseMetricTile(
+              width: width,
+              icon: Icons.auto_stories_outlined,
+              label: 'Cursos',
+              value: '$courseCount',
+              color: const Color(0xFF5B4B41),
+            ),
+            _CourseMetricTile(
+              width: width,
+              icon: Icons.article_outlined,
+              label: 'Lecciones/PDF',
+              value: '$lessonCount',
+              color: const Color(0xFF7A6042),
+            ),
+            _CourseMetricTile(
+              width: width,
+              icon: Icons.auto_awesome_rounded,
+              label: 'Destacados',
+              value: '$featuredCount',
+              color: const Color(0xFFB68B61),
+            ),
+            _CourseMetricTile(
+              width: width,
+              icon: Icons.workspace_premium_outlined,
+              label: 'Premium',
+              value: '$premiumCount',
+              color: const Color(0xFF5C7A72),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _CourseMetricTile extends StatelessWidget {
+  const _CourseMetricTile({
+    required this.width,
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final double width;
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: width,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: const Color(0xFFE7DED3)),
+        ),
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(icon, color: color),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    value,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: const Color(0xFF241D22),
+                          fontWeight: FontWeight.w900,
+                        ),
+                  ),
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          color: const Color(0xFF6E625B),
+                          fontWeight: FontWeight.w800,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CourseAdminCard extends StatelessWidget {
+  const _CourseAdminCard({
+    required this.course,
+  });
+
+  final Course course;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFE7DED3)),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: const Color(0xFF5C7A72).withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: const Icon(
+              Icons.menu_book_outlined,
+              color: Color(0xFF5C7A72),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  course.title,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: const Color(0xFF241D22),
+                        fontWeight: FontWeight.w900,
+                      ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  course.subtitle,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: const Color(0xFF6E625B),
+                        height: 1.32,
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _CourseStatusPill(
+                      label: '${course.lessonCount} lecciones',
+                    ),
+                    _CourseStatusPill(
+                      label: '${course.estimatedHours.toStringAsFixed(1)} h',
+                    ),
+                    if (course.featured)
+                      const _CourseStatusPill(label: 'Destacado'),
+                    if (course.premium)
+                      const _CourseStatusPill(label: 'Premium'),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CourseStatusPill extends StatelessWidget {
+  const _CourseStatusPill({
+    required this.label,
+  });
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF2EBE3),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: const Color(0xFF5B4B41),
+              fontWeight: FontWeight.w900,
+            ),
       ),
     );
   }

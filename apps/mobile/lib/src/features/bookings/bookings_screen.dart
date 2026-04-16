@@ -17,6 +17,7 @@ class BookingsScreen extends StatefulWidget {
     required this.onCancelBooking,
     required this.onLoadCommunityChat,
     required this.onSendCommunityChatMessage,
+    this.canManageBookings = false,
   });
 
   final AppBootstrap data;
@@ -30,6 +31,7 @@ class BookingsScreen extends StatefulWidget {
   final Future<List<CommunityChatMessage>> Function() onLoadCommunityChat;
   final Future<List<CommunityChatMessage>> Function(String body)
       onSendCommunityChatMessage;
+  final bool canManageBookings;
 
   @override
   State<BookingsScreen> createState() => _BookingsScreenState();
@@ -149,6 +151,29 @@ class _BookingsScreenState extends State<BookingsScreen> {
     }
   }
 
+  Future<void> _handleSpecialistStatus(Booking booking, String status) async {
+    setState(() {
+      _busyBookingId = booking.id;
+    });
+
+    final errorMessage = await widget.onUpdateBooking(
+      bookingId: booking.id,
+      input: UpdateBookingInput(status: status),
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _busyBookingId = null;
+    });
+
+    _showSnackBar(
+      errorMessage ?? 'Cita actualizada a ${_statusLabel(status)}.',
+    );
+  }
+
   void _showBookingDetail(Booking booking) {
     showModalBottomSheet<void>(
       context: context,
@@ -190,6 +215,89 @@ class _BookingsScreenState extends State<BookingsScreen> {
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
+  Widget _buildSpecialistAgenda({
+    required int confirmedCount,
+    required int pendingPaymentCount,
+    required int cancelledCount,
+  }) {
+    final activeBookings = widget.data.bookings
+        .where((booking) => booking.status != 'cancelled')
+        .toList(growable: false);
+
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFFFFF8F0),
+            Color(0xFFFFFCF8),
+          ],
+        ),
+      ),
+      child: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: widget.onRefresh,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+            children: [
+              MysticBannerCard(
+                eyebrow: 'Agenda especialista',
+                title: 'Citas recibidas',
+                subtitle:
+                    'Gestiona pagos, confirmaciones y cierre de sesiones sin crear reservas como cliente.',
+                glyphKind: MysticGlyphKind.agenda,
+                gradient: const [
+                  Color(0xFF24443F),
+                  Color(0xFF3B6E66),
+                  Color(0xFF6F9C93),
+                ],
+                tags: [
+                  '${widget.data.bookings.length} reservas',
+                  '$confirmedCount confirmadas',
+                  '$pendingPaymentCount pendientes',
+                  if (cancelledCount > 0) '$cancelledCount canceladas',
+                ],
+                primaryLabel: 'Chat comunidad',
+                onPrimaryTap: _openCommunityChat,
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Operación de citas',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: const Color(0xFF243C37),
+                      fontWeight: FontWeight.w900,
+                    ),
+              ),
+              const SizedBox(height: 12),
+              if (activeBookings.isEmpty)
+                const MysticMiniBanner(
+                  title: 'Sin citas activas',
+                  subtitle:
+                      'Cuando un cliente reserve una consulta, aparecerá aquí para cambiar estado y revisar notas.',
+                  glyphKind: MysticGlyphKind.agenda,
+                  accent: Color(0xFF5C7A72),
+                )
+              else
+                ...activeBookings.map(
+                  (booking) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _SpecialistAgendaBookingCard(
+                      booking: booking,
+                      busy: _busyBookingId == booking.id,
+                      onOpen: () => _showBookingDetail(booking),
+                      onStatusSelected: (status) =>
+                          _handleSpecialistStatus(booking, status),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final tarotSpecialists = widget.data.specialists.where((specialist) {
@@ -206,6 +314,14 @@ class _BookingsScreenState extends State<BookingsScreen> {
     final cancelledCount = widget.data.bookings
         .where((booking) => booking.status == 'cancelled')
         .length;
+
+    if (widget.canManageBookings) {
+      return _buildSpecialistAgenda(
+        confirmedCount: confirmedCount,
+        pendingPaymentCount: pendingPaymentCount,
+        cancelledCount: cancelledCount,
+      );
+    }
 
     return Container(
       decoration: const BoxDecoration(
@@ -391,6 +507,120 @@ class _BookingStatusPill extends StatelessWidget {
           fontSize: 11,
           fontWeight: FontWeight.w800,
           color: accent,
+        ),
+      ),
+    );
+  }
+}
+
+class _SpecialistAgendaBookingCard extends StatelessWidget {
+  const _SpecialistAgendaBookingCard({
+    required this.booking,
+    required this.busy,
+    required this.onOpen,
+    required this.onStatusSelected,
+  });
+
+  final Booking booking;
+  final bool busy;
+  final VoidCallback onOpen;
+  final ValueChanged<String> onStatusSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = _statusAccent(booking.status);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(24),
+        onTap: onOpen,
+        child: Ink(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: const Color(0xFFE7DED3)),
+          ),
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: accent.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(Icons.event_available_outlined, color: accent),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      booking.serviceName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            color: const Color(0xFF1E2C29),
+                            fontWeight: FontWeight.w900,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${formatSchedule(booking.scheduledAt)} · ${formatMoney(booking.price)}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: const Color(0xFF6E625B),
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${_modeLabel(booking.mode)} · ${booking.notes.trim().isEmpty ? 'Sin notas' : booking.notes.trim()}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: const Color(0xFF7B716A),
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              busy
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : PopupMenuButton<String>(
+                      tooltip: 'Cambiar estado',
+                      onSelected: onStatusSelected,
+                      itemBuilder: (context) => const [
+                        PopupMenuItem(
+                          value: 'pending_payment',
+                          child: Text('Pendiente de pago'),
+                        ),
+                        PopupMenuItem(
+                          value: 'confirmed',
+                          child: Text('Confirmada'),
+                        ),
+                        PopupMenuItem(
+                          value: 'completed',
+                          child: Text('Completada'),
+                        ),
+                        PopupMenuItem(
+                          value: 'cancelled',
+                          child: Text('Cancelada'),
+                        ),
+                      ],
+                      child: _BookingStatusPill(booking: booking),
+                    ),
+            ],
+          ),
         ),
       ),
     );

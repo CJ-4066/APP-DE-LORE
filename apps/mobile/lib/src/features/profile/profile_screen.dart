@@ -16,6 +16,7 @@ class ProfileScreen extends StatelessWidget {
     required this.onLogout,
     required this.onOpenAstralChart,
     required this.onEnterSpecialistMode,
+    required this.onExitSpecialistMode,
     required this.currentLocale,
     required this.onChangeLocale,
   });
@@ -27,6 +28,7 @@ class ProfileScreen extends StatelessWidget {
   final Future<void> Function() onLogout;
   final Future<void> Function() onOpenAstralChart;
   final Future<String?> Function() onEnterSpecialistMode;
+  final Future<String?> Function() onExitSpecialistMode;
   final Locale currentLocale;
   final Future<void> Function(Locale locale) onChangeLocale;
 
@@ -192,6 +194,7 @@ class ProfileScreen extends StatelessWidget {
               onStartPhoneLogin: onStartPhoneLogin,
               onEditProfile: onEditProfile,
               onEnterSpecialistMode: onEnterSpecialistMode,
+              onExitSpecialistMode: onExitSpecialistMode,
             ),
             const SizedBox(height: 16),
             Card(
@@ -467,6 +470,7 @@ class _SpecialistModeCard extends StatelessWidget {
     required this.onStartPhoneLogin,
     required this.onEditProfile,
     required this.onEnterSpecialistMode,
+    required this.onExitSpecialistMode,
   });
 
   final UserProfile user;
@@ -474,18 +478,13 @@ class _SpecialistModeCard extends StatelessWidget {
   final VoidCallback onStartPhoneLogin;
   final Future<void> Function() onEditProfile;
   final Future<String?> Function() onEnterSpecialistMode;
+  final Future<String?> Function() onExitSpecialistMode;
 
   @override
   Widget build(BuildContext context) {
     final isSpecialist = user.accountType == 'specialist';
     final hasRequiredProfileData = _hasRequiredSpecialistProfileData(user);
-    final buttonLabel = isSpecialist
-        ? 'Ir al panel especialista'
-        : hasRequiredProfileData
-            ? 'Entrar como especialista'
-            : isGuestMode
-                ? 'Registrarme para administrar'
-                : 'Completar datos para administrar';
+    final buttonLabel = isSpecialist ? 'Usuario' : 'Especialista';
 
     return Container(
       decoration: BoxDecoration(
@@ -586,14 +585,16 @@ class _SpecialistModeCard extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
-              onPressed: () => _handleSpecialistModeTap(context),
+              onPressed: isSpecialist
+                  ? () => _handleClientModeTap(context)
+                  : () => _handleSpecialistModeTap(context),
               style: FilledButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: const Color(0xFF211821),
               ),
               icon: Icon(
                 isSpecialist
-                    ? Icons.dashboard_customize_outlined
+                    ? Icons.person_outline_rounded
                     : Icons.arrow_forward_rounded,
               ),
               label: Text(buttonLabel),
@@ -703,6 +704,48 @@ class _SpecialistModeCard extends StatelessWidget {
       SnackBar(
         content: Text(
           error ?? 'Vista especialista lista para administrar tu operación.',
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleClientModeTap(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) {
+            return AlertDialog(
+              title: const Text('Volver a vista usuario'),
+              content: const Text(
+                'Tu perfil y tus datos se mantienen. Solo se ocultará el panel especialista y volverás a la navegación normal de usuario.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: const Text('Cancelar'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                  child: const Text('Volver'),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+
+    if (!confirmed) {
+      return;
+    }
+
+    final error = await onExitSpecialistMode();
+    if (!context.mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          error ?? 'Vista usuario activada.',
         ),
       ),
     );

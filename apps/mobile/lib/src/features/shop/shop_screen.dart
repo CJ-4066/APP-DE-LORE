@@ -44,11 +44,31 @@ class _ShopScreenState extends State<ShopScreen> {
   final Map<String, int> _cart = <String, int>{};
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.canManageShop) {
+      _selectedSection = _ShopSection.admin;
+    }
+  }
+
+  @override
   void didUpdateWidget(covariant ShopScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     final validIds = widget.data.shop.products.map((item) => item.id).toSet();
     _cart.removeWhere((productId, _) => !validIds.contains(productId));
+
+    if (widget.canManageShop) {
+      _cart.clear();
+      if (!oldWidget.canManageShop ||
+          (_selectedSection != _ShopSection.admin &&
+              _selectedSection != _ShopSection.orders)) {
+        _selectedSection = _ShopSection.admin;
+      }
+    } else if (oldWidget.canManageShop &&
+        _selectedSection == _ShopSection.admin) {
+      _selectedSection = _ShopSection.home;
+    }
   }
 
   @override
@@ -64,7 +84,8 @@ class _ShopScreenState extends State<ShopScreen> {
         : products
             .where((item) => item.category == _selectedCategory)
             .toList(growable: false);
-    final cartLines = _cartLines(products);
+    final cartLines =
+        widget.canManageShop ? <_CartLine>[] : _cartLines(products);
     final cartItemCount = cartLines.fold<int>(
       0,
       (sum, line) => sum + line.quantity,
@@ -82,13 +103,16 @@ class _ShopScreenState extends State<ShopScreen> {
     final lowStockProducts = products.where(_isLowStockProduct).toList();
     final customizableProducts =
         products.where(_isCustomizableProduct).toList(growable: false);
-    final visibleSections = _ShopSection.values
-        .where(
-            (section) => widget.canManageShop || section != _ShopSection.admin)
-        .toList(growable: false);
+    final visibleSections = widget.canManageShop
+        ? const [_ShopSection.admin]
+        : _ShopSection.values
+            .where((section) => section != _ShopSection.admin)
+            .toList(growable: false);
     final effectiveSection = visibleSections.contains(_selectedSection)
         ? _selectedSection
-        : _ShopSection.home;
+        : widget.canManageShop
+            ? _ShopSection.admin
+            : _ShopSection.home;
 
     return Container(
       decoration: const BoxDecoration(
@@ -112,16 +136,16 @@ class _ShopScreenState extends State<ShopScreen> {
                   20,
                   14,
                   20,
-                  cartLines.isEmpty ? 28 : 126,
+                  widget.canManageShop || cartLines.isEmpty ? 28 : 126,
                 ),
                 children: [
                   MysticBannerCard(
                     eyebrow: widget.data.shop.title,
                     title: widget.canManageShop
-                        ? 'Boutique ritual y administración de tienda'
+                        ? 'Productos y órdenes'
                         : 'Objetos, mazos y piezas para tu ritual',
                     subtitle: widget.canManageShop
-                        ? '${widget.data.shop.subtitle} Gestiona catálogo, órdenes y stock desde una vista más clara.'
+                        ? 'Gestiona catálogo, fotos, stock, destacados y órdenes sin flujo de compra.'
                         : widget.data.shop.subtitle,
                     glyphKind: MysticGlyphKind.ritual,
                     gradient: const [
@@ -135,25 +159,28 @@ class _ShopScreenState extends State<ShopScreen> {
                       '${lowStockProducts.length} bajo stock',
                       '${customizableProducts.length} personalizables',
                     ],
-                    primaryLabel: cartLines.isEmpty
-                        ? 'Ir al catálogo'
-                        : 'Revisar pedido · ${_formatUsd(cartTotal)}',
-                    onPrimaryTap: cartLines.isEmpty
-                        ? () {
+                    primaryLabel: widget.canManageShop
+                        ? 'Nuevo producto'
+                        : cartLines.isEmpty
+                            ? 'Ir al catálogo'
+                            : 'Revisar pedido · ${_formatUsd(cartTotal)}',
+                    onPrimaryTap: widget.canManageShop
+                        ? _openCreateProductSheet
+                        : cartLines.isEmpty
+                            ? () {
+                                setState(() {
+                                  _selectedSection = _ShopSection.catalog;
+                                });
+                              }
+                            : _openCheckoutSheet,
+                    secondaryLabel: widget.canManageShop ? null : 'Órdenes',
+                    onSecondaryTap: widget.canManageShop
+                        ? null
+                        : () {
                             setState(() {
-                              _selectedSection = _ShopSection.catalog;
+                              _selectedSection = _ShopSection.orders;
                             });
-                          }
-                        : _openCheckoutSheet,
-                    secondaryLabel:
-                        widget.canManageShop ? 'Administrar' : 'Órdenes',
-                    onSecondaryTap: () {
-                      setState(() {
-                        _selectedSection = widget.canManageShop
-                            ? _ShopSection.admin
-                            : _ShopSection.orders;
-                      });
-                    },
+                          },
                   ),
                   const SizedBox(height: 18),
                   _ShopMetricsGrid(
@@ -220,7 +247,7 @@ class _ShopScreenState extends State<ShopScreen> {
                             onEditFeatured: _openFeaturedManagerSheet,
                             onOpenOrders: () {
                               setState(() {
-                                _selectedSection = _ShopSection.orders;
+                                _selectedSection = _ShopSection.admin;
                               });
                             },
                             onUpdateOrderStatus: _updateOrderStatus,
@@ -231,7 +258,7 @@ class _ShopScreenState extends State<ShopScreen> {
                 ],
               ),
             ),
-            if (cartLines.isNotEmpty)
+            if (!widget.canManageShop && cartLines.isNotEmpty)
               Positioned(
                 left: 20,
                 right: 20,
@@ -249,6 +276,10 @@ class _ShopScreenState extends State<ShopScreen> {
   }
 
   Future<void> _openCheckoutSheet() async {
+    if (widget.canManageShop) {
+      return;
+    }
+
     final cartLines = _cartLines(widget.data.shop.products);
     if (cartLines.isEmpty) {
       return;
@@ -314,12 +345,20 @@ class _ShopScreenState extends State<ShopScreen> {
   }
 
   void _incrementProduct(String productId) {
+    if (widget.canManageShop) {
+      return;
+    }
+
     setState(() {
       _cart.update(productId, (value) => value + 1, ifAbsent: () => 1);
     });
   }
 
   void _decrementProduct(String productId) {
+    if (widget.canManageShop) {
+      return;
+    }
+
     final current = _cart[productId] ?? 0;
     if (current <= 1) {
       setState(() {
@@ -354,7 +393,8 @@ class _ShopScreenState extends State<ShopScreen> {
     }
 
     setState(() {
-      _selectedSection = _ShopSection.catalog;
+      _selectedSection =
+          widget.canManageShop ? _ShopSection.admin : _ShopSection.catalog;
       _selectedCategory = product.category;
     });
     ScaffoldMessenger.of(context).showSnackBar(

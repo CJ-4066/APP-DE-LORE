@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../core/utils/formatters.dart';
-import '../../core/widgets/mystic_ui.dart';
 import '../../models/app_models.dart';
 import '../../models/booking_models.dart';
 
@@ -37,7 +36,6 @@ class SpecialistWorkspaceScreen extends StatefulWidget {
 }
 
 class _SpecialistWorkspaceScreenState extends State<SpecialistWorkspaceScreen> {
-  String? _busyServiceId;
   String? _busyBookingId;
 
   @override
@@ -48,13 +46,13 @@ class _SpecialistWorkspaceScreenState extends State<SpecialistWorkspaceScreen> {
     final activeBookings = widget.data.bookings
         .where((booking) => booking.status != 'cancelled')
         .toList(growable: false);
-    final pendingBookings = widget.data.bookings
-        .where((booking) =>
-            booking.status == 'pending_payment' ||
-            booking.status == 'confirmed')
+    final activeOrders = widget.data.shop.orders
+        .where(
+          (order) => order.status != 'completed' && order.status != 'cancelled',
+        )
         .length;
-    final featuredProducts =
-        widget.data.shop.products.where((product) => product.featured).length;
+    final featuredCourses =
+        widget.data.courses.where((course) => course.featured).length;
 
     return Container(
       decoration: const BoxDecoration(
@@ -73,29 +71,6 @@ class _SpecialistWorkspaceScreenState extends State<SpecialistWorkspaceScreen> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
             children: [
-              MysticBannerCard(
-                eyebrow: 'Modo especialista',
-                title: 'Gestiona tu práctica, agenda y tienda',
-                subtitle:
-                    'Controla precios, citas, comunidad, productos y materiales desde un solo centro operativo.',
-                glyphKind: MysticGlyphKind.specialist,
-                gradient: const [
-                  Color(0xFF1F1820),
-                  Color(0xFF5B3A4F),
-                  Color(0xFFB47658),
-                ],
-                tags: [
-                  '${paidServices.length} servicios',
-                  '$pendingBookings citas activas',
-                  '${widget.data.courses.length} cursos',
-                  '$featuredProducts productos destacados',
-                ],
-                primaryLabel: 'Gestionar precios',
-                onPrimaryTap: () => _scrollToServices(context),
-                secondaryLabel: 'Chat comunidad',
-                onSecondaryTap: widget.onOpenCommunityChat,
-              ),
-              const SizedBox(height: 18),
               _SpecialistMetricGrid(
                 serviceCount: paidServices.length,
                 bookingCount: activeBookings.length,
@@ -103,32 +78,21 @@ class _SpecialistWorkspaceScreenState extends State<SpecialistWorkspaceScreen> {
                 productCount: widget.data.shop.products.length,
               ),
               const SizedBox(height: 18),
+              _PricingCenterCard(
+                services: paidServices,
+                onOpen: () => _openPricingCenterSheet(paidServices),
+              ),
+              const SizedBox(height: 18),
               _ActionDeck(
+                productCount: widget.data.shop.products.length,
+                activeOrderCount: activeOrders,
+                courseCount: widget.data.courses.length,
+                featuredCourseCount: featuredCourses,
                 onOpenShop: widget.onOpenShop,
                 onOpenCourses: widget.onOpenCourses,
                 onOpenCommunityChat: widget.onOpenCommunityChat,
               ),
               const SizedBox(height: 24),
-              KeyedSubtree(
-                key: _servicesKey,
-                child: _SectionTitle(
-                  title: 'Precios de consultas',
-                  subtitle:
-                      'Edita el valor de tus servicios sin duplicar el catálogo público.',
-                ),
-              ),
-              const SizedBox(height: 12),
-              ...paidServices.map(
-                (service) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _ServicePriceCard(
-                    service: service,
-                    busy: _busyServiceId == service.id,
-                    onEdit: () => _openServicePriceSheet(service),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
               _SectionTitle(
                 title: 'Citas operativas',
                 subtitle:
@@ -162,16 +126,20 @@ class _SpecialistWorkspaceScreenState extends State<SpecialistWorkspaceScreen> {
     );
   }
 
-  void _scrollToServices(BuildContext context) {
-    final target = _servicesKey.currentContext;
-    if (target == null) {
-      return;
-    }
-
-    Scrollable.ensureVisible(
-      target,
-      duration: const Duration(milliseconds: 260),
-      curve: Curves.easeOutCubic,
+  Future<void> _openPricingCenterSheet(List<ServiceOffer> services) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: true,
+      backgroundColor: const Color(0xFFFFFCF8),
+      builder: (sheetContext) => _PricingCenterSheet(
+        services: services,
+        onEdit: (service) {
+          Navigator.of(sheetContext).pop();
+          _openServicePriceSheet(service);
+        },
+      ),
     );
   }
 
@@ -189,10 +157,6 @@ class _SpecialistWorkspaceScreenState extends State<SpecialistWorkspaceScreen> {
       return;
     }
 
-    setState(() {
-      _busyServiceId = service.id;
-    });
-
     final error = await widget.onUpdateService(
       serviceId: service.id,
       input: UpdateServiceOfferInput(
@@ -204,10 +168,6 @@ class _SpecialistWorkspaceScreenState extends State<SpecialistWorkspaceScreen> {
     if (!mounted) {
       return;
     }
-
-    setState(() {
-      _busyServiceId = null;
-    });
 
     _showSnackBar(error ?? '${service.name} actualizado.');
   }
@@ -240,8 +200,6 @@ class _SpecialistWorkspaceScreenState extends State<SpecialistWorkspaceScreen> {
     );
   }
 }
-
-final GlobalKey _servicesKey = GlobalKey();
 
 class _SpecialistMetricGrid extends StatelessWidget {
   const _SpecialistMetricGrid({
@@ -365,112 +323,429 @@ class _MetricTile extends StatelessWidget {
   }
 }
 
+class _PricingCenterCard extends StatelessWidget {
+  const _PricingCenterCard({
+    required this.services,
+    required this.onOpen,
+  });
+
+  final List<ServiceOffer> services;
+  final VoidCallback onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    final lowestService = services.isEmpty
+        ? null
+        : services.reduce(
+            (a, b) => a.price.amount <= b.price.amount ? a : b,
+          );
+    final totalDuration = services.fold<int>(
+      0,
+      (sum, service) => sum + service.durationMinutes,
+    );
+    final averageDuration =
+        services.isEmpty ? 0 : (totalDuration / services.length).round();
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(28),
+        onTap: onOpen,
+        child: Ink(
+          decoration: BoxDecoration(
+            color: const Color(0xFF2B2028),
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF5C3B52).withValues(alpha: 0.16),
+                blurRadius: 24,
+                offset: const Offset(0, 14),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(18),
+          child: Row(
+            children: [
+              Container(
+                width: 54,
+                height: 54,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.13),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.14),
+                  ),
+                ),
+                child: const Icon(
+                  Icons.payments_outlined,
+                  color: Color(0xFFFFF4E8),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Servicios y precios',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                          ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      services.isEmpty
+                          ? 'Configura tus consultas antes de publicarlas.'
+                          : '${services.length} consultas · desde ${formatMoney(lowestService!.price)} · $averageDuration min promedio',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.white.withValues(alpha: 0.76),
+                            height: 1.3,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF4E8),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: const Icon(
+                  Icons.tune_rounded,
+                  color: Color(0xFF2B2028),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _ActionDeck extends StatelessWidget {
   const _ActionDeck({
+    required this.productCount,
+    required this.activeOrderCount,
+    required this.courseCount,
+    required this.featuredCourseCount,
     required this.onOpenShop,
     required this.onOpenCourses,
     required this.onOpenCommunityChat,
   });
 
+  final int productCount;
+  final int activeOrderCount;
+  final int courseCount;
+  final int featuredCourseCount;
   final VoidCallback onOpenShop;
   final VoidCallback onOpenCourses;
   final Future<void> Function() onOpenCommunityChat;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: _ActionCard(
-            title: 'Tienda',
-            subtitle: 'Fotos, stock y productos',
-            icon: Icons.storefront_rounded,
-            color: const Color(0xFF8C4C43),
-            onTap: onOpenShop,
-          ),
+        Text(
+          'Tienda, cursos y comunidad',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: const Color(0xFF241D22),
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.2,
+              ),
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _ActionCard(
-            title: 'Cursos/PDF',
-            subtitle: 'Materiales y rutas',
-            icon: Icons.auto_stories_outlined,
-            color: const Color(0xFF8C6239),
-            onTap: onOpenCourses,
-          ),
+        const SizedBox(height: 12),
+        _SpotlightActionCard(
+          title: 'Tienda',
+          metric: '$productCount productos',
+          detail: activeOrderCount > 0
+              ? '$activeOrderCount órdenes por revisar'
+              : 'Catálogo, fotos y stock',
+          actionLabel: 'Administrar tienda',
+          icon: Icons.storefront_rounded,
+          gradient: const [
+            Color(0xFF221616),
+            Color(0xFF8C4C43),
+            Color(0xFFE0A06A),
+          ],
+          onTap: onOpenShop,
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _ActionCard(
-            title: 'Comunidad',
-            subtitle: 'Chat abierto',
-            icon: Icons.forum_outlined,
-            color: const Color(0xFF4F7B67),
-            onTap: () {
-              onOpenCommunityChat();
-            },
-          ),
+        const SizedBox(height: 12),
+        _SpotlightActionCard(
+          title: 'Cursos y PDFs',
+          metric: '$courseCount cursos activos',
+          detail: featuredCourseCount > 0
+              ? '$featuredCourseCount destacados para alumnos'
+              : 'Biblioteca y materiales',
+          actionLabel: 'Gestionar contenido',
+          icon: Icons.auto_stories_outlined,
+          gradient: const [
+            Color(0xFF231B12),
+            Color(0xFF8C6239),
+            Color(0xFFD9B16E),
+          ],
+          onTap: onOpenCourses,
+        ),
+        const SizedBox(height: 12),
+        _SpotlightActionCard(
+          title: 'Comunidad',
+          metric: 'Chat general',
+          detail: 'Mensajes, acompañamiento y vínculo con clientes',
+          actionLabel: 'Abrir comunidad',
+          icon: Icons.forum_outlined,
+          gradient: const [
+            Color(0xFF122019),
+            Color(0xFF4F7B67),
+            Color(0xFF9AC3A6),
+          ],
+          onTap: () {
+            onOpenCommunityChat();
+          },
         ),
       ],
     );
   }
 }
 
-class _ActionCard extends StatelessWidget {
-  const _ActionCard({
+class _SpotlightActionCard extends StatelessWidget {
+  const _SpotlightActionCard({
     required this.title,
-    required this.subtitle,
+    required this.metric,
+    required this.detail,
+    required this.actionLabel,
     required this.icon,
-    required this.color,
+    required this.gradient,
     required this.onTap,
   });
 
   final String title;
-  final String subtitle;
+  final String metric;
+  final String detail;
+  final String actionLabel;
   final IconData icon;
-  final Color color;
+  final List<Color> gradient;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(22),
-        onTap: onTap,
-        child: Ink(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: const Color(0xFFE7DED3)),
-          ),
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(icon, color: color),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w900,
-                    ),
+    return Semantics(
+      button: true,
+      label: '$title. $metric. $actionLabel.',
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(28),
+          onTap: onTap,
+          child: Ink(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(28),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: gradient,
               ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: const Color(0xFF6E625B),
-                      height: 1.25,
-                    ),
-              ),
-            ],
+              boxShadow: [
+                BoxShadow(
+                  color: gradient.last.withValues(alpha: 0.22),
+                  blurRadius: 24,
+                  offset: const Offset(0, 14),
+                ),
+              ],
+            ),
+            child: Stack(
+              children: [
+                Positioned(
+                  right: -24,
+                  top: -18,
+                  child: Icon(
+                    icon,
+                    size: 118,
+                    color: Colors.white.withValues(alpha: 0.08),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 58,
+                            height: 58,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.14),
+                              borderRadius: BorderRadius.circular(22),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.16),
+                              ),
+                            ),
+                            child: Icon(
+                              icon,
+                              color: const Color(0xFFFFF7EE),
+                              size: 30,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  title,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w900,
+                                        decoration: TextDecoration.none,
+                                      ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  metric,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    color: Color(0xFFFFE7CB),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w900,
+                                    decoration: TextDecoration.none,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        detail,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.76),
+                          fontSize: 13,
+                          height: 1.28,
+                          fontWeight: FontWeight.w600,
+                          decoration: TextDecoration.none,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Container(
+                        width: double.infinity,
+                        constraints: const BoxConstraints(minHeight: 44),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              actionLabel,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Color(0xFF2A1E22),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w900,
+                                decoration: TextDecoration.none,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Icon(
+                              Icons.arrow_forward_rounded,
+                              color: Color(0xFF2A1E22),
+                              size: 16,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _PricingCenterSheet extends StatelessWidget {
+  const _PricingCenterSheet({
+    required this.services,
+    required this.onEdit,
+  });
+
+  final List<ServiceOffer> services;
+  final ValueChanged<ServiceOffer> onEdit;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        20,
+        8,
+        20,
+        MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
+      child: ListView(
+        shrinkWrap: true,
+        children: [
+          Text(
+            'Servicios y precios',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: const Color(0xFF241D22),
+                  fontWeight: FontWeight.w900,
+                ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Administra los valores de tus consultas desde este centro, separado del panel principal.',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: const Color(0xFF6E625B),
+                  height: 1.4,
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+          const SizedBox(height: 18),
+          if (services.isEmpty)
+            const _EmptyPanel(
+              title: 'Sin servicios pagados',
+              subtitle:
+                  'Cuando exista una consulta con precio, aparecerá aquí para editarla.',
+            )
+          else
+            ...services.map(
+              (service) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _ServicePriceCard(
+                  service: service,
+                  busy: false,
+                  onEdit: () => onEdit(service),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

@@ -225,6 +225,24 @@ class _AuthenticatedShell extends StatelessWidget {
       return error;
     }
 
+    Future<String?> exitSpecialistMode() async {
+      const clientProfileIndex = 5;
+
+      if (data.user.accountType != 'specialist') {
+        controller.setCurrentIndex(clientProfileIndex);
+        return null;
+      }
+
+      final error = await controller.updateProfile(
+        UpdateProfileInput(accountType: 'client'),
+      );
+      if (error == null) {
+        controller.setCurrentIndex(clientProfileIndex);
+      }
+
+      return error;
+    }
+
     final isSpecialist = data.user.accountType == 'specialist';
     final screens = isSpecialist
         ? [
@@ -249,6 +267,7 @@ class _AuthenticatedShell extends StatelessWidget {
             CoursesScreen(
               data: data,
               onRefresh: controller.refreshHome,
+              canManageCourses: true,
             ),
             BookingsScreen(
               data: data,
@@ -258,12 +277,14 @@ class _AuthenticatedShell extends StatelessWidget {
               onCancelBooking: controller.cancelBooking,
               onLoadCommunityChat: controller.loadCommunityChat,
               onSendCommunityChatMessage: controller.sendCommunityChatMessage,
+              canManageBookings: true,
             ),
             ProfileScreen(
               data: data,
               onRefresh: controller.refreshHome,
               onOpenAstralChart: openAstralChart,
               onEnterSpecialistMode: enterSpecialistMode,
+              onExitSpecialistMode: exitSpecialistMode,
               currentLocale: controller.locale,
               onChangeLocale: controller.setLocale,
               onStartPhoneLogin: controller.goBackToPhoneEntry,
@@ -322,6 +343,7 @@ class _AuthenticatedShell extends StatelessWidget {
               onRefresh: controller.refreshHome,
               onOpenAstralChart: openAstralChart,
               onEnterSpecialistMode: enterSpecialistMode,
+              onExitSpecialistMode: exitSpecialistMode,
               currentLocale: controller.locale,
               onChangeLocale: controller.setLocale,
               onStartPhoneLogin: controller.goBackToPhoneEntry,
@@ -361,17 +383,17 @@ class _AuthenticatedShell extends StatelessWidget {
                 NavigationDestination(
                   icon: const Icon(Icons.shopping_bag_outlined),
                   selectedIcon: const Icon(Icons.shopping_bag),
-                  label: l10n.tr('navShop'),
+                  label: 'Productos',
                 ),
                 NavigationDestination(
                   icon: const Icon(Icons.auto_stories_outlined),
                   selectedIcon: const Icon(Icons.auto_stories),
-                  label: l10n.tr('navCourses'),
+                  label: 'Cursos/PDF',
                 ),
                 NavigationDestination(
                   icon: const Icon(Icons.calendar_month_outlined),
                   selectedIcon: const Icon(Icons.calendar_month),
-                  label: l10n.tr('navBookings'),
+                  label: 'Agenda',
                 ),
                 NavigationDestination(
                   icon: const Icon(Icons.person_outline),

@@ -197,16 +197,18 @@ class MysticBannerCard extends StatelessWidget {
                   decoration: TextDecoration.none,
                 ),
           ),
-          const SizedBox(height: 10),
-          Text(
-            subtitle,
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 15,
-              height: 1.45,
-              decoration: TextDecoration.none,
+          if (subtitle.trim().isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Text(
+              subtitle,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 15,
+                height: 1.45,
+                decoration: TextDecoration.none,
+              ),
             ),
-          ),
+          ],
           const SizedBox(height: 16),
           Wrap(
             spacing: 8,
