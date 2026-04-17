@@ -122,6 +122,7 @@ interface UserRow extends QueryResultRow {
   zodiac_sign: string;
   plan_id: string;
   account_type: AccountType;
+  specialist_profile_id: string;
   subject_name: string;
   birth_date: string;
   birth_time: string;
@@ -360,6 +361,7 @@ function mapUserRow(row: UserRow): UserProfile {
     zodiacSign: row.zodiac_sign,
     planId: row.plan_id,
     accountType: row.account_type,
+    specialistProfileId: row.specialist_profile_id,
     natalChart: {
       subjectName: row.subject_name,
       birthDate: row.birth_date,
@@ -559,6 +561,7 @@ function buildDefaultUser(): UserProfile {
     zodiacSign: "",
     planId: "free",
     accountType: "client",
+    specialistProfileId: "",
     natalChart: {
       subjectName: "",
       birthDate: "",
@@ -604,6 +607,8 @@ function mergeUserProfile(
     avatarUrl: input.avatarUrl ?? existingUser.avatarUrl,
     location: input.location ?? existingUser.location,
     accountType: input.accountType ?? existingUser.accountType,
+    specialistProfileId:
+      input.specialistProfileId ?? existingUser.specialistProfileId,
     timezone: input.natalChart?.timeZoneId?.trim() || existingUser.timezone,
     zodiacSign:
       requestedZodiacSign == null
@@ -662,6 +667,7 @@ async function findUserById(
         zodiac_sign,
         plan_id,
         account_type,
+        specialist_profile_id,
         subject_name,
         birth_date,
         birth_time,
@@ -738,6 +744,7 @@ async function upsertUserProfile(
         zodiac_sign,
         plan_id,
         account_type,
+        specialist_profile_id,
         subject_name,
         birth_date,
         birth_time,
@@ -755,7 +762,7 @@ async function upsertUserProfile(
         updated_at
       ) values (
         $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,
-        $15, $16, $17, $18, $19, $20, $21, $22, $23::jsonb, $24::jsonb, $25, now()
+        $15, $16, $17, $18, $19, $20, $21, $22, $23, $24::jsonb, $25::jsonb, $26, now()
       )
       on conflict (id) do update set
         first_name = excluded.first_name,
@@ -768,6 +775,7 @@ async function upsertUserProfile(
         zodiac_sign = excluded.zodiac_sign,
         plan_id = excluded.plan_id,
         account_type = excluded.account_type,
+        specialist_profile_id = excluded.specialist_profile_id,
         subject_name = excluded.subject_name,
         birth_date = excluded.birth_date,
         birth_time = excluded.birth_time,
@@ -796,6 +804,7 @@ async function upsertUserProfile(
       user.zodiacSign,
       user.planId,
       user.accountType,
+      user.specialistProfileId ?? "",
       user.natalChart.subjectName,
       user.natalChart.birthDate,
       user.natalChart.birthTime,
@@ -928,6 +937,21 @@ async function getDatabaseUser(
   }
 
   return user;
+}
+
+export async function getManagedSpecialistProfileId(
+  userId?: string,
+): Promise<string | null> {
+  const user = isDatabaseConfigured()
+    ? await getDatabaseUser(userId)
+    : getProfileMock(userId);
+  const specialistProfileId = user.specialistProfileId?.trim() ?? "";
+
+  if (user.accountType !== "specialist" || specialistProfileId.length === 0) {
+    return null;
+  }
+
+  return getSpecialistById(specialistProfileId)?.id ?? null;
 }
 
 export async function getUserIdForAccessToken(
@@ -1301,7 +1325,10 @@ export async function getBookings(userId?: string): Promise<Booking[]> {
     return getBookingsMock(userId);
   }
 
-  const resolvedUserId = userId ?? demoUserId;
+  const user = await getDatabaseUser(userId);
+  const specialistScope =
+    user.accountType === "specialist" &&
+    Boolean(user.specialistProfileId?.trim());
   const result = await runQuery<BookingRow>(
     `
       select
@@ -1318,10 +1345,14 @@ export async function getBookings(userId?: string): Promise<Booking[]> {
         price_currency,
         notes
       from bookings
-      where user_id = $1
+      where ${specialistScope ? "specialist_id" : "user_id"} = $1
       order by scheduled_at asc
     `,
-    [resolvedUserId],
+    [
+      specialistScope
+        ? user.specialistProfileId?.trim() ?? user.id
+        : user.id,
+    ],
   );
 
   return result.rows.map(mapBookingRow);
@@ -1425,7 +1456,13 @@ export async function updateBooking(
     return updateBookingMock(bookingId, input, userId);
   }
 
-  const resolvedUserId = userId ?? demoUserId;
+  const user = await getDatabaseUser(userId);
+  const specialistScope =
+    user.accountType === "specialist" &&
+    Boolean(user.specialistProfileId?.trim());
+  const scopeValue = specialistScope
+    ? user.specialistProfileId?.trim() ?? user.id
+    : user.id;
   const result = await runQuery<BookingRow>(
     `
       select
@@ -1443,9 +1480,9 @@ export async function updateBooking(
         notes
       from bookings
       where id = $1
-        and user_id = $2
+        and ${specialistScope ? "specialist_id" : "user_id"} = $2
     `,
-    [bookingId, resolvedUserId],
+    [bookingId, scopeValue],
   );
   const bookingRow = result.rows[0];
 
@@ -1497,11 +1534,11 @@ export async function updateBooking(
           status = $6,
           updated_at = now()
       where id = $1
-        and user_id = $2
+        and ${specialistScope ? "specialist_id" : "user_id"} = $2
     `,
     [
       updatedBooking.id,
-      updatedBooking.userId,
+      scopeValue,
       updatedBooking.scheduledAt,
       updatedBooking.mode,
       updatedBooking.notes,

@@ -396,6 +396,26 @@ class AppController extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
+  Future<List<SpecialistAvailabilitySlot>> loadSpecialistAvailability({
+    required String specialistId,
+    required DateTime from,
+    required DateTime to,
+    String? mode,
+    String? serviceId,
+  }) async {
+    try {
+      return await _apiClient.fetchSpecialistAvailability(
+        specialistId: specialistId,
+        from: from,
+        to: to,
+        mode: mode,
+        serviceId: serviceId,
+      );
+    } catch (error) {
+      throw Exception(_readErrorMessage(error));
+    }
+  }
+
   Future<String?> updateBooking({
     required String bookingId,
     required UpdateBookingInput input,

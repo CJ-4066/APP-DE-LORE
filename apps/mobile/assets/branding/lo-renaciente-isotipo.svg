@@ -1,0 +1,38 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(456 350) rotate(74) scale(676)">
+      <stop stop-color="#6250A8"/>
+      <stop offset="0.34" stop-color="#A47A94"/>
+      <stop offset="0.72" stop-color="#292D67"/>
+      <stop offset="1" stop-color="#171A3E"/>
+    </radialGradient>
+    <filter id="shadow" x="34" y="142" width="956" height="732" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="28" stdDeviation="26" flood-color="#07071B" flood-opacity="0.38"/>
+    </filter>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <path d="M512 188C406 276 392 370 512 448C632 370 618 276 512 188Z" fill="#FFF8EC" fill-opacity="0.78"/>
+  <g filter="url(#shadow)">
+    <g fill="#12172F">
+      <path d="M494 506C412 382 237 257 112 253C72 343 139 535 274 586C374 625 454 575 494 506Z"/>
+      <path d="M530 506C612 382 787 257 912 253C952 343 885 535 750 586C650 625 570 575 530 506Z"/>
+      <path d="M489 536C414 582 337 662 253 762C163 738 119 657 151 591C190 511 355 501 489 536Z"/>
+      <path d="M535 536C610 582 687 662 771 762C861 738 905 657 873 591C834 511 669 501 535 536Z"/>
+    </g>
+    <g fill="#6750A8" fill-opacity="0.9">
+      <path d="M203 343C272 334 354 374 427 454C333 433 239 407 174 401C165 376 176 351 203 343Z"/>
+      <path d="M821 343C752 334 670 374 597 454C691 433 785 407 850 401C859 376 848 351 821 343Z"/>
+      <path d="M191 474C274 462 350 478 432 514C345 523 263 524 191 516C175 503 175 486 191 474Z"/>
+      <path d="M833 474C750 462 674 478 592 514C679 523 761 524 833 516C849 503 849 486 833 474Z"/>
+      <path d="M252 640C301 597 358 569 438 547C383 619 337 680 282 722C253 710 239 681 252 640Z"/>
+      <path d="M772 640C723 597 666 569 586 547C641 619 687 680 742 722C771 710 785 681 772 640Z"/>
+    </g>
+    <g stroke="#12172F" stroke-width="19" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M511 347V718"/>
+      <path d="M507 340C459 284 430 273 400 293"/>
+      <path d="M517 340C565 284 594 273 624 293"/>
+    </g>
+    <ellipse cx="512" cy="512" rx="34" ry="66" fill="#12172F"/>
+    <ellipse cx="512" cy="429" rx="26" ry="36" fill="#12172F"/>
+  </g>
+</svg>

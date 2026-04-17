@@ -6,14 +6,16 @@ import {
   registerPushDevice,
   type RegisterPushDeviceInput,
 } from "../../data/push-store.js";
-import { getUserIdForAccessToken } from "../../data/persistent-store.js";
-import { readAccessToken } from "../shared/auth.js";
+import { requireAuthenticatedUser } from "../shared/access.js";
 
 export async function registerPushRoutes(app: FastifyInstance) {
-  app.get("/devices", async (request) => {
-    const accessToken = readAccessToken(request.headers.authorization);
-    const userId =
-      (await getUserIdForAccessToken(accessToken ?? undefined)) ?? undefined;
+  app.get("/devices", async (request, reply) => {
+    const userId = await requireAuthenticatedUser(request, reply);
+    if (!userId) {
+      return {
+        error: "Inicia sesión para administrar tus dispositivos.",
+      };
+    }
 
     return {
       items: await getPushDevices(userId),
@@ -21,11 +23,14 @@ export async function registerPushRoutes(app: FastifyInstance) {
   });
 
   app.post<{ Body: RegisterPushDeviceInput }>("/devices", async (request, reply) => {
-    try {
-      const accessToken = readAccessToken(request.headers.authorization);
-      const userId =
-        (await getUserIdForAccessToken(accessToken ?? undefined)) ?? undefined;
+    const userId = await requireAuthenticatedUser(request, reply);
+    if (!userId) {
+      return {
+        error: "Inicia sesión para registrar un dispositivo.",
+      };
+    }
 
+    try {
       reply.code(201);
       return {
         item: await registerPushDevice(request.body ?? {}, userId),
@@ -42,11 +47,14 @@ export async function registerPushRoutes(app: FastifyInstance) {
   });
 
   app.delete<{ Params: { deviceId: string } }>("/devices/:deviceId", async (request, reply) => {
-    try {
-      const accessToken = readAccessToken(request.headers.authorization);
-      const userId =
-        (await getUserIdForAccessToken(accessToken ?? undefined)) ?? undefined;
+    const userId = await requireAuthenticatedUser(request, reply);
+    if (!userId) {
+      return {
+        error: "Inicia sesión para eliminar el dispositivo.",
+      };
+    }
 
+    try {
       await deletePushDevice(request.params.deviceId, userId);
       reply.code(204);
       return null;

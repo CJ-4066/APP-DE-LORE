@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import '../core/branding/renaciente_logo.dart';
 import '../core/i18n/app_i18n.dart';
+import '../core/theme/app_palette.dart';
 import '../core/theme/app_theme.dart';
 import '../features/astro/astral_chart_screen.dart';
 import '../features/auth/auth_screens.dart';
@@ -179,6 +180,7 @@ class _AuthenticatedShell extends StatelessWidget {
             data: data,
             initialServiceId: initialServiceId,
             onSave: controller.createBooking,
+            onLoadAvailability: controller.loadSpecialistAvailability,
           ),
         ),
       );
@@ -273,6 +275,7 @@ class _AuthenticatedShell extends StatelessWidget {
               data: data,
               onRefresh: controller.refreshHome,
               onCreateBooking: openBooking,
+              onLoadAvailability: controller.loadSpecialistAvailability,
               onUpdateBooking: controller.updateBooking,
               onCancelBooking: controller.cancelBooking,
               onLoadCommunityChat: controller.loadCommunityChat,
@@ -333,6 +336,7 @@ class _AuthenticatedShell extends StatelessWidget {
               data: data,
               onRefresh: controller.refreshHome,
               onCreateBooking: openBooking,
+              onLoadAvailability: controller.loadSpecialistAvailability,
               onUpdateBooking: controller.updateBooking,
               onCancelBooking: controller.cancelBooking,
               onLoadCommunityChat: controller.loadCommunityChat,
@@ -461,9 +465,9 @@ class _LoadingView extends StatelessWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFFFFF4E8),
-              Color(0xFFF8E0C2),
-              Color(0xFFFFFAF4),
+              AppPalette.shellGradientTop,
+              AppPalette.shellGradientMid,
+              AppPalette.shellGradientBottom,
             ],
           ),
         ),
@@ -478,8 +482,8 @@ class _LoadingView extends StatelessWidget {
                   children: [
                     const RenacienteLogoLockup(
                       markSize: 74,
-                      foregroundColor: Color(0xFF182127),
-                      secondaryColor: Color(0xFF6B4C3A),
+                      foregroundColor: AppPalette.indigo,
+                      secondaryColor: AppPalette.mutedLavender,
                       showTagline: true,
                       tagline: 'Autoconocimiento con forma clara',
                     ),
@@ -490,7 +494,7 @@ class _LoadingView extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFF182127),
+                        color: AppPalette.midnight,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -500,7 +504,7 @@ class _LoadingView extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 16,
                         height: 1.45,
-                        color: Color(0xFF5C7A72),
+                        color: AppPalette.mutedLavender,
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -541,9 +545,9 @@ class _BootView extends StatelessWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFFFFF4E8),
-              Color(0xFFF8E0C2),
-              Color(0xFFFFFAF4),
+              AppPalette.shellGradientTop,
+              AppPalette.shellGradientMid,
+              AppPalette.shellGradientBottom,
             ],
           ),
         ),
@@ -554,8 +558,8 @@ class _BootView extends StatelessWidget {
               children: [
                 RenacienteLogoLockup(
                   markSize: 74,
-                  foregroundColor: Color(0xFF182127),
-                  secondaryColor: Color(0xFF6B4C3A),
+                  foregroundColor: AppPalette.indigo,
+                  secondaryColor: AppPalette.mutedLavender,
                   showTagline: true,
                   tagline: 'Autoconocimiento con forma clara',
                 ),

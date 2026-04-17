@@ -1,13 +1,11 @@
 import type { FastifyInstance } from "fastify";
 
 import {
-  getProfile,
-  getUserIdForAccessToken,
   listServices,
   updateServiceOffer,
   type UpdateServiceOfferInput,
 } from "../../data/persistent-store.js";
-import { readAccessToken } from "../shared/auth.js";
+import { requireManagedSpecialistProfile } from "../shared/access.js";
 
 export async function registerServiceRoutes(app: FastifyInstance) {
   app.get("/", async () => {
@@ -19,8 +17,26 @@ export async function registerServiceRoutes(app: FastifyInstance) {
   app.patch<{ Params: { serviceId: string }; Body: UpdateServiceOfferInput }>(
     "/:serviceId",
     async (request, reply) => {
+      const access = await requireManagedSpecialistProfile(request, reply);
+      if (!access) {
+        return {
+          error:
+            reply.statusCode === 403
+              ? "Configura tu perfil especialista para administrar tus servicios."
+              : "Inicia sesión como especialista para administrar servicios.",
+        };
+      }
+
       try {
-        await requireSpecialist(request.headers.authorization);
+        const services = await listServices();
+        const service = services.find((item) => item.id === request.params.serviceId);
+        if (!service || !service.specialistIds.includes(access.specialistProfileId)) {
+          reply.code(403);
+          return {
+            error: "Solo puedes editar servicios que pertenezcan a tu perfil especialista.",
+          };
+        }
+
         return {
           item: await updateServiceOffer(
             request.params.serviceId,
@@ -38,19 +54,4 @@ export async function registerServiceRoutes(app: FastifyInstance) {
       }
     },
   );
-}
-
-async function requireSpecialist(authorization?: string) {
-  const accessToken = readAccessToken(authorization);
-  const userId = await getUserIdForAccessToken(accessToken ?? undefined);
-  if (!userId) {
-    throw new Error(
-      "Inicia sesión como especialista para administrar servicios.",
-    );
-  }
-
-  const user = await getProfile(userId);
-  if (user.accountType !== "specialist") {
-    throw new Error("Tu perfil debe estar en modo especialista.");
-  }
 }

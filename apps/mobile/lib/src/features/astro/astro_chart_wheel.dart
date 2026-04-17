@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../core/theme/app_palette.dart';
 import '../../models/astro_models.dart';
 
 part 'astro_chart_wheel_support.dart';

@@ -1,6 +1,5 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
 
-import { getUserIdForAccessToken } from "../../data/persistent-store.js";
 import {
   createUploadSession,
   getFileAsset,
@@ -8,7 +7,7 @@ import {
   type CreateUploadSessionInput,
   uploadAssetBytes,
 } from "../../data/storage-store.js";
-import { readAccessToken } from "../shared/auth.js";
+import { requireAuthenticatedUser } from "../shared/access.js";
 
 function getRequestBaseUrl(request: FastifyRequest): string {
   const forwardedProto = request.headers["x-forwarded-proto"];
@@ -37,10 +36,14 @@ function serializeAsset(
 
 export async function registerStorageRoutes(app: FastifyInstance) {
   app.post<{ Body: CreateUploadSessionInput }>("/uploads", async (request, reply) => {
+    const userId = await requireAuthenticatedUser(request, reply);
+    if (!userId) {
+      return {
+        error: "Inicia sesión para subir archivos.",
+      };
+    }
+
     try {
-      const accessToken = readAccessToken(request.headers.authorization);
-      const userId =
-        (await getUserIdForAccessToken(accessToken ?? undefined)) ?? undefined;
       const session = await createUploadSession(request.body ?? {}, userId);
 
       reply.code(201);

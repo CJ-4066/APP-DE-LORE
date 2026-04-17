@@ -1,18 +1,20 @@
 import type { FastifyInstance } from "fastify";
 
 import {
-  getUserIdForAccessToken,
   getProfile,
   type UpdateUserProfileInput,
   updateCurrentUser,
 } from "../../data/persistent-store.js";
-import { readAccessToken } from "../shared/auth.js";
+import { requireAuthenticatedUser } from "../shared/access.js";
 
 export async function registerProfileRoutes(app: FastifyInstance) {
-  app.get("/me", async (request) => {
-    const accessToken = readAccessToken(request.headers.authorization);
-    const userId =
-      (await getUserIdForAccessToken(accessToken ?? undefined)) ?? undefined;
+  app.get("/me", async (request, reply) => {
+    const userId = await requireAuthenticatedUser(request, reply);
+    if (!userId) {
+      return {
+        error: "Inicia sesión para ver tu perfil.",
+      };
+    }
 
     return {
       item: await getProfile(userId),
@@ -20,10 +22,14 @@ export async function registerProfileRoutes(app: FastifyInstance) {
   });
 
   app.patch<{ Body: UpdateUserProfileInput }>("/me", async (request, reply) => {
+    const userId = await requireAuthenticatedUser(request, reply);
+    if (!userId) {
+      return {
+        error: "Inicia sesión para actualizar tu perfil.",
+      };
+    }
+
     try {
-      const accessToken = readAccessToken(request.headers.authorization);
-      const userId =
-        (await getUserIdForAccessToken(accessToken ?? undefined)) ?? undefined;
       const item = await updateCurrentUser(request.body ?? {}, userId);
       reply.code(200);
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/app_palette.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/mystic_ui.dart';
 import '../../models/app_models.dart';
@@ -120,8 +121,9 @@ class _ShopScreenState extends State<ShopScreen> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color(0xFFFFF8F1),
-            Color(0xFFF6EFE8),
+            AppPalette.shellGradientTop,
+            AppPalette.shellGradientMid,
+            AppPalette.shellGradientBottom,
           ],
         ),
       ),
@@ -149,9 +151,9 @@ class _ShopScreenState extends State<ShopScreen> {
                         : widget.data.shop.subtitle,
                     glyphKind: MysticGlyphKind.ritual,
                     gradient: const [
-                      Color(0xFF1F1820),
-                      Color(0xFF5F3B4E),
-                      Color(0xFFB97B5A),
+                      AppPalette.midnight,
+                      AppPalette.indigo,
+                      AppPalette.orchid,
                     ],
                     tags: [
                       '${products.length} productos',
@@ -499,28 +501,28 @@ class _ShopMetricsGrid extends StatelessWidget {
               icon: Icons.inventory_2_outlined,
               label: 'Productos',
               value: '$productCount',
-              tone: const Color(0xFF5C3B52),
+              tone: AppPalette.royalViolet,
             ),
             _MetricTile(
               width: tileWidth,
               icon: Icons.auto_awesome_rounded,
               label: 'Destacados',
               value: '$featuredCount',
-              tone: const Color(0xFFB47658),
+              tone: AppPalette.flameGold,
             ),
             _MetricTile(
               width: tileWidth,
               icon: Icons.receipt_long_rounded,
               label: 'Pendientes',
               value: '$pendingOrderCount',
-              tone: const Color(0xFF7C5A2D),
+              tone: AppPalette.indigo,
             ),
             _MetricTile(
               width: tileWidth,
               icon: Icons.warning_amber_rounded,
               label: 'Bajo stock',
               value: '$lowStockCount',
-              tone: const Color(0xFF8C4C43),
+              tone: AppPalette.berry,
             ),
           ],
         );
@@ -550,9 +552,9 @@ class _MetricTile extends StatelessWidget {
       width: width,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.92),
+          color: AppPalette.moonIvory.withValues(alpha: 0.96),
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: const Color(0xFFE7DED3)),
+          border: Border.all(color: AppPalette.border),
           boxShadow: [
             BoxShadow(
               color: tone.withValues(alpha: 0.08),
@@ -582,7 +584,7 @@ class _MetricTile extends StatelessWidget {
                     value,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w900,
-                          color: const Color(0xFF1E1A1A),
+                          color: AppPalette.midnight,
                         ),
                   ),
                   const SizedBox(height: 2),
@@ -591,7 +593,7 @@ class _MetricTile extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: const Color(0xFF6E625B),
+                          color: AppPalette.mutedLavender,
                           fontWeight: FontWeight.w700,
                         ),
                   ),
@@ -649,7 +651,7 @@ class _ShopSectionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = selected ? const Color(0xFF5C3B52) : const Color(0xFF7A6B60);
+    final accent = selected ? AppPalette.royalViolet : AppPalette.mutedLavender;
 
     return Material(
       color: Colors.transparent,
@@ -660,12 +662,13 @@ class _ShopSectionButton extends StatelessWidget {
           duration: const Duration(milliseconds: 180),
           padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 11),
           decoration: BoxDecoration(
-            color: selected ? accent.withValues(alpha: 0.13) : Colors.white,
+            color: selected
+                ? AppPalette.softLilac
+                : AppPalette.moonIvory.withValues(alpha: 0.94),
             borderRadius: BorderRadius.circular(999),
             border: Border.all(
-              color: selected
-                  ? accent.withValues(alpha: 0.32)
-                  : const Color(0xFFE7DED3),
+              color:
+                  selected ? accent.withValues(alpha: 0.32) : AppPalette.border,
             ),
           ),
           child: Row(
@@ -809,12 +812,12 @@ class _CollectionTile extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Color(0xFFFFFFFF),
-                  Color(0xFFFFF5EA),
+                  AppPalette.moonIvory,
+                  AppPalette.mistLilac,
                 ],
               ),
               borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: const Color(0xFFE7DED3)),
+              border: Border.all(color: AppPalette.border),
             ),
             padding: const EdgeInsets.all(14),
             child: Column(
@@ -822,7 +825,7 @@ class _CollectionTile extends StatelessWidget {
               children: [
                 Icon(
                   _categoryIcon(label),
-                  color: const Color(0xFF8C6239),
+                  color: AppPalette.flameGold,
                 ),
                 const SizedBox(height: 14),
                 Text(
@@ -835,7 +838,7 @@ class _CollectionTile extends StatelessWidget {
                 Text(
                   '$count productos',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: const Color(0xFF6E625B),
+                        color: AppPalette.mutedLavender,
                         fontWeight: FontWeight.w700,
                       ),
                 ),
@@ -944,10 +947,10 @@ class _CatalogProductTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: const Color(0xFFE7DED3)),
+        border: Border.all(color: AppPalette.border),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF946244).withValues(alpha: 0.07),
+            color: AppPalette.flameGold.withValues(alpha: 0.09),
             blurRadius: 16,
             offset: const Offset(0, 10),
           ),
@@ -968,7 +971,7 @@ class _CatalogProductTile extends StatelessWidget {
                   top: 10,
                   child: _MiniPill(
                     label: product.badge,
-                    color: const Color(0xFF2A1D23),
+                    color: AppPalette.butterflyInk,
                   ),
                 ),
               ],
@@ -1049,7 +1052,7 @@ class _CompactQuantityControl extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F2EA),
+        color: AppPalette.petal,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Row(
@@ -1126,10 +1129,10 @@ class _OrderPipeline extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final stages = [
-      _PipelineStage('Pendiente', 'pending', const Color(0xFF8C4C43)),
-      _PipelineStage('Confirmada', 'confirmed', const Color(0xFF4F7B67)),
-      _PipelineStage('Preparando', 'preparing', const Color(0xFF8C6239)),
-      _PipelineStage('Enviada', 'shipped', const Color(0xFF3E6381)),
+      _PipelineStage('Pendiente', 'pending', AppPalette.berry),
+      _PipelineStage('Confirmada', 'confirmed', AppPalette.success),
+      _PipelineStage('Preparando', 'preparing', AppPalette.flameGold),
+      _PipelineStage('Enviada', 'shipped', AppPalette.indigo),
     ];
 
     return SizedBox(
@@ -1190,7 +1193,7 @@ class _PipelineTile extends StatelessWidget {
           Text(
             stage.label,
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: const Color(0xFF6E625B),
+                  color: AppPalette.mutedLavender,
                   fontWeight: FontWeight.w800,
                 ),
           ),
@@ -1248,7 +1251,7 @@ class _ShopAdminView extends StatelessWidget {
                   title: 'Nuevo producto',
                   subtitle: '${products.length} en catálogo',
                   icon: Icons.add_box_outlined,
-                  color: const Color(0xFF5C3B52),
+                  color: AppPalette.indigo,
                   onTap: onCreateProduct,
                 ),
                 _AdminActionCard(
@@ -1256,7 +1259,7 @@ class _ShopAdminView extends StatelessWidget {
                   title: 'Editar stock',
                   subtitle: '${lowStockProducts.length} alertas',
                   icon: Icons.inventory_outlined,
-                  color: const Color(0xFF8C4C43),
+                  color: AppPalette.berry,
                   onTap: onEditStock,
                 ),
                 _AdminActionCard(
@@ -1265,7 +1268,7 @@ class _ShopAdminView extends StatelessWidget {
                   subtitle:
                       '${products.where((product) => product.featured).length} activos',
                   icon: Icons.auto_awesome_rounded,
-                  color: const Color(0xFFB47658),
+                  color: AppPalette.roseDust,
                   onTap: onEditFeatured,
                 ),
                 _AdminActionCard(
@@ -1273,7 +1276,7 @@ class _ShopAdminView extends StatelessWidget {
                   title: 'Órdenes',
                   subtitle: '${orders.length} recientes',
                   icon: Icons.receipt_long_rounded,
-                  color: const Color(0xFF4F7B67),
+                  color: AppPalette.success,
                   onTap: onOpenOrders,
                 ),
               ],
@@ -1406,7 +1409,7 @@ class _AdminActionCard extends StatelessWidget {
                 Text(
                   subtitle,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: const Color(0xFF6E625B),
+                        color: AppPalette.mutedLavender,
                         fontWeight: FontWeight.w700,
                       ),
                 ),
@@ -1590,7 +1593,7 @@ class _ProductEditorSheetState extends State<_ProductEditorSheet> {
             Text(
               _error!,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: const Color(0xFF9B3B2F),
+                    color: AppPalette.berry,
                     fontWeight: FontWeight.w800,
                   ),
             ),
@@ -1725,7 +1728,7 @@ class _StockManagerSheetState extends State<_StockManagerSheet> {
             Text(
               _error!,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: const Color(0xFF9B3B2F),
+                    color: AppPalette.berry,
                     fontWeight: FontWeight.w800,
                   ),
             ),
@@ -1805,7 +1808,7 @@ class _StockEditorRow extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFFE7DED3)),
+        border: Border.all(color: AppPalette.border),
       ),
       padding: const EdgeInsets.all(12),
       child: Column(
@@ -1889,7 +1892,7 @@ class _FeaturedManagerSheetState extends State<_FeaturedManagerSheet> {
             Text(
               _error!,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: const Color(0xFF9B3B2F),
+                    color: AppPalette.berry,
                     fontWeight: FontWeight.w800,
                   ),
             ),
@@ -1921,7 +1924,7 @@ class _FeaturedManagerSheetState extends State<_FeaturedManagerSheet> {
                   tileColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
-                    side: const BorderSide(color: Color(0xFFE7DED3)),
+                    side: const BorderSide(color: AppPalette.border),
                   ),
                 ),
               );
@@ -1984,7 +1987,7 @@ class _AdminOrderRow extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFFE7DED3)),
+        border: Border.all(color: AppPalette.border),
       ),
       padding: const EdgeInsets.all(14),
       child: Row(
@@ -2013,7 +2016,7 @@ class _AdminOrderRow extends StatelessWidget {
                 Text(
                   '${order.itemCount} artículos · ${formatMoney(order.total)}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: const Color(0xFF6E625B),
+                        color: AppPalette.mutedLavender,
                         fontWeight: FontWeight.w700,
                       ),
                 ),
@@ -2054,7 +2057,7 @@ class _ShopSheetShell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: Color(0xFFFFFCF8),
+        color: AppPalette.petalSoft,
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
       child: SafeArea(
@@ -2075,7 +2078,7 @@ class _ShopSheetShell extends StatelessWidget {
                     width: 54,
                     height: 5,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFD8CFC4),
+                      color: AppPalette.borderSoft,
                       borderRadius: BorderRadius.circular(999),
                     ),
                   ),
@@ -2091,7 +2094,7 @@ class _ShopSheetShell extends StatelessWidget {
                 Text(
                   subtitle,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: const Color(0xFF5E676E),
+                        color: AppPalette.mutedLavender,
                         height: 1.45,
                       ),
                 ),
@@ -2119,7 +2122,7 @@ class _InventoryRow extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFFE7DED3)),
+        border: Border.all(color: AppPalette.border),
       ),
       padding: const EdgeInsets.all(12),
       child: Row(
@@ -2226,7 +2229,7 @@ class _SectionTitle extends StatelessWidget {
         Text(
           subtitle,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: const Color(0xFF5E676E),
+                color: AppPalette.mutedLavender,
                 height: 1.45,
               ),
         ),
@@ -2248,7 +2251,7 @@ class _CategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = selected ? const Color(0xFF5C3B52) : const Color(0xFF8A7669);
+    final accent = selected ? AppPalette.indigo : AppPalette.mutedLavender;
 
     return GestureDetector(
       onTap: onTap,
@@ -2259,9 +2262,8 @@ class _CategoryChip extends StatelessWidget {
           color: selected ? accent.withValues(alpha: 0.12) : Colors.white,
           borderRadius: BorderRadius.circular(999),
           border: Border.all(
-            color: selected
-                ? accent.withValues(alpha: 0.28)
-                : const Color(0xFFE7DED3),
+            color:
+                selected ? accent.withValues(alpha: 0.28) : AppPalette.border,
           ),
         ),
         child: Text(
@@ -2295,10 +2297,10 @@ class _FeaturedProductCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: const Color(0xFFE7DED3)),
+        border: Border.all(color: AppPalette.border),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF946244).withValues(alpha: 0.08),
+            color: AppPalette.flameGold.withValues(alpha: 0.1),
             blurRadius: 22,
             offset: const Offset(0, 12),
           ),
@@ -2338,7 +2340,7 @@ class _FeaturedProductCard extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: const Color(0xFF5E676E),
+                        color: AppPalette.mutedLavender,
                         height: 1.35,
                       ),
                 ),
@@ -2349,7 +2351,7 @@ class _FeaturedProductCard extends StatelessWidget {
                       formatMoney(product.price),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w800,
-                            color: const Color(0xFF1E1A1A),
+                            color: AppPalette.butterflyInk,
                           ),
                     ),
                     const Spacer(),
@@ -2387,13 +2389,13 @@ class _BadgeRow extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            color: const Color(0xFFF6EFE8),
+            color: AppPalette.petal,
             borderRadius: BorderRadius.circular(999),
           ),
           child: Text(
             badge,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: const Color(0xFF6E5041),
+                  color: AppPalette.indigo,
                   fontWeight: FontWeight.w800,
                 ),
           ),
@@ -2401,13 +2403,13 @@ class _BadgeRow extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            color: const Color(0xFFEAF3EE),
+            color: AppPalette.softLilac,
             borderRadius: BorderRadius.circular(999),
           ),
           child: Text(
             stockLabel,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: const Color(0xFF456658),
+                  color: AppPalette.success,
                   fontWeight: FontWeight.w700,
                 ),
           ),
@@ -2440,7 +2442,7 @@ class _QuantityControl extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F2EA),
+        color: AppPalette.petal,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Row(
@@ -2491,14 +2493,14 @@ class _FloatingCartBar extends StatelessWidget {
             borderRadius: BorderRadius.circular(999),
             gradient: const LinearGradient(
               colors: [
-                Color(0xFF23161B),
-                Color(0xFF5C3B52),
-                Color(0xFFB47658),
+                AppPalette.midnight,
+                AppPalette.indigo,
+                AppPalette.royalViolet,
               ],
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF5C3B52).withValues(alpha: 0.28),
+                color: AppPalette.indigo.withValues(alpha: 0.26),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -2551,7 +2553,7 @@ class _OrderCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE7DED3)),
+        border: Border.all(color: AppPalette.border),
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -2588,7 +2590,7 @@ class _OrderCard extends StatelessWidget {
           Text(
             '${formatSchedule(order.createdAt)} · ${order.itemCount} artículos',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: const Color(0xFF5E676E),
+                  color: AppPalette.mutedLavender,
                 ),
           ),
           const SizedBox(height: 10),
@@ -2598,7 +2600,7 @@ class _OrderCard extends StatelessWidget {
                   child: Text(
                     '• ${item.productName} x${item.quantity}',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: const Color(0xFF3B3432),
+                          color: AppPalette.butterflyInk,
                         ),
                   ),
                 ),
@@ -2607,7 +2609,7 @@ class _OrderCard extends StatelessWidget {
           Text(
             'Entrega: ${order.deliveryAddress}',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: const Color(0xFF5E676E),
+                  color: AppPalette.mutedLavender,
                 ),
           ),
           const SizedBox(height: 10),
@@ -2635,7 +2637,7 @@ class _SummaryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = highlight ? const Color(0xFF1E1A1A) : const Color(0xFF5E676E);
+    final color = highlight ? AppPalette.midnight : AppPalette.mutedLavender;
 
     return Row(
       children: [
@@ -2704,10 +2706,14 @@ class _CheckoutSheetState extends State<_CheckoutSheet> {
     );
     final shipping = subtotal >= 120 ? 0.0 : 9.0;
     final total = subtotal + shipping;
+    final itemCount = widget.lines.fold<int>(
+      0,
+      (sum, line) => sum + line.quantity,
+    );
 
     return Container(
       decoration: const BoxDecoration(
-        color: Color(0xFFFFFCF8),
+        color: AppPalette.moonIvory,
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
       child: SafeArea(
@@ -2728,73 +2734,89 @@ class _CheckoutSheetState extends State<_CheckoutSheet> {
                     width: 54,
                     height: 5,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFD8CFC4),
+                      color: AppPalette.border,
                       borderRadius: BorderRadius.circular(999),
                     ),
                   ),
                 ),
                 const SizedBox(height: 20),
-                Text(
-                  'Generar orden de compra',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
+                _CheckoutHeroHeader(
+                  itemCount: itemCount,
+                  total: total,
+                  hasFreeShipping: shipping == 0,
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Confirma dirección, revisa el resumen y deja notas si quieres coordinar detalles del pedido.',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: const Color(0xFF5E676E),
-                        height: 1.45,
-                      ),
-                ),
-                const SizedBox(height: 18),
-                ...widget.lines.map(
-                  (line) => Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: _CheckoutLine(line: line),
+                const SizedBox(height: 16),
+                _CheckoutSectionCard(
+                  step: '1',
+                  title: 'Productos del pedido',
+                  subtitle: 'Revisa cantidades y productos antes de confirmar.',
+                  child: Column(
+                    children: widget.lines
+                        .map(
+                          (line) => Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: _CheckoutLine(line: line),
+                          ),
+                        )
+                        .toList(),
                   ),
                 ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: _addressController,
-                  textCapitalization: TextCapitalization.sentences,
-                  decoration: const InputDecoration(
-                    labelText: 'Dirección de entrega',
-                    hintText: 'Distrito, ciudad, referencia',
+                const SizedBox(height: 14),
+                _CheckoutSectionCard(
+                  step: '2',
+                  title: 'Entrega',
+                  subtitle: 'Agrega dirección, distrito y una referencia útil.',
+                  child: TextField(
+                    controller: _addressController,
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: const InputDecoration(
+                      labelText: 'Dirección de entrega',
+                      hintText: 'Distrito, ciudad, referencia',
+                      prefixIcon: Icon(Icons.location_on_outlined),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _notesController,
-                  maxLines: 3,
-                  textCapitalization: TextCapitalization.sentences,
-                  decoration: const InputDecoration(
-                    labelText: 'Notas para la orden',
-                    hintText: 'Horario, referencia, pedido especial',
+                const SizedBox(height: 14),
+                _CheckoutSectionCard(
+                  step: '3',
+                  title: 'Notas',
+                  subtitle:
+                      'Opcional: horario, referencia o pedido personalizado.',
+                  child: TextField(
+                    controller: _notesController,
+                    maxLines: 3,
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: const InputDecoration(
+                      labelText: 'Notas para la orden',
+                      hintText: 'Horario, referencia, pedido especial',
+                      prefixIcon: Icon(Icons.edit_note_outlined),
+                    ),
                   ),
                 ),
                 if (_error != null) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    _error!,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: const Color(0xFF9B3B2F),
-                          fontWeight: FontWeight.w700,
-                        ),
+                  const SizedBox(height: 14),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppPalette.softLilac,
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: AppPalette.border),
+                    ),
+                    child: Text(
+                      _error!,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: AppPalette.berry,
+                            fontWeight: FontWeight.w800,
+                          ),
+                    ),
                   ),
                 ],
-                const SizedBox(height: 18),
-                _SummaryRow(label: 'Subtotal', value: _formatUsd(subtotal)),
-                const SizedBox(height: 6),
-                _SummaryRow(label: 'Envío', value: _formatUsd(shipping)),
-                const SizedBox(height: 8),
-                const Divider(height: 1),
-                const SizedBox(height: 10),
-                _SummaryRow(
-                  label: 'Total',
-                  value: _formatUsd(total),
-                  highlight: true,
+                const SizedBox(height: 14),
+                _CheckoutTotalCard(
+                  subtotal: subtotal,
+                  shipping: shipping,
+                  total: total,
                 ),
                 const SizedBox(height: 18),
                 SizedBox(
@@ -2809,7 +2831,9 @@ class _CheckoutSheetState extends State<_CheckoutSheet> {
                           )
                         : const Icon(Icons.shopping_bag_rounded),
                     label: Text(
-                      _isSubmitting ? 'Generando orden...' : 'Confirmar orden',
+                      _isSubmitting
+                          ? 'Generando pedido...'
+                          : 'Crear pedido · ${_formatUsd(total)}',
                     ),
                   ),
                 ),
@@ -2858,6 +2882,220 @@ class _CheckoutSheetState extends State<_CheckoutSheet> {
   }
 }
 
+class _CheckoutHeroHeader extends StatelessWidget {
+  const _CheckoutHeroHeader({
+    required this.itemCount,
+    required this.total,
+    required this.hasFreeShipping,
+  });
+
+  final int itemCount;
+  final double total;
+  final bool hasFreeShipping;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppPalette.midnight,
+            AppPalette.indigo,
+            AppPalette.orchid,
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppPalette.indigo.withValues(alpha: 0.20),
+            blurRadius: 22,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(18),
+      child: Row(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.16),
+              ),
+            ),
+            child: const Icon(
+              Icons.shopping_bag_rounded,
+              color: AppPalette.moonIvory,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Crear nuevo pedido',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                      ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  '$itemCount artículos · ${_formatUsd(total)}',
+                  style: const TextStyle(
+                    color: AppPalette.softLilac,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  hasFreeShipping
+                      ? 'Envío incluido por monto del pedido.'
+                      : 'Confirma entrega y coordinación antes de pagar.',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.76),
+                    fontSize: 13,
+                    height: 1.3,
+                    fontWeight: FontWeight.w600,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CheckoutSectionCard extends StatelessWidget {
+  const _CheckoutSectionCard({
+    required this.step,
+    required this.title,
+    required this.subtitle,
+    required this.child,
+  });
+
+  final String step;
+  final String title;
+  final String subtitle;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppPalette.moonIvory,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppPalette.border),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: AppPalette.indigo,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Center(
+                  child: Text(
+                    step,
+                    style: const TextStyle(
+                      color: AppPalette.moonIvory,
+                      fontWeight: FontWeight.w900,
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: AppPalette.midnight,
+                            fontWeight: FontWeight.w900,
+                          ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      subtitle,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppPalette.mutedLavender,
+                            height: 1.32,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _CheckoutTotalCard extends StatelessWidget {
+  const _CheckoutTotalCard({
+    required this.subtotal,
+    required this.shipping,
+    required this.total,
+  });
+
+  final double subtotal;
+  final double shipping;
+  final double total;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppPalette.mistLilac,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppPalette.border),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          _SummaryRow(label: 'Subtotal', value: _formatUsd(subtotal)),
+          const SizedBox(height: 8),
+          _SummaryRow(label: 'Envío', value: _formatUsd(shipping)),
+          const SizedBox(height: 12),
+          const Divider(height: 1),
+          const SizedBox(height: 12),
+          _SummaryRow(
+            label: 'Total del pedido',
+            value: _formatUsd(total),
+            highlight: true,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _CheckoutLine extends StatelessWidget {
   const _CheckoutLine({
     required this.line,
@@ -2871,7 +3109,7 @@ class _CheckoutLine extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE7DED3)),
+        border: Border.all(color: AppPalette.border),
       ),
       padding: const EdgeInsets.all(14),
       child: Row(
@@ -2899,7 +3137,7 @@ class _CheckoutLine extends StatelessWidget {
                 Text(
                   '${line.quantity} x ${formatMoney(line.product.price)}',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: const Color(0xFF5E676E),
+                        color: AppPalette.mutedLavender,
                       ),
                 ),
               ],
@@ -3022,7 +3260,7 @@ class _EmptyState extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE7DED3)),
+        border: Border.all(color: AppPalette.border),
       ),
       padding: const EdgeInsets.all(18),
       child: Column(
@@ -3038,7 +3276,7 @@ class _EmptyState extends StatelessWidget {
           Text(
             subtitle,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: const Color(0xFF5E676E),
+                  color: AppPalette.mutedLavender,
                   height: 1.45,
                 ),
           ),
@@ -3152,15 +3390,15 @@ Color _stockColor(String stockLabel) {
   if (stock.contains('pocas') ||
       stock.contains('bajo') ||
       stock.contains('últimas')) {
-    return const Color(0xFF8C4C43);
+    return AppPalette.berry;
   }
   if (stock.contains('pedido')) {
-    return const Color(0xFF8C6239);
+    return AppPalette.flameGold;
   }
   if (stock.contains('nueva')) {
-    return const Color(0xFF5C3B52);
+    return AppPalette.indigo;
   }
-  return const Color(0xFF456658);
+  return AppPalette.success;
 }
 
 _OrderStatusCopy _statusCopy(String status) {
@@ -3168,22 +3406,22 @@ _OrderStatusCopy _statusCopy(String status) {
     case 'confirmed':
       return const _OrderStatusCopy(
         label: 'Confirmada',
-        color: Color(0xFF4F7B67),
+        color: AppPalette.success,
       );
     case 'preparing':
       return const _OrderStatusCopy(
         label: 'Preparando',
-        color: Color(0xFF8C6239),
+        color: AppPalette.flameGold,
       );
     case 'shipped':
       return const _OrderStatusCopy(
         label: 'Enviada',
-        color: Color(0xFF3E6381),
+        color: AppPalette.indigo,
       );
     default:
       return const _OrderStatusCopy(
         label: 'Pendiente',
-        color: Color(0xFF8C4C43),
+        color: AppPalette.berry,
       );
   }
 }
@@ -3195,9 +3433,9 @@ _ArtworkStyle _artworkStyle(String artwork) {
       return const _ArtworkStyle(
         icon: Icons.local_fire_department_rounded,
         colors: [
-          Color(0xFF2D1A1A),
-          Color(0xFF6A3A2A),
-          Color(0xFFD1914D),
+          AppPalette.midnight,
+          AppPalette.berry,
+          AppPalette.flameGold,
         ],
       );
     case 'natal-gold':
@@ -3205,9 +3443,9 @@ _ArtworkStyle _artworkStyle(String artwork) {
       return const _ArtworkStyle(
         icon: Icons.track_changes_rounded,
         colors: [
-          Color(0xFF182133),
-          Color(0xFF335069),
-          Color(0xFFD3A969),
+          AppPalette.midnight,
+          AppPalette.indigo,
+          AppPalette.roseDust,
         ],
       );
     case 'statue-moon':
@@ -3215,9 +3453,9 @@ _ArtworkStyle _artworkStyle(String artwork) {
       return const _ArtworkStyle(
         icon: Icons.self_improvement_rounded,
         colors: [
-          Color(0xFF1C2422),
-          Color(0xFF49645D),
-          Color(0xFFC9A372),
+          AppPalette.midnight,
+          AppPalette.royalViolet,
+          AppPalette.flameGold,
         ],
       );
     case 'symbol-flower':
@@ -3225,18 +3463,18 @@ _ArtworkStyle _artworkStyle(String artwork) {
       return const _ArtworkStyle(
         icon: Icons.auto_awesome_rounded,
         colors: [
-          Color(0xFF231823),
-          Color(0xFF5D4363),
-          Color(0xFFD1A56E),
+          AppPalette.butterflyInk,
+          AppPalette.indigo,
+          AppPalette.roseDust,
         ],
       );
     default:
       return const _ArtworkStyle(
         icon: Icons.style_rounded,
         colors: [
-          Color(0xFF1F1820),
-          Color(0xFF5F3B4E),
-          Color(0xFFC99E6A),
+          AppPalette.butterflyInk,
+          AppPalette.royalViolet,
+          AppPalette.flameGold,
         ],
       );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/app_palette.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/mystic_ui.dart';
 import '../chat/community_chat_screen.dart';
@@ -13,6 +14,7 @@ class BookingsScreen extends StatefulWidget {
     required this.data,
     required this.onRefresh,
     required this.onCreateBooking,
+    required this.onLoadAvailability,
     required this.onUpdateBooking,
     required this.onCancelBooking,
     required this.onLoadCommunityChat,
@@ -23,6 +25,13 @@ class BookingsScreen extends StatefulWidget {
   final AppBootstrap data;
   final Future<void> Function() onRefresh;
   final Future<void> Function() onCreateBooking;
+  final Future<List<SpecialistAvailabilitySlot>> Function({
+    required String specialistId,
+    required DateTime from,
+    required DateTime to,
+    String? mode,
+    String? serviceId,
+  }) onLoadAvailability;
   final Future<String?> Function({
     required String bookingId,
     required UpdateBookingInput input,
@@ -114,10 +123,11 @@ class _BookingsScreenState extends State<BookingsScreen> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      backgroundColor: const Color(0xFFFFFCF8),
+      backgroundColor: AppPalette.petalSoft,
       builder: (_) => _RescheduleBookingSheet(
         booking: booking,
         service: service,
+        onLoadAvailability: widget.onLoadAvailability,
         onSave: (input) async {
           setState(() {
             _busyBookingId = booking.id;
@@ -230,8 +240,9 @@ class _BookingsScreenState extends State<BookingsScreen> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color(0xFFFFF8F0),
-            Color(0xFFFFFCF8),
+            AppPalette.shellGradientTop,
+            AppPalette.shellGradientMid,
+            AppPalette.shellGradientBottom,
           ],
         ),
       ),
@@ -247,11 +258,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                 subtitle:
                     'Gestiona pagos, confirmaciones y cierre de sesiones sin crear reservas como cliente.',
                 glyphKind: MysticGlyphKind.agenda,
-                gradient: const [
-                  Color(0xFF24443F),
-                  Color(0xFF3B6E66),
-                  Color(0xFF6F9C93),
-                ],
+                gradient: AppPalette.darkBrandGradient,
                 tags: [
                   '${widget.data.bookings.length} reservas',
                   '$confirmedCount confirmadas',
@@ -265,7 +272,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
               Text(
                 'Operación de citas',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: const Color(0xFF243C37),
+                      color: AppPalette.butterflyInk,
                       fontWeight: FontWeight.w900,
                     ),
               ),
@@ -276,7 +283,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                   subtitle:
                       'Cuando un cliente reserve una consulta, aparecerá aquí para cambiar estado y revisar notas.',
                   glyphKind: MysticGlyphKind.agenda,
-                  accent: Color(0xFF5C7A72),
+                  accent: AppPalette.orchid,
                 )
               else
                 ...activeBookings.map(
@@ -329,8 +336,9 @@ class _BookingsScreenState extends State<BookingsScreen> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color(0xFFFFF8F0),
-            Color(0xFFFFFCF8),
+            AppPalette.shellGradientTop,
+            AppPalette.shellGradientMid,
+            AppPalette.shellGradientBottom,
           ],
         ),
       ),
@@ -340,27 +348,26 @@ class _BookingsScreenState extends State<BookingsScreen> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
             children: [
-              MysticBannerCard(
-                eyebrow: 'Organiza tus encuentros',
-                title: 'Citas',
-                subtitle:
-                    'Centraliza tus próximas sesiones, el chat general y los especialistas sugeridos sin mezclarlo con módulos secundarios.',
-                glyphKind: MysticGlyphKind.agenda,
-                gradient: const [
-                  Color(0xFF24443F),
-                  Color(0xFF3B6E66),
-                  Color(0xFF6F9C93),
-                ],
-                tags: [
-                  '${widget.data.bookings.length} reservas',
-                  '$confirmedCount confirmadas',
-                  '$pendingPaymentCount pendientes',
-                  if (cancelledCount > 0) '$cancelledCount canceladas',
-                ],
-                primaryLabel: 'Agendar nueva consulta',
-                onPrimaryTap: () => widget.onCreateBooking(),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () => widget.onCreateBooking(),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppPalette.royalViolet,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 16,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  icon: const Icon(Icons.add_circle_outline),
+                  label: const Text('Agendar nueva consulta'),
+                ),
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 16),
               Text(
                 'Atajos de citas',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -413,7 +420,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                   subtitle:
                       'Crea tu primera consulta y elige el día y la hora que mejor te funcione.',
                   glyphKind: MysticGlyphKind.agenda,
-                  accent: const Color(0xFF5C7A72),
+                  accent: AppPalette.orchid,
                   onTap: () => widget.onCreateBooking(),
                 )
               else
@@ -539,7 +546,7 @@ class _SpecialistAgendaBookingCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: const Color(0xFFE7DED3)),
+            border: Border.all(color: AppPalette.borderSoft),
           ),
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -563,7 +570,7 @@ class _SpecialistAgendaBookingCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: const Color(0xFF1E2C29),
+                            color: AppPalette.butterflyInk,
                             fontWeight: FontWeight.w900,
                           ),
                     ),
@@ -573,7 +580,7 @@ class _SpecialistAgendaBookingCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: const Color(0xFF6E625B),
+                            color: AppPalette.mutedLavender,
                             fontWeight: FontWeight.w700,
                           ),
                     ),
@@ -583,7 +590,7 @@ class _SpecialistAgendaBookingCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: const Color(0xFF7B716A),
+                            color: AppPalette.mutedLavender,
                           ),
                     ),
                   ],
@@ -860,13 +867,13 @@ class _RescheduleBookingSheetState extends State<_RescheduleBookingSheet> {
 Color _statusAccent(String status) {
   switch (status) {
     case 'confirmed':
-      return const Color(0xFF2E6655);
+      return AppPalette.royalViolet;
     case 'cancelled':
-      return const Color(0xFF8B2C1F);
+      return AppPalette.berry;
     case 'completed':
-      return const Color(0xFF264653);
+      return AppPalette.indigo;
     default:
-      return const Color(0xFF9A5A1D);
+      return AppPalette.warning;
   }
 }
 

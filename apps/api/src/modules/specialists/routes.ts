@@ -8,6 +8,7 @@ import {
   type UpsertSpecialistAvailabilityInput,
   upsertSpecialistAvailability,
 } from "../../data/scheduling-store.js";
+import { requireManagedSpecialistProfile } from "../shared/access.js";
 
 export async function registerSpecialistRoutes(app: FastifyInstance) {
   app.get("/", async () => {
@@ -24,7 +25,12 @@ export async function registerSpecialistRoutes(app: FastifyInstance) {
 
   app.get<{
     Params: { specialistId: string };
-    Querystring: { from?: string; to?: string; mode?: "chat" | "audio" | "video" };
+    Querystring: {
+      from?: string;
+      to?: string;
+      mode?: "chat" | "audio" | "video";
+      serviceId?: string;
+    };
   }>("/:specialistId/availability", async (request, reply) => {
     try {
       return {
@@ -32,6 +38,7 @@ export async function registerSpecialistRoutes(app: FastifyInstance) {
           from: request.query.from,
           to: request.query.to,
           mode: request.query.mode,
+          serviceId: request.query.serviceId,
         }),
       };
     } catch (error) {
@@ -48,7 +55,24 @@ export async function registerSpecialistRoutes(app: FastifyInstance) {
   app.post<{ Body: UpsertSpecialistAvailabilityInput }>(
     "/availability",
     async (request, reply) => {
+      const access = await requireManagedSpecialistProfile(request, reply);
+      if (!access) {
+        return {
+          error:
+            reply.statusCode === 403
+              ? "Configura tu perfil especialista para administrar tu disponibilidad."
+              : "Inicia sesión como especialista para administrar disponibilidad.",
+        };
+      }
+
       try {
+        if (request.body?.specialistId?.trim() !== access.specialistProfileId) {
+          reply.code(403);
+          return {
+            error: "Solo puedes editar la disponibilidad de tu propio perfil especialista.",
+          };
+        }
+
         const item = await upsertSpecialistAvailability(request.body ?? {});
         reply.code(201);
         return {
@@ -69,8 +93,21 @@ export async function registerSpecialistRoutes(app: FastifyInstance) {
   app.delete<{ Params: { availabilityId: string } }>(
     "/availability/:availabilityId",
     async (request, reply) => {
+      const access = await requireManagedSpecialistProfile(request, reply);
+      if (!access) {
+        return {
+          error:
+            reply.statusCode === 403
+              ? "Configura tu perfil especialista para administrar tu disponibilidad."
+              : "Inicia sesión como especialista para administrar disponibilidad.",
+        };
+      }
+
       try {
-        await deleteSpecialistAvailability(request.params.availabilityId);
+        await deleteSpecialistAvailability(
+          request.params.availabilityId,
+          access.specialistProfileId,
+        );
         reply.code(204);
         return null;
       } catch (error) {

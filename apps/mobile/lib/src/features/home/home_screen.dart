@@ -1,7 +1,10 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../core/branding/renaciente_logo.dart';
 import '../../core/i18n/app_i18n.dart';
+import '../../core/theme/app_palette.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/mystic_ui.dart';
 import '../../models/app_models.dart';
@@ -73,8 +76,9 @@ class _HomeScreenState extends State<HomeScreen> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color(0xFFFFF6ED),
-            Color(0xFFFFFBF7),
+            AppPalette.shellGradientTop,
+            AppPalette.shellGradientMid,
+            AppPalette.shellGradientBottom,
           ],
         ),
       ),
@@ -304,16 +308,16 @@ class _HomeAstroCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF152635),
-            Color(0xFF6B4C3A),
-            Color(0xFFD59A62),
+            AppPalette.midnight,
+            AppPalette.indigo,
+            AppPalette.royalViolet,
           ],
         ),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x1F6B4C3A),
+            color: AppPalette.indigo.withValues(alpha: 0.26),
             blurRadius: 28,
-            offset: Offset(0, 18),
+            offset: const Offset(0, 18),
           ),
         ],
       ),
@@ -376,12 +380,12 @@ class _HomeAstroCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const RenacienteLogoMark(
-                    size: 64,
-                    accentColor: Color(0xFFFFF2E3),
-                    glowColor: Color(0xFFD59A62),
-                    surfaceColor: Color(0xFF6B4C3A),
-                    backgroundColor: Color(0x1FFFFFFF),
+                  const RenacienteAnimatedLogoMark(
+                    size: 76,
+                    accentColor: AppPalette.butterflyInk,
+                    wingInsetColor: AppPalette.orchid,
+                    glowColor: AppPalette.roseQuartz,
+                    surfaceColor: AppPalette.candleGlow,
                   ),
                 ],
               ),
@@ -392,8 +396,8 @@ class _HomeAstroCard extends StatelessWidget {
                   child: FilledButton(
                     onPressed: onPlanTap,
                     style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFFFFF2E3),
-                      foregroundColor: const Color(0xFF1A2430),
+                      backgroundColor: AppPalette.moonIvory,
+                      foregroundColor: AppPalette.butterflyInk,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 14,
                         vertical: 10,
@@ -423,7 +427,7 @@ class _HomeAstroCard extends StatelessWidget {
                         height: 18,
                         child: CircularProgressIndicator(
                           strokeWidth: 2.2,
-                          color: Color(0xFFFFF2E3),
+                          color: AppPalette.flameGold,
                         ),
                       ),
                       SizedBox(width: 12),
@@ -480,8 +484,8 @@ class _HomeAstroCard extends StatelessWidget {
                       FilledButton(
                         onPressed: () => onOpenAstralChart(),
                         style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFFFFF2E3),
-                          foregroundColor: const Color(0xFF1A2430),
+                          backgroundColor: AppPalette.moonIvory,
+                          foregroundColor: AppPalette.butterflyInk,
                         ),
                         child: Text(l10n.tr('completeAstralChart')),
                       ),
@@ -552,7 +556,7 @@ class _AstroContextPanel extends StatelessWidget {
             child: TextButton(
               onPressed: () => onOpenAstralChart(),
               style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFFFFF2E3),
+                foregroundColor: AppPalette.moonIvory,
                 padding: EdgeInsets.zero,
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -1576,17 +1580,17 @@ class _DiscoverDaySection extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFFFFF8F0),
-            Color(0xFFF8EFE6),
-            Color(0xFFFFFBF7),
+            AppPalette.mistLilac,
+            AppPalette.moonIvory,
+            AppPalette.softLilac,
           ],
         ),
-        border: Border.all(color: const Color(0xFFE8DCCF)),
-        boxShadow: const [
+        border: Border.all(color: AppPalette.border),
+        boxShadow: [
           BoxShadow(
-            color: Color(0x12000000),
+            color: AppPalette.royalViolet.withValues(alpha: 0.10),
             blurRadius: 24,
-            offset: Offset(0, 14),
+            offset: const Offset(0, 14),
           ),
         ],
       ),
@@ -1600,7 +1604,7 @@ class _DiscoverDaySection extends StatelessWidget {
               height: 96,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFFBA8C66).withValues(alpha: 0.10),
+                color: AppPalette.flameGold.withValues(alpha: 0.14),
               ),
             ),
           ),
@@ -1612,7 +1616,7 @@ class _DiscoverDaySection extends StatelessWidget {
               height: 74,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF184A56).withValues(alpha: 0.07),
+                color: AppPalette.royalViolet.withValues(alpha: 0.10),
               ),
             ),
           ),
@@ -1637,7 +1641,7 @@ class _DiscoverDaySection extends StatelessWidget {
                             ),
                             borderRadius: BorderRadius.circular(999),
                             border: Border.all(
-                              color: const Color(0xFFE7DDD0),
+                              color: AppPalette.borderSoft,
                             ),
                           ),
                           child: Text(
@@ -1646,7 +1650,7 @@ class _DiscoverDaySection extends StatelessWidget {
                                 .textTheme
                                 .labelMedium
                                 ?.copyWith(
-                                  color: const Color(0xFF6B4C3A),
+                                  color: AppPalette.royalViolet,
                                   fontWeight: FontWeight.w800,
                                 ),
                           ),
@@ -1657,7 +1661,7 @@ class _DiscoverDaySection extends StatelessWidget {
                           style:
                               Theme.of(context).textTheme.titleLarge?.copyWith(
                                     fontWeight: FontWeight.w800,
-                                    color: const Color(0xFF1B2328),
+                                    color: AppPalette.midnight,
                                   ),
                         ),
                         const SizedBox(height: 4),
@@ -1665,7 +1669,7 @@ class _DiscoverDaySection extends StatelessWidget {
                           subtitle,
                           style:
                               Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: const Color(0xFF627077),
+                                    color: AppPalette.mutedLavender,
                                     height: 1.35,
                                   ),
                         ),
@@ -1690,11 +1694,12 @@ class _DiscoverDaySection extends StatelessWidget {
                         title: astralTitle,
                         caption: astralCaption,
                         glyphKind: MysticGlyphKind.astral,
-                        accent: const Color(0xFF184A56),
+                        motionVariant: _ModuleGlyphMotionVariant.astral,
+                        accent: AppPalette.flameGold,
                         gradient: const [
-                          Color(0xFF183846),
-                          Color(0xFF2D5870),
-                          Color(0xFF5E8395),
+                          AppPalette.midnight,
+                          AppPalette.indigo,
+                          AppPalette.royalViolet,
                         ],
                         onTap: onOpenAstralChart,
                       ),
@@ -1706,11 +1711,12 @@ class _DiscoverDaySection extends StatelessWidget {
                         title: numerologyTitle,
                         caption: numerologyCaption,
                         glyphKind: MysticGlyphKind.numerology,
-                        accent: const Color(0xFF284B73),
+                        motionVariant: _ModuleGlyphMotionVariant.numerology,
+                        accent: AppPalette.moonIvory,
                         gradient: const [
-                          Color(0xFF272342),
-                          Color(0xFF4A4477),
-                          Color(0xFF6F6AB3),
+                          AppPalette.butterflyInk,
+                          AppPalette.royalViolet,
+                          AppPalette.orchid,
                         ],
                         onTap: onOpenNumerology,
                       ),
@@ -1720,11 +1726,12 @@ class _DiscoverDaySection extends StatelessWidget {
                       title: 'Tránsitos de hoy',
                       caption: transitCaption,
                       glyphKind: MysticGlyphKind.astral,
-                      accent: const Color(0xFF6B4C3A),
+                      motionVariant: _ModuleGlyphMotionVariant.transit,
+                      accent: AppPalette.moonIvory,
                       gradient: const [
-                        Color(0xFF4B2C24),
-                        Color(0xFF7C4A36),
-                        Color(0xFFB27D58),
+                        AppPalette.midnight,
+                        AppPalette.royalViolet,
+                        AppPalette.berry,
                       ],
                       onTap: onOpenTodayTransitHub,
                     ),
@@ -1738,7 +1745,7 @@ class _DiscoverDaySection extends StatelessWidget {
                     child: Text(
                       'Muévete de un lado a otro para cambiar de módulo.',
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            color: const Color(0xFF7B675C),
+                            color: AppPalette.mutedLavender,
                             fontWeight: FontWeight.w600,
                           ),
                     ),
@@ -1764,6 +1771,7 @@ class _ModulePanel extends StatelessWidget {
     required this.title,
     required this.caption,
     required this.glyphKind,
+    required this.motionVariant,
     required this.accent,
     required this.gradient,
     required this.onTap,
@@ -1773,6 +1781,7 @@ class _ModulePanel extends StatelessWidget {
   final String title;
   final String caption;
   final MysticGlyphKind glyphKind;
+  final _ModuleGlyphMotionVariant motionVariant;
   final Color accent;
   final List<Color> gradient;
   final Future<void> Function() onTap;
@@ -1860,9 +1869,11 @@ class _ModulePanel extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      MysticGlyphBadge(
+                      _AnimatedModuleGlyph(
                         kind: glyphKind,
-                        accent: const Color(0xFFFFF7EC),
+                        variant: motionVariant,
+                        accent: accent,
+                        foreground: AppPalette.moonIvory,
                         background: Colors.white.withValues(alpha: 0.14),
                         size: 54,
                       ),
@@ -1925,6 +1936,354 @@ class _ModulePanel extends StatelessWidget {
   }
 }
 
+enum _ModuleGlyphMotionVariant {
+  astral,
+  numerology,
+  transit,
+}
+
+class _AnimatedModuleGlyph extends StatefulWidget {
+  const _AnimatedModuleGlyph({
+    required this.kind,
+    required this.variant,
+    required this.accent,
+    required this.foreground,
+    required this.background,
+    required this.size,
+  });
+
+  final MysticGlyphKind kind;
+  final _ModuleGlyphMotionVariant variant;
+  final Color accent;
+  final Color foreground;
+  final Color background;
+  final double size;
+
+  @override
+  State<_AnimatedModuleGlyph> createState() => _AnimatedModuleGlyphState();
+}
+
+class _AnimatedModuleGlyphState extends State<_AnimatedModuleGlyph>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 5200),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final canvasSize = widget.size * 1.34;
+
+    return SizedBox(
+      width: canvasSize,
+      height: canvasSize,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, _) {
+          final phase = _controller.value * math.pi * 2;
+
+          return Stack(
+            alignment: Alignment.center,
+            clipBehavior: Clip.none,
+            children: [
+              ...switch (widget.variant) {
+                _ModuleGlyphMotionVariant.astral => _buildAstralDecor(phase),
+                _ModuleGlyphMotionVariant.numerology =>
+                  _buildNumerologyDecor(phase),
+                _ModuleGlyphMotionVariant.transit => _buildTransitDecor(phase),
+              },
+              _buildBadge(phase),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildBadge(double phase) {
+    final floatY = switch (widget.variant) {
+      _ModuleGlyphMotionVariant.astral => math.sin(phase * 1.1) * 2.4,
+      _ModuleGlyphMotionVariant.numerology => math.sin(phase * 1.6) * 1.3,
+      _ModuleGlyphMotionVariant.transit => math.sin(phase * 1.8) * 1.8,
+    };
+
+    final scale = switch (widget.variant) {
+      _ModuleGlyphMotionVariant.astral => 1 + math.sin(phase * 1.2) * 0.02,
+      _ModuleGlyphMotionVariant.numerology =>
+        1 + (math.sin(phase * 2.0) + 1) * 0.028,
+      _ModuleGlyphMotionVariant.transit => 1 + math.sin(phase * 1.4) * 0.018,
+    };
+
+    final rotation = switch (widget.variant) {
+      _ModuleGlyphMotionVariant.astral => math.sin(phase * 0.7) * 0.06,
+      _ModuleGlyphMotionVariant.numerology => math.sin(phase * 0.9) * 0.03,
+      _ModuleGlyphMotionVariant.transit => math.sin(phase * 1.1) * 0.045,
+    };
+
+    return Transform.translate(
+      offset: Offset(0, floatY),
+      child: Transform.rotate(
+        angle: rotation,
+        child: Transform.scale(
+          scale: scale,
+          child: MysticGlyphBadge(
+            kind: widget.kind,
+            accent: widget.foreground,
+            background: widget.background,
+            size: widget.size,
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildAstralDecor(double phase) {
+    final orbitA = phase;
+    final orbitB = phase * 0.78 + math.pi * 0.2;
+    final orbitC = -phase * 0.62 + math.pi * 0.95;
+    final orbitD = phase * 1.18 + math.pi * 1.35;
+    final orbitE = -phase * 0.92 + math.pi * 0.48;
+    final outerRadius = widget.size * 0.45;
+    final midRadius = widget.size * 0.36;
+    final innerRadius = widget.size * 0.28;
+
+    return [
+      Container(
+        width: widget.size * 1.18,
+        height: widget.size * 1.18,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: widget.accent.withValues(alpha: 0.20),
+            width: 1.2,
+          ),
+        ),
+      ),
+      Container(
+        width: widget.size * 0.92,
+        height: widget.size * 0.92,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: widget.accent.withValues(alpha: 0.12),
+            width: 1.0,
+          ),
+        ),
+      ),
+      _orbitDot(
+        angle: orbitA,
+        radius: outerRadius,
+        size: widget.size * 0.12,
+        color: widget.accent.withValues(alpha: 0.92),
+      ),
+      _orbitDot(
+        angle: orbitB,
+        radius: outerRadius,
+        size: widget.size * 0.07,
+        color: Colors.white.withValues(alpha: 0.64),
+      ),
+      _orbitDot(
+        angle: orbitC,
+        radius: midRadius,
+        size: widget.size * 0.08,
+        color: Colors.white.withValues(alpha: 0.78),
+      ),
+      _orbitDot(
+        angle: orbitD,
+        radius: midRadius,
+        size: widget.size * 0.06,
+        color: widget.accent.withValues(alpha: 0.58),
+      ),
+      _orbitDot(
+        angle: orbitE,
+        radius: innerRadius,
+        size: widget.size * 0.045,
+        color: Colors.white.withValues(alpha: 0.82),
+      ),
+    ];
+  }
+
+  List<Widget> _buildNumerologyDecor(double phase) {
+    final ringOne = 0.92 + (math.sin(phase * 1.8) + 1) * 0.05;
+    final ringTwo = 0.84 + (math.sin(phase * 1.8 + 0.7) + 1) * 0.045;
+
+    return [
+      Transform.scale(
+        scale: ringOne,
+        child: Container(
+          width: widget.size * 1.18,
+          height: widget.size * 1.18,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: widget.accent.withValues(alpha: 0.18),
+              width: 1.2,
+            ),
+          ),
+        ),
+      ),
+      Transform.scale(
+        scale: ringTwo,
+        child: Container(
+          width: widget.size * 0.94,
+          height: widget.size * 0.94,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: widget.accent.withValues(alpha: 0.12),
+              width: 1.0,
+            ),
+          ),
+        ),
+      ),
+      _numberChip(
+        label: '3',
+        alignment: Alignment.topCenter,
+        dx: math.sin(phase * 1.4) * 4,
+        dy: math.cos(phase * 1.4) * 2,
+      ),
+      _numberChip(
+        label: '6',
+        alignment: Alignment.centerLeft,
+        dx: math.cos(phase * 1.1) * 3,
+        dy: math.sin(phase * 1.1) * 4,
+      ),
+      _numberChip(
+        label: '9',
+        alignment: Alignment.centerRight,
+        dx: math.sin(phase * 1.25) * -3,
+        dy: math.cos(phase * 1.25) * 4,
+      ),
+    ];
+  }
+
+  List<Widget> _buildTransitDecor(double phase) {
+    return [
+      Positioned.fill(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(widget.size),
+          child: Stack(
+            children: List.generate(3, (index) {
+              final progress = (_controller.value + index * 0.24) % 1.0;
+              final width = widget.size * (0.22 + index * 0.03);
+              final left = -width + progress * widget.size * 1.5;
+              final top = widget.size * (0.22 + index * 0.14) +
+                  math.sin(progress * math.pi * 2 + index) * widget.size * 0.08;
+              final opacity = 0.06 +
+                  (1 - ((progress - 0.5).abs() * 2).clamp(0.0, 1.0)) * 0.22;
+
+              return Positioned(
+                left: left,
+                top: top,
+                child: Transform.rotate(
+                  angle: -0.42,
+                  child: Container(
+                    width: width,
+                    height: widget.size * 0.07,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(999),
+                      gradient: LinearGradient(
+                        colors: [
+                          widget.accent.withValues(alpha: 0),
+                          widget.accent.withValues(alpha: opacity),
+                          Colors.white.withValues(alpha: opacity * 0.9),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+      ),
+      Container(
+        width: widget.size * 1.08,
+        height: widget.size * 1.08,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: widget.accent.withValues(alpha: 0.10),
+          ),
+        ),
+      ),
+    ];
+  }
+
+  Widget _orbitDot({
+    required double angle,
+    required double radius,
+    required double size,
+    required Color color,
+  }) {
+    return Transform.translate(
+      offset: Offset(
+        math.cos(angle) * radius,
+        math.sin(angle) * radius,
+      ),
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: color,
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.24),
+              blurRadius: 8,
+              spreadRadius: 0.5,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _numberChip({
+    required String label,
+    required Alignment alignment,
+    required double dx,
+    required double dy,
+  }) {
+    return Align(
+      alignment: alignment,
+      child: Transform.translate(
+        offset: Offset(dx, dy),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.18),
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: widget.accent.withValues(alpha: 0.18),
+            ),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: widget.foreground,
+              fontSize: 10,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _DiscoverModulesIndicator extends StatelessWidget {
   const _DiscoverModulesIndicator({
     required this.currentIndex,
@@ -1947,8 +2306,7 @@ class _DiscoverModulesIndicator extends StatelessWidget {
             height: 8,
             margin: EdgeInsets.only(right: index == total - 1 ? 0 : 6),
             decoration: BoxDecoration(
-              color:
-                  selected ? const Color(0xFF6B4C3A) : const Color(0xFFDCCFC3),
+              color: selected ? AppPalette.royalViolet : AppPalette.border,
               borderRadius: BorderRadius.circular(999),
             ),
           );
@@ -1994,8 +2352,9 @@ class _PlanStrip extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Color(0xFFB56A3A),
-                Color(0xFFD18D55),
+                AppPalette.indigo,
+                AppPalette.royalViolet,
+                AppPalette.flameGold,
               ],
             ),
           ),
@@ -2046,8 +2405,8 @@ class _PlanStrip extends StatelessWidget {
               FilledButton(
                 onPressed: onTap,
                 style: FilledButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: const Color(0xFF8C4E2A),
+                  backgroundColor: AppPalette.moonIvory,
+                  foregroundColor: AppPalette.butterflyInk,
                 ),
                 child: Text(context.l10n.tr('manageSubscription')),
               ),
@@ -2070,7 +2429,7 @@ class _InfoChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const chipAccent = Color(0xFF6C675F);
+    const chipAccent = AppPalette.mutedLavender;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),

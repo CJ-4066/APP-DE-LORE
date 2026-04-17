@@ -5,6 +5,7 @@ import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../core/data/birth_place_catalog.dart';
+import '../../core/theme/app_palette.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/mystic_ui.dart';
 import '../../models/app_models.dart';
@@ -610,8 +611,9 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
         borderRadius: BorderRadius.circular(28),
         gradient: const LinearGradient(
           colors: [
-            Color(0xFF182127),
-            Color(0xFF354A4D),
+            AppPalette.midnight,
+            AppPalette.indigo,
+            AppPalette.royalViolet,
           ],
         ),
       ),
@@ -1366,7 +1368,7 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
                 _selectedSection = _AstroFlowSection.values[index];
               });
             },
-            accent: const Color(0xFF355B52),
+            accent: AppPalette.royalViolet,
           ),
           const SizedBox(height: 18),
           MysticSlideSwitcher(

@@ -36,6 +36,9 @@ flutter:
   uses-material-design: true
   assets:
     - assets/bootstrap/bootstrap_seed.json
+    - assets/branding/lo-renaciente-app-icon.png
+    - assets/branding/lo-renaciente-isotipo.png
+    - assets/branding/lo-renaciente-logo.jpeg
     - assets/tarot_cards/
   fonts:
     - family: CormorantGaramond

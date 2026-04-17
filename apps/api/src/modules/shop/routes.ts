@@ -3,9 +3,7 @@ import type { FastifyInstance } from "fastify";
 import {
   createShopProduct,
   createShopOrder,
-  getProfile,
   getShopOrders,
-  getUserIdForAccessToken,
   updateShopOrderStatus,
   updateShopProduct,
   type CreateShopProductInput,
@@ -13,13 +11,19 @@ import {
   type UpdateShopOrderStatusInput,
   type UpdateShopProductInput,
 } from "../../data/persistent-store.js";
-import { readAccessToken } from "../shared/auth.js";
+import {
+  requireAuthenticatedUser,
+  requireSpecialistProfile,
+} from "../shared/access.js";
 
 export async function registerShopRoutes(app: FastifyInstance) {
-  app.get("/", async (request) => {
-    const accessToken = readAccessToken(request.headers.authorization);
-    const userId =
-      (await getUserIdForAccessToken(accessToken ?? undefined)) ?? undefined;
+  app.get("/", async (request, reply) => {
+    const userId = await requireAuthenticatedUser(request, reply);
+    if (!userId) {
+      return {
+        error: "Inicia sesión para revisar tus órdenes.",
+      };
+    }
 
     return {
       items: await getShopOrders(userId),
@@ -27,10 +31,14 @@ export async function registerShopRoutes(app: FastifyInstance) {
   });
 
   app.post<{ Body: CreateShopOrderInput }>("/", async (request, reply) => {
+    const userId = await requireAuthenticatedUser(request, reply);
+    if (!userId) {
+      return {
+        error: "Inicia sesión para crear una orden.",
+      };
+    }
+
     try {
-      const accessToken = readAccessToken(request.headers.authorization);
-      const userId =
-        (await getUserIdForAccessToken(accessToken ?? undefined)) ?? undefined;
       const item = await createShopOrder(request.body ?? {}, userId);
       reply.code(201);
 
@@ -51,8 +59,17 @@ export async function registerShopRoutes(app: FastifyInstance) {
   app.post<{ Body: CreateShopProductInput }>(
     "/products",
     async (request, reply) => {
+      const userId = await requireSpecialistProfile(request, reply);
+      if (!userId) {
+        return {
+          error:
+            reply.statusCode === 403
+              ? "Tu perfil debe estar en modo especialista."
+              : "Inicia sesión como especialista para administrar tienda.",
+        };
+      }
+
       try {
-        await requireSpecialist(request.headers.authorization);
         const item = await createShopProduct(request.body ?? {});
         reply.code(201);
 
@@ -74,8 +91,17 @@ export async function registerShopRoutes(app: FastifyInstance) {
   app.patch<{ Params: { productId: string }; Body: UpdateShopProductInput }>(
     "/products/:productId",
     async (request, reply) => {
+      const userId = await requireSpecialistProfile(request, reply);
+      if (!userId) {
+        return {
+          error:
+            reply.statusCode === 403
+              ? "Tu perfil debe estar en modo especialista."
+              : "Inicia sesión como especialista para administrar tienda.",
+        };
+      }
+
       try {
-        await requireSpecialist(request.headers.authorization);
         const item = await updateShopProduct(
           request.params.productId,
           request.body ?? {},
@@ -100,11 +126,17 @@ export async function registerShopRoutes(app: FastifyInstance) {
     Params: { orderId: string };
     Body: UpdateShopOrderStatusInput;
   }>("/orders/:orderId", async (request, reply) => {
+    const userId = await requireSpecialistProfile(request, reply);
+    if (!userId) {
+      return {
+        error:
+          reply.statusCode === 403
+            ? "Tu perfil debe estar en modo especialista."
+            : "Inicia sesión como especialista para administrar tienda.",
+      };
+    }
+
     try {
-      const accessToken = readAccessToken(request.headers.authorization);
-      const userId =
-        (await getUserIdForAccessToken(accessToken ?? undefined)) ?? undefined;
-      await requireSpecialist(request.headers.authorization);
       const item = await updateShopOrderStatus(
         request.params.orderId,
         request.body ?? {},
@@ -124,17 +156,4 @@ export async function registerShopRoutes(app: FastifyInstance) {
       };
     }
   });
-}
-
-async function requireSpecialist(authorization?: string) {
-  const accessToken = readAccessToken(authorization);
-  const userId = await getUserIdForAccessToken(accessToken ?? undefined);
-  if (!userId) {
-    throw new Error("Inicia sesión como especialista para administrar tienda.");
-  }
-
-  const user = await getProfile(userId);
-  if (user.accountType !== "specialist") {
-    throw new Error("Tu perfil debe estar en modo especialista.");
-  }
 }

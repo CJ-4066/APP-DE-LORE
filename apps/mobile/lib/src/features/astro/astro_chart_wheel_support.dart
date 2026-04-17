@@ -29,7 +29,7 @@ class AstroChartTechnicalHeader extends StatelessWidget {
         '${_formatLatitude(meta.coordinates.latitude)} ${_formatLongitude(meta.coordinates.longitude)}';
 
     final textColor =
-        classic ? const Color(0xFF1A1A1A) : const Color(0xFF302E2B);
+        classic ? const Color(0xFF1A1A1A) : AppPalette.butterflyInk;
 
     return Container(
       width: double.infinity,
@@ -37,9 +37,9 @@ class AstroChartTechnicalHeader extends StatelessWidget {
       decoration: classic
           ? null
           : BoxDecoration(
-              color: const Color(0xFFFBF8F4),
+              color: AppPalette.petalSoft,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFE4D8CB)),
+              border: Border.all(color: AppPalette.border),
             ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -48,9 +48,7 @@ class AstroChartTechnicalHeader extends StatelessWidget {
             'Carta natal',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w800,
-                  color: classic
-                      ? const Color(0xFF1A1A1A)
-                      : const Color(0xFF21345A),
+                  color: classic ? const Color(0xFF1A1A1A) : AppPalette.indigo,
                 ),
           ),
           const SizedBox(height: 4),
@@ -59,8 +57,7 @@ class AstroChartTechnicalHeader extends StatelessWidget {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w800,
-              color:
-                  classic ? const Color(0xFF1A1A1A) : const Color(0xFF254C9B),
+              color: classic ? const Color(0xFF1A1A1A) : AppPalette.midnight,
             ),
           ),
           const SizedBox(height: 10),
@@ -92,7 +89,7 @@ class AstroChartTechnicalHeader extends StatelessWidget {
             'Tropical/geocéntrico · Carta eclíptica · Casas: ${_capitalize(meta.houseSystem)}',
             style: const TextStyle(
               fontSize: 12.5,
-              color: Color(0xFF5D5953),
+              color: AppPalette.mutedLavender,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -101,7 +98,7 @@ class AstroChartTechnicalHeader extends StatelessWidget {
             'Nodos: ${_nodeTypeLabel(meta.nodeType)} · Fuente: ${_ephemerisSourceLabel(meta.ephemerisSource)}',
             style: const TextStyle(
               fontSize: 12,
-              color: Color(0xFF6A625B),
+              color: AppPalette.mutedLavender,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -168,9 +165,9 @@ class AstroCuspsSidebar extends StatelessWidget {
               borderRadius: BorderRadius.circular(4),
             )
           : BoxDecoration(
-              color: Colors.white,
+              color: AppPalette.moonIvory,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: const Color(0xFFCFC7BF)),
+              border: Border.all(color: AppPalette.border),
             ),
       child: Column(
         children: rows
@@ -186,7 +183,9 @@ class AstroCuspsSidebar extends StatelessWidget {
                         style: TextStyle(
                           fontSize: classic ? 12 : 13,
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF1F1F1F),
+                          color: classic
+                              ? const Color(0xFF1F1F1F)
+                              : AppPalette.butterflyInk,
                         ),
                       ),
                     ),
@@ -195,7 +194,9 @@ class AstroCuspsSidebar extends StatelessWidget {
                         row.degree,
                         style: TextStyle(
                           fontSize: classic ? 12 : 13,
-                          color: const Color(0xFF1F1F1F),
+                          color: classic
+                              ? const Color(0xFF1F1F1F)
+                              : AppPalette.butterflyInk,
                         ),
                       ),
                     ),

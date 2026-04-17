@@ -37,6 +37,7 @@ export interface ListSpecialistAvailabilityOptions {
   from?: string;
   to?: string;
   mode?: SessionMode;
+  serviceId?: string;
 }
 
 export interface UpsertSpecialistAvailabilityInput {
@@ -133,6 +134,10 @@ function parseRequiredDate(value: string | undefined, fieldName: string): Date {
 
 function addMinutes(date: Date, minutes: number): Date {
   return new Date(date.getTime() + minutes * 60 * 1000);
+}
+
+function addDays(date: Date, days: number): Date {
+  return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
 }
 
 function hoursUntil(dateIso: string): number {
@@ -276,6 +281,86 @@ function buildDemoAvailabilitySlots(
     const matchesMode = options.mode ? slot.mode === options.mode : true;
     return matchesMode && startsAt.getTime() >= from.getTime() && startsAt.getTime() <= to.getTime();
   });
+}
+
+function resolveAvailabilityWindowRange(options: ListSpecialistAvailabilityOptions): {
+  from: Date;
+  to: Date;
+} {
+  const from = options.from ? parseRequiredDate(options.from, "La fecha inicial") : new Date();
+  const to = options.to
+    ? parseRequiredDate(options.to, "La fecha final")
+    : addDays(from, 14);
+
+  if (to.getTime() <= from.getTime()) {
+    throw new Error("La fecha final debe ser posterior a la inicial.");
+  }
+
+  return { from, to };
+}
+
+function roundUpToStep(date: Date, minutesStep: number): Date {
+  const rounded = new Date(date);
+  rounded.setSeconds(0, 0);
+
+  const totalMinutes = rounded.getHours() * 60 + rounded.getMinutes();
+  const remainder = totalMinutes % minutesStep;
+  if (remainder === 0) {
+    return rounded;
+  }
+
+  return addMinutes(rounded, minutesStep - remainder);
+}
+
+async function expandBookableAvailabilitySlots(
+  specialist: Specialist,
+  service: ServiceOffer,
+  windows: SpecialistAvailabilitySlot[],
+  options: ListSpecialistAvailabilityOptions,
+): Promise<SpecialistAvailabilitySlot[]> {
+  const { from, to } = resolveAvailabilityWindowRange(options);
+  const stepMinutes = Math.max(15, Math.min(30, service.durationMinutes));
+  const items: SpecialistAvailabilitySlot[] = [];
+
+  for (const window of windows) {
+    if (!window.isAvailable) {
+      continue;
+    }
+
+    const windowStart = new Date(window.startsAt);
+    const windowEnd = new Date(window.endsAt);
+    let cursor = roundUpToStep(
+      windowStart.getTime() < from.getTime() ? from : windowStart,
+      stepMinutes,
+    );
+
+    while (cursor.getTime() < windowEnd.getTime() && cursor.getTime() < to.getTime()) {
+      const endsAt = addMinutes(cursor, service.durationMinutes);
+      if (endsAt.getTime() > windowEnd.getTime() || endsAt.getTime() > to.getTime()) {
+        break;
+      }
+
+      const hasConflict = await hasConflictingBooking(
+        specialist.id,
+        cursor,
+        endsAt,
+      );
+      if (!hasConflict) {
+        items.push({
+          id: `${window.id}:${cursor.toISOString()}`,
+          specialistId: specialist.id,
+          startsAt: cursor.toISOString(),
+          endsAt: endsAt.toISOString(),
+          mode: window.mode,
+          isAvailable: true,
+        });
+      }
+
+      cursor = addMinutes(cursor, stepMinutes);
+    }
+  }
+
+  return items;
 }
 
 async function getDatabaseNextAvailabilityMap(): Promise<Map<string, string>> {
@@ -552,6 +637,9 @@ export async function getSpecialistAvailability(
     throw new Error("El especialista no existe.");
   }
 
+  const { from, to } = resolveAvailabilityWindowRange(options);
+
+  let windows: SpecialistAvailabilitySlot[];
   if (!isDatabaseConfigured()) {
     const customSlots = [...mockAvailabilitySlots.values()].filter(
       (slot) =>
@@ -559,46 +647,54 @@ export async function getSpecialistAvailability(
         (options.mode ? slot.mode === options.mode : true),
     );
 
-    if (customSlots.length > 0) {
-      return customSlots.sort((left, right) => left.startsAt.localeCompare(right.startsAt));
+    windows = customSlots.length > 0
+      ? customSlots.sort((left, right) => left.startsAt.localeCompare(right.startsAt))
+      : buildDemoAvailabilitySlots(specialist, options);
+  } else {
+    const params: unknown[] = [specialistId, from.toISOString(), to.toISOString()];
+    let modeClause = "";
+    if (options.mode) {
+      params.push(options.mode);
+      modeClause = "and mode = $4";
     }
 
-    return buildDemoAvailabilitySlots(specialist, options);
+    const result = await query<AvailabilityRow>(
+      `
+        select id, specialist_id, starts_at, ends_at, mode, is_available
+        from specialist_availability
+        where specialist_id = $1
+          and ends_at >= $2
+          and starts_at <= $3
+          ${modeClause}
+        order by starts_at asc
+      `,
+      params,
+    );
+
+    windows = result.rows.length === 0
+      ? buildDemoAvailabilitySlots(specialist, options)
+      : result.rows.map(mapAvailabilityRow);
   }
 
-  const from = options.from ? parseRequiredDate(options.from, "La fecha inicial") : new Date();
-  const to = options.to
-    ? parseRequiredDate(options.to, "La fecha final")
-    : new Date(from.getTime() + 14 * 24 * 60 * 60 * 1000);
-  if (to.getTime() <= from.getTime()) {
-    throw new Error("La fecha final debe ser posterior a la inicial.");
+  const serviceId = options.serviceId?.trim();
+  if (!serviceId) {
+    return windows;
   }
 
-  const params: unknown[] = [specialistId, from.toISOString(), to.toISOString()];
-  let modeClause = "";
-  if (options.mode) {
-    params.push(options.mode);
-    modeClause = "and mode = $4";
+  const service = getServiceById(serviceId);
+  if (!service) {
+    throw new Error("El servicio no existe.");
   }
 
-  const result = await query<AvailabilityRow>(
-    `
-      select id, specialist_id, starts_at, ends_at, mode, is_available
-      from specialist_availability
-      where specialist_id = $1
-        and ends_at >= $2
-        and starts_at <= $3
-        ${modeClause}
-      order by starts_at asc
-    `,
-    params,
-  );
-
-  if (result.rows.length === 0) {
-    return buildDemoAvailabilitySlots(specialist, options);
+  if (!service.specialistIds.includes(specialist.id)) {
+    throw new Error("El especialista no ofrece ese servicio.");
   }
 
-  return result.rows.map(mapAvailabilityRow);
+  if (options.mode && !service.deliveryModes.includes(options.mode)) {
+    throw new Error("Ese servicio no admite la modalidad seleccionada.");
+  }
+
+  return expandBookableAvailabilitySlots(specialist, service, windows, options);
 }
 
 export async function upsertSpecialistAvailability(
@@ -662,20 +758,33 @@ export async function upsertSpecialistAvailability(
   return slot;
 }
 
-export async function deleteSpecialistAvailability(availabilityId: string): Promise<void> {
+export async function deleteSpecialistAvailability(
+  availabilityId: string,
+  specialistId?: string,
+): Promise<void> {
   if (!isDatabaseConfigured()) {
-    if (!mockAvailabilitySlots.delete(availabilityId)) {
+    const slot = mockAvailabilitySlots.get(availabilityId);
+    if (!slot || (specialistId && slot.specialistId !== specialistId)) {
       throw new Error("La disponibilidad no existe.");
     }
+    mockAvailabilitySlots.delete(availabilityId);
     return;
+  }
+
+  const params: unknown[] = [availabilityId];
+  let specialistClause = "";
+  if (specialistId) {
+    params.push(specialistId);
+    specialistClause = "and specialist_id = $2";
   }
 
   const result = await query(
     `
       delete from specialist_availability
       where id = $1
+        ${specialistClause}
     `,
-    [availabilityId],
+    params,
   );
 
   if (result.rowCount === 0) {

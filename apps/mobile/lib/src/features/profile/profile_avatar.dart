@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import '../../models/app_models.dart';
+import '../../core/theme/app_palette.dart';
 
 class ProfileAvatar extends StatelessWidget {
   const ProfileAvatar({
@@ -26,8 +27,8 @@ class ProfileAvatar extends StatelessWidget {
 
     return CircleAvatar(
       radius: radius,
-      backgroundColor: const Color(0xFFF4E7D3),
-      foregroundColor: const Color(0xFF182127),
+      backgroundColor: AppPalette.softLilac,
+      foregroundColor: AppPalette.midnight,
       backgroundImage: imageProvider,
       child: imageProvider == null
           ? Text(

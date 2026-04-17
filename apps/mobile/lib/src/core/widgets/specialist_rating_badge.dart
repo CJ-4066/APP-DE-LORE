@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_palette.dart';
 import '../utils/formatters.dart';
 
 class SpecialistRatingBadge extends StatelessWidget {
@@ -7,11 +8,11 @@ class SpecialistRatingBadge extends StatelessWidget {
     super.key,
     required this.rating,
     this.maxStars = 4,
-    this.backgroundColor = const Color(0xFFF7F0E6),
-    this.borderColor = const Color(0xFFE4D2BE),
-    this.filledStarColor = const Color(0xFFC88A2D),
-    this.emptyStarColor = const Color(0xFFBDAE9B),
-    this.textColor = const Color(0xFF5B4B3D),
+    this.backgroundColor = AppPalette.moonIvory,
+    this.borderColor = AppPalette.border,
+    this.filledStarColor = AppPalette.flameGold,
+    this.emptyStarColor = AppPalette.softLilac,
+    this.textColor = AppPalette.indigo,
   });
 
   final double rating;

@@ -1,8 +1,27 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/app_palette.dart';
 import '../../core/utils/formatters.dart';
 import '../../models/app_models.dart';
 import '../../models/booking_models.dart';
+
+const _specialistCommerceGradient = <Color>[
+  AppPalette.midnight,
+  AppPalette.indigo,
+  AppPalette.royalViolet,
+];
+
+const _specialistContentGradient = <Color>[
+  AppPalette.indigo,
+  AppPalette.royalViolet,
+  AppPalette.orchid,
+];
+
+const _specialistCommunityGradient = <Color>[
+  AppPalette.dusk,
+  AppPalette.indigo,
+  AppPalette.roseDust,
+];
 
 class SpecialistWorkspaceScreen extends StatefulWidget {
   const SpecialistWorkspaceScreen({
@@ -60,8 +79,9 @@ class _SpecialistWorkspaceScreenState extends State<SpecialistWorkspaceScreen> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color(0xFFFFF8F0),
-            Color(0xFFFFFCF8),
+            AppPalette.shellGradientTop,
+            AppPalette.shellGradientMid,
+            AppPalette.shellGradientBottom,
           ],
         ),
       ),
@@ -132,7 +152,7 @@ class _SpecialistWorkspaceScreenState extends State<SpecialistWorkspaceScreen> {
       isScrollControlled: true,
       useSafeArea: true,
       showDragHandle: true,
-      backgroundColor: const Color(0xFFFFFCF8),
+      backgroundColor: AppPalette.petalSoft,
       builder: (sheetContext) => _PricingCenterSheet(
         services: services,
         onEdit: (service) {
@@ -149,7 +169,7 @@ class _SpecialistWorkspaceScreenState extends State<SpecialistWorkspaceScreen> {
       isScrollControlled: true,
       useSafeArea: true,
       showDragHandle: true,
-      backgroundColor: const Color(0xFFFFFCF8),
+      backgroundColor: AppPalette.petalSoft,
       builder: (context) => _ServicePriceSheet(service: service),
     );
 
@@ -228,28 +248,28 @@ class _SpecialistMetricGrid extends StatelessWidget {
               icon: Icons.payments_outlined,
               value: '$serviceCount',
               label: 'Servicios',
-              color: const Color(0xFF5C3B52),
+              color: AppPalette.indigo,
             ),
             _MetricTile(
               width: width,
               icon: Icons.calendar_month_outlined,
               value: '$bookingCount',
               label: 'Citas',
-              color: const Color(0xFF4F7B67),
+              color: AppPalette.royalViolet,
             ),
             _MetricTile(
               width: width,
               icon: Icons.picture_as_pdf_outlined,
               value: '$courseCount',
               label: 'Cursos',
-              color: const Color(0xFF8C6239),
+              color: AppPalette.warning,
             ),
             _MetricTile(
               width: width,
               icon: Icons.shopping_bag_outlined,
               value: '$productCount',
               label: 'Productos',
-              color: const Color(0xFF8C4C43),
+              color: AppPalette.berry,
             ),
           ],
         );
@@ -281,7 +301,7 @@ class _MetricTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: const Color(0xFFE7DED3)),
+          border: Border.all(color: AppPalette.borderSoft),
         ),
         padding: const EdgeInsets.all(14),
         child: Row(
@@ -309,7 +329,7 @@ class _MetricTile extends StatelessWidget {
                   Text(
                     label,
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: const Color(0xFF6E625B),
+                          color: AppPalette.mutedLavender,
                           fontWeight: FontWeight.w800,
                         ),
                   ),
@@ -353,11 +373,15 @@ class _PricingCenterCard extends StatelessWidget {
         onTap: onOpen,
         child: Ink(
           decoration: BoxDecoration(
-            color: const Color(0xFF2B2028),
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: _specialistCommerceGradient,
+            ),
             borderRadius: BorderRadius.circular(28),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF5C3B52).withValues(alpha: 0.16),
+                color: AppPalette.indigo.withValues(alpha: 0.22),
                 blurRadius: 24,
                 offset: const Offset(0, 14),
               ),
@@ -378,7 +402,7 @@ class _PricingCenterCard extends StatelessWidget {
                 ),
                 child: const Icon(
                   Icons.payments_outlined,
-                  color: Color(0xFFFFF4E8),
+                  color: AppPalette.candleGlow,
                 ),
               ),
               const SizedBox(width: 14),
@@ -414,12 +438,12 @@ class _PricingCenterCard extends StatelessWidget {
                 width: 42,
                 height: 42,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFF4E8),
+                  color: AppPalette.candleGlow,
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: const Icon(
                   Icons.tune_rounded,
-                  color: Color(0xFF2B2028),
+                  color: AppPalette.butterflyInk,
                 ),
               ),
             ],
@@ -457,7 +481,7 @@ class _ActionDeck extends StatelessWidget {
         Text(
           'Tienda, cursos y comunidad',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: const Color(0xFF241D22),
+                color: AppPalette.butterflyInk,
                 fontWeight: FontWeight.w900,
                 letterSpacing: -0.2,
               ),
@@ -471,11 +495,7 @@ class _ActionDeck extends StatelessWidget {
               : 'Catálogo, fotos y stock',
           actionLabel: 'Administrar tienda',
           icon: Icons.storefront_rounded,
-          gradient: const [
-            Color(0xFF221616),
-            Color(0xFF8C4C43),
-            Color(0xFFE0A06A),
-          ],
+          gradient: _specialistCommerceGradient,
           onTap: onOpenShop,
         ),
         const SizedBox(height: 12),
@@ -487,11 +507,7 @@ class _ActionDeck extends StatelessWidget {
               : 'Biblioteca y materiales',
           actionLabel: 'Gestionar contenido',
           icon: Icons.auto_stories_outlined,
-          gradient: const [
-            Color(0xFF231B12),
-            Color(0xFF8C6239),
-            Color(0xFFD9B16E),
-          ],
+          gradient: _specialistContentGradient,
           onTap: onOpenCourses,
         ),
         const SizedBox(height: 12),
@@ -501,11 +517,7 @@ class _ActionDeck extends StatelessWidget {
           detail: 'Mensajes, acompañamiento y vínculo con clientes',
           actionLabel: 'Abrir comunidad',
           icon: Icons.forum_outlined,
-          gradient: const [
-            Color(0xFF122019),
-            Color(0xFF4F7B67),
-            Color(0xFF9AC3A6),
-          ],
+          gradient: _specialistCommunityGradient,
           onTap: () {
             onOpenCommunityChat();
           },
@@ -590,7 +602,7 @@ class _SpotlightActionCard extends StatelessWidget {
                             ),
                             child: Icon(
                               icon,
-                              color: const Color(0xFFFFF7EE),
+                              color: AppPalette.candleGlow,
                               size: 30,
                             ),
                           ),
@@ -618,7 +630,7 @@ class _SpotlightActionCard extends StatelessWidget {
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
-                                    color: Color(0xFFFFE7CB),
+                                    color: AppPalette.roseQuartz,
                                     fontSize: 13,
                                     fontWeight: FontWeight.w900,
                                     decoration: TextDecoration.none,
@@ -663,7 +675,7 @@ class _SpotlightActionCard extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
-                                color: Color(0xFF2A1E22),
+                                color: AppPalette.butterflyInk,
                                 fontSize: 12,
                                 fontWeight: FontWeight.w900,
                                 decoration: TextDecoration.none,
@@ -672,7 +684,7 @@ class _SpotlightActionCard extends StatelessWidget {
                             const SizedBox(width: 6),
                             const Icon(
                               Icons.arrow_forward_rounded,
-                              color: Color(0xFF2A1E22),
+                              color: AppPalette.butterflyInk,
                               size: 16,
                             ),
                           ],
@@ -714,7 +726,7 @@ class _PricingCenterSheet extends StatelessWidget {
           Text(
             'Servicios y precios',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: const Color(0xFF241D22),
+                  color: AppPalette.butterflyInk,
                   fontWeight: FontWeight.w900,
                 ),
           ),
@@ -722,7 +734,7 @@ class _PricingCenterSheet extends StatelessWidget {
           Text(
             'Administra los valores de tus consultas desde este centro, separado del panel principal.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: const Color(0xFF6E625B),
+                  color: AppPalette.mutedLavender,
                   height: 1.4,
                   fontWeight: FontWeight.w600,
                 ),
@@ -768,7 +780,7 @@ class _ServicePriceCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE7DED3)),
+        border: Border.all(color: AppPalette.borderSoft),
       ),
       padding: const EdgeInsets.all(16),
       child: Row(
@@ -787,7 +799,7 @@ class _ServicePriceCard extends StatelessWidget {
                 Text(
                   '${service.category} · ${service.durationMinutes} min · ${service.deliveryModes.join(', ')}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: const Color(0xFF6E625B),
+                        color: AppPalette.mutedLavender,
                         fontWeight: FontWeight.w700,
                       ),
                 ),
@@ -842,7 +854,7 @@ class _SpecialistBookingCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE7DED3)),
+        border: Border.all(color: AppPalette.borderSoft),
       ),
       padding: const EdgeInsets.all(16),
       child: Row(
@@ -875,7 +887,7 @@ class _SpecialistBookingCard extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: const Color(0xFF6E625B),
+                        color: AppPalette.mutedLavender,
                         fontWeight: FontWeight.w700,
                       ),
                 ),
@@ -994,7 +1006,7 @@ class _ServicePriceSheetState extends State<_ServicePriceSheet> {
             Text(
               _error!,
               style: const TextStyle(
-                color: Color(0xFF8B2C1F),
+                color: AppPalette.berry,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -1041,8 +1053,19 @@ class _ContentQualityCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF24191F),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: _specialistContentGradient,
+        ),
         borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: AppPalette.orchid.withValues(alpha: 0.22),
+            blurRadius: 24,
+            offset: const Offset(0, 14),
+          ),
+        ],
       ),
       padding: const EdgeInsets.all(18),
       child: Column(
@@ -1066,7 +1089,12 @@ class _ContentQualityCard extends StatelessWidget {
           const SizedBox(height: 14),
           OutlinedButton.icon(
             onPressed: onOpenCourses,
-            style: OutlinedButton.styleFrom(foregroundColor: Colors.white),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.white,
+              side: BorderSide(
+                color: Colors.white.withValues(alpha: 0.32),
+              ),
+            ),
             icon: const Icon(Icons.auto_stories_outlined),
             label: const Text('Revisar cursos y PDFs'),
           ),
@@ -1100,7 +1128,7 @@ class _SectionTitle extends StatelessWidget {
         Text(
           subtitle,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: const Color(0xFF5E676E),
+                color: AppPalette.mutedLavender,
                 height: 1.45,
               ),
         ),
@@ -1152,7 +1180,7 @@ class _EmptyPanel extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE7DED3)),
+        border: Border.all(color: AppPalette.borderSoft),
       ),
       padding: const EdgeInsets.all(18),
       child: Column(
@@ -1168,7 +1196,7 @@ class _EmptyPanel extends StatelessWidget {
           Text(
             subtitle,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: const Color(0xFF5E676E),
+                  color: AppPalette.mutedLavender,
                 ),
           ),
         ],
@@ -1205,12 +1233,12 @@ String _bookingStatusLabel(String status) {
 Color _bookingStatusColor(String status) {
   switch (status) {
     case 'confirmed':
-      return const Color(0xFF4F7B67);
+      return AppPalette.royalViolet;
     case 'completed':
-      return const Color(0xFF3E6381);
+      return AppPalette.indigo;
     case 'cancelled':
-      return const Color(0xFF8C4C43);
+      return AppPalette.berry;
     default:
-      return const Color(0xFF8C6239);
+      return AppPalette.warning;
   }
 }

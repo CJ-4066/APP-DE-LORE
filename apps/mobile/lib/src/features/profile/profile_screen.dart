@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/i18n/app_i18n.dart';
+import '../../core/theme/app_palette.dart';
 import '../../core/utils/formatters.dart';
 import '../../models/app_models.dart';
 import 'account_center_screens.dart';
@@ -416,8 +417,8 @@ class ProfileScreen extends StatelessWidget {
                     ListTile(
                       leading: const Icon(Icons.logout),
                       title: const Text('Cerrar sesión'),
-                      textColor: const Color(0xFF8B3A18),
-                      iconColor: const Color(0xFF8B3A18),
+                      textColor: AppPalette.berry,
+                      iconColor: AppPalette.berry,
                       onTap: () async {
                         final confirmed = await showDialog<bool>(
                               context: context,
@@ -493,14 +494,14 @@ class _SpecialistModeCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF211821),
-            Color(0xFF5C3B52),
-            Color(0xFF9E694D),
+            AppPalette.midnight,
+            AppPalette.indigo,
+            AppPalette.orchid,
           ],
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF5C3B52).withValues(alpha: 0.18),
+            color: AppPalette.indigo.withValues(alpha: 0.22),
             blurRadius: 24,
             offset: const Offset(0, 14),
           ),
@@ -575,7 +576,7 @@ class _SpecialistModeCard extends StatelessWidget {
                   ? 'Para administrar primero necesitas registrarte con teléfono y completar tu perfil.'
                   : 'Antes de administrar necesitamos nombre, nacimiento, ciudad, país, zona horaria y coordenadas.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: const Color(0xFFFFD8C5),
+                    color: AppPalette.moonIvory,
                     fontWeight: FontWeight.w700,
                     height: 1.35,
                   ),
@@ -590,7 +591,7 @@ class _SpecialistModeCard extends StatelessWidget {
                   : () => _handleSpecialistModeTap(context),
               style: FilledButton.styleFrom(
                 backgroundColor: Colors.white,
-                foregroundColor: const Color(0xFF211821),
+                foregroundColor: AppPalette.butterflyInk,
               ),
               icon: Icon(
                 isSpecialist
@@ -764,10 +765,10 @@ class _SpecialistModePill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.12),
+        color: Colors.white.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(999),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.16),
+          color: AppPalette.moonIvory.withValues(alpha: 0.22),
         ),
       ),
       child: Text(

@@ -132,8 +132,8 @@ class _CalculationConfigurationPanel extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        color: const Color(0xFFFBF7F2),
-        border: Border.all(color: const Color(0xFFE5D9CB)),
+        color: AppPalette.petalSoft,
+        border: Border.all(color: AppPalette.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,7 +150,7 @@ class _CalculationConfigurationPanel extends StatelessWidget {
             style: TextStyle(
               fontSize: 13.5,
               height: 1.35,
-              color: Color(0xFF5E5750),
+              color: AppPalette.mutedLavender,
             ),
           ),
           const SizedBox(height: 12),
@@ -338,9 +338,9 @@ class _MultiSelectMenuCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppPalette.moonIvory,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE6D3BE)),
+        border: Border.all(color: AppPalette.border),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -361,7 +361,7 @@ class _MultiSelectMenuCard extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 13,
                     height: 1.35,
-                    color: Color(0xFF675F58),
+                    color: AppPalette.mutedLavender,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -370,7 +370,7 @@ class _MultiSelectMenuCard extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF1D252B),
+                    color: AppPalette.butterflyInk,
                   ),
                 ),
               ],
@@ -407,10 +407,9 @@ class _MultiSelectMenuCard extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
-                color:
-                    enabled ? const Color(0xFFF8EFE5) : const Color(0xFFF2EEEA),
+                color: enabled ? AppPalette.petal : AppPalette.mistLilac,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFE1D2C2)),
+                border: Border.all(color: AppPalette.border),
               ),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
@@ -535,22 +534,22 @@ class _BigThreeItemTheme {
       : emoji = '☀️',
         label = 'Sol',
         note = 'Tu identidad esencial',
-        startColor = const Color(0xFFD9813A),
-        endColor = const Color(0xFFF1B24A);
+        startColor = AppPalette.flameGold,
+        endColor = AppPalette.roseDust;
 
   const _BigThreeItemTheme.moon()
       : emoji = '🌙',
         label = 'Luna',
         note = 'Tu mundo emocional',
-        startColor = const Color(0xFF506A8A),
-        endColor = const Color(0xFF8FA7C7);
+        startColor = AppPalette.indigo,
+        endColor = AppPalette.orchid;
 
   const _BigThreeItemTheme.ascendant()
       : emoji = '⬆️',
         label = 'Ascendente',
         note = 'Como te perciben',
-        startColor = const Color(0xFF355B52),
-        endColor = const Color(0xFF5E8C7F);
+        startColor = AppPalette.midnight,
+        endColor = AppPalette.royalViolet;
 
   final String emoji;
   final String label;
@@ -923,7 +922,7 @@ class _PillStat extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE6D3BE)),
+        border: Border.all(color: AppPalette.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -934,7 +933,7 @@ class _PillStat extends StatelessWidget {
             style: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF7D5B47),
+              color: AppPalette.mutedLavender,
             ),
           ),
           const SizedBox(height: 6),
@@ -968,7 +967,7 @@ class _InsightPanel extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        color: const Color(0xFFF9F1E6),
+        color: AppPalette.petal,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -978,7 +977,7 @@ class _InsightPanel extends StatelessWidget {
             height: 42,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: const Color(0xFFEFD8BF),
+              color: AppPalette.roseQuartz,
               borderRadius: BorderRadius.circular(14),
             ),
             child: Text(
@@ -1039,7 +1038,7 @@ class _DetailBox extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE6D3BE)),
+        border: Border.all(color: AppPalette.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1095,13 +1094,13 @@ class _HouseSystemChip extends StatelessWidget {
       label: Text(label),
       selected: selected,
       onSelected: onSelected == null ? null : (_) => onSelected!(),
-      selectedColor: const Color(0xFFF2D5B4),
+      selectedColor: AppPalette.roseQuartz,
       side: BorderSide(
-        color: selected ? const Color(0xFFB26E39) : const Color(0xFFE4D6C7),
+        color: selected ? AppPalette.indigo : AppPalette.border,
       ),
       labelStyle: TextStyle(
         fontWeight: FontWeight.w700,
-        color: selected ? const Color(0xFF6E3F16) : const Color(0xFF453C35),
+        color: selected ? AppPalette.indigo : AppPalette.butterflyInk,
       ),
     );
   }
@@ -1145,7 +1144,7 @@ class _TimelineRow extends StatelessWidget {
           margin: const EdgeInsets.only(top: 4),
           decoration: const BoxDecoration(
             shape: BoxShape.circle,
-            color: Color(0xFFB96C3D),
+            color: AppPalette.royalViolet,
           ),
         ),
         const SizedBox(width: 12),

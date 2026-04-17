@@ -24,6 +24,35 @@ class CreateBookingInput {
   }
 }
 
+class SpecialistAvailabilitySlot {
+  SpecialistAvailabilitySlot({
+    required this.id,
+    required this.specialistId,
+    required this.startsAt,
+    required this.endsAt,
+    required this.mode,
+    required this.isAvailable,
+  });
+
+  final String id;
+  final String specialistId;
+  final String startsAt;
+  final String endsAt;
+  final String mode;
+  final bool isAvailable;
+
+  factory SpecialistAvailabilitySlot.fromJson(Map<String, dynamic> json) {
+    return SpecialistAvailabilitySlot(
+      id: json['id'] as String? ?? '',
+      specialistId: json['specialistId'] as String? ?? '',
+      startsAt: json['startsAt'] as String? ?? '',
+      endsAt: json['endsAt'] as String? ?? '',
+      mode: json['mode'] as String? ?? '',
+      isAvailable: json['isAvailable'] as bool? ?? false,
+    );
+  }
+}
+
 class UpdateBookingInput {
   UpdateBookingInput({
     this.scheduledAt,

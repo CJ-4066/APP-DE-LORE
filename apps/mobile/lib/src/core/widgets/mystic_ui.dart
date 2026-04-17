@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_palette.dart';
+
 enum MysticGlyphKind {
   astral,
   numerology,
@@ -182,7 +184,7 @@ class MysticBannerCard extends StatelessWidget {
               ),
               MysticGlyphBadge(
                 kind: glyphKind,
-                accent: const Color(0xFFFFF5E8),
+                accent: AppPalette.moonIvory,
                 background: Colors.white.withValues(alpha: 0.14),
                 size: 72,
               ),
@@ -249,8 +251,8 @@ class MysticBannerCard extends StatelessWidget {
               FilledButton(
                 onPressed: onPrimaryTap,
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFFFFF4E8),
-                  foregroundColor: const Color(0xFF182127),
+                  backgroundColor: AppPalette.moonIvory,
+                  foregroundColor: AppPalette.midnight,
                 ),
                 child: Text(primaryLabel),
               ),
@@ -296,9 +298,8 @@ class MysticPageDots extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 4),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(999),
-            color: activeIndex == index
-                ? const Color(0xFF182127)
-                : const Color(0xFFD8D3CB),
+            color:
+                activeIndex == index ? AppPalette.indigo : AppPalette.softLilac,
           ),
         ),
       ),
@@ -337,12 +338,13 @@ class MysticMenuTile extends StatelessWidget {
           height: 172,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: selected ? accent.withValues(alpha: 0.14) : Colors.white,
+            color: selected
+                ? accent.withValues(alpha: 0.14)
+                : AppPalette.moonIvory,
             borderRadius: BorderRadius.circular(22),
             border: Border.all(
-              color: selected
-                  ? accent.withValues(alpha: 0.42)
-                  : const Color(0xFFE7DED3),
+              color:
+                  selected ? accent.withValues(alpha: 0.42) : AppPalette.border,
             ),
             boxShadow: selected
                 ? [
@@ -381,7 +383,7 @@ class MysticMenuTile extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: const Color(0xFF54656B),
+                        color: AppPalette.mutedLavender,
                         height: 1.35,
                         decoration: TextDecoration.none,
                       ),
@@ -508,8 +510,8 @@ class MysticMiniBanner extends StatelessWidget {
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(24),
-            color: Colors.white,
-            border: Border.all(color: const Color(0xFFE8DED2)),
+            color: AppPalette.moonIvory,
+            border: Border.all(color: AppPalette.border),
           ),
           child: Row(
             children: [
@@ -539,7 +541,7 @@ class MysticMiniBanner extends StatelessWidget {
                       maxLines: trailing == null ? 3 : 2,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: const Color(0xFF55666C),
+                            color: AppPalette.mutedLavender,
                             height: 1.35,
                             decoration: TextDecoration.none,
                           ),

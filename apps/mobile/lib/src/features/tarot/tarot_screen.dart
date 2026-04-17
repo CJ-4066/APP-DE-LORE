@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 
 import '../../core/config/app_config.dart';
 import '../../core/i18n/app_i18n.dart';
+import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/mystic_ui.dart';
 import '../../models/app_models.dart';
@@ -18,8 +20,8 @@ enum _TarotSpreadFocus {
 const _tarotTransitionDuration = Duration(milliseconds: 260);
 const _tarotTransitionInCurve = Curves.easeOutCubic;
 const _tarotTransitionOutCurve = Curves.easeInCubic;
-const _tarotSecondaryText = Color(0xFF4A5560);
-const _tarotMutedText = Color(0xFF5A6470);
+const _tarotSecondaryText = AppPalette.butterflyInk;
+const _tarotMutedText = AppPalette.mutedLavender;
 
 class _TarotCatalog {
   const _TarotCatalog({
@@ -144,7 +146,6 @@ class _TarotScreenState extends State<TarotScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
     final dailyCard = widget.data.home.cardOfTheDay;
     final tarotServices = _catalog.services;
     final featuredServiceId =
@@ -156,8 +157,9 @@ class _TarotScreenState extends State<TarotScreen> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color(0xFFFFF7F1),
-            Color(0xFFFFFCF8),
+            AppPalette.shellGradientTop,
+            AppPalette.shellGradientMid,
+            AppPalette.shellGradientBottom,
           ],
         ),
       ),
@@ -179,7 +181,6 @@ class _TarotScreenState extends State<TarotScreen> {
                 onOpenSpread: () => _openDailyCompleteSpread(
                   featuredServiceId: featuredServiceId,
                 ),
-                headerLabel: l10n.tr('arcanaOfDay'),
                 isLoading: _isRefreshing,
               ),
             ],
@@ -227,9 +228,9 @@ class _TarotSkeletonCard extends StatelessWidget {
       height: height,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppPalette.moonIvory,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE7DED3)),
+        border: Border.all(color: AppPalette.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -298,9 +299,9 @@ class _TarotSkeletonBoxState extends State<_TarotSkeletonBox>
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
               colors: [
-                const Color(0xFF8B6B54).withValues(alpha: alpha),
-                const Color(0xFF8B6B54).withValues(alpha: alpha + 0.06),
-                const Color(0xFF8B6B54).withValues(alpha: alpha),
+                AppPalette.orchid.withValues(alpha: alpha),
+                AppPalette.royalViolet.withValues(alpha: alpha + 0.06),
+                AppPalette.orchid.withValues(alpha: alpha),
               ],
             ),
           ),
@@ -319,7 +320,6 @@ class _TarotHeroCard extends StatelessWidget {
     required this.onTap,
     required this.onSchedule,
     required this.onOpenSpread,
-    required this.headerLabel,
     this.isLoading = false,
   });
 
@@ -330,7 +330,6 @@ class _TarotHeroCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback? onSchedule;
   final VoidCallback onOpenSpread;
-  final String headerLabel;
   final bool isLoading;
 
   @override
@@ -359,11 +358,15 @@ class _TarotHeroCard extends StatelessWidget {
                   cardName: cardName,
                   cardRitual: cardRitual,
                   imageUrl: cardImageUrl,
-                  headerLabel: headerLabel,
                   centerFooter: true,
                   centerHeader: true,
+                  showHeader: false,
                   showMetaFooter: false,
                   showRefreshLabel: false,
+                  maxFaceHeight: double.infinity,
+                  imageFit: BoxFit.contain,
+                  imageScale: 1,
+                  faceAspectRatio: cardName == 'El Mundo' ? 0.59 : 0.78,
                 ),
         );
 
@@ -374,7 +377,7 @@ class _TarotHeroCard extends StatelessWidget {
                   FilledButton.icon(
                     onPressed: onSchedule,
                     style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFF7B2D94),
+                      backgroundColor: AppPalette.royalViolet,
                       foregroundColor: Colors.white,
                     ),
                     icon: const Icon(Icons.calendar_month_outlined),
@@ -384,9 +387,9 @@ class _TarotHeroCard extends StatelessWidget {
                   OutlinedButton.icon(
                     onPressed: onOpenSpread,
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF7B2D94),
-                      side: const BorderSide(color: Color(0xFFD6BDE7)),
-                      backgroundColor: Colors.white,
+                      foregroundColor: AppPalette.indigo,
+                      side: const BorderSide(color: AppPalette.border),
+                      backgroundColor: AppPalette.moonIvory,
                     ),
                     icon: const Icon(Icons.auto_awesome_outlined),
                     label: Text(l10n.tr('tarotOpenSpread')),
@@ -400,7 +403,7 @@ class _TarotHeroCard extends StatelessWidget {
                   FilledButton.icon(
                     onPressed: onSchedule,
                     style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFF7B2D94),
+                      backgroundColor: AppPalette.royalViolet,
                       foregroundColor: Colors.white,
                     ),
                     icon: const Icon(Icons.calendar_month_outlined),
@@ -409,9 +412,9 @@ class _TarotHeroCard extends StatelessWidget {
                   OutlinedButton.icon(
                     onPressed: onOpenSpread,
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF7B2D94),
-                      side: const BorderSide(color: Color(0xFFD6BDE7)),
-                      backgroundColor: Colors.white,
+                      foregroundColor: AppPalette.indigo,
+                      side: const BorderSide(color: AppPalette.border),
+                      backgroundColor: AppPalette.moonIvory,
                     ),
                     icon: const Icon(Icons.auto_awesome_outlined),
                     label: Text(l10n.tr('tarotOpenSpread')),
@@ -422,18 +425,13 @@ class _TarotHeroCard extends StatelessWidget {
         final heroHeader = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _InfoPill(
-              label: headerLabel,
-              accent: const Color(0xFF7B2D94),
-            ),
-            const SizedBox(height: 12),
             if (isLoading)
               const _TarotSkeletonBox(width: 190, height: 24, radius: 12)
             else
               Text(
                 cardName,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: const Color(0xFF35203F),
+                      color: AppPalette.midnight,
                       fontWeight: FontWeight.w900,
                       height: 1.02,
                     ),
@@ -471,7 +469,7 @@ class _TarotHeroCard extends StatelessWidget {
                 title: l10n.tr('tarotHeroMessageTitle'),
                 body: cardMessage,
                 icon: Icons.menu_book_outlined,
-                accent: const Color(0xFF7B2D94),
+                accent: AppPalette.royalViolet,
               ),
             const SizedBox(height: 12),
             if (isLoading)
@@ -481,7 +479,7 @@ class _TarotHeroCard extends StatelessWidget {
                 title: l10n.tr('tarotHeroActionTitle'),
                 body: cardRitual,
                 icon: Icons.bolt_outlined,
-                accent: const Color(0xFF8B5A3C),
+                accent: AppPalette.flameGold,
               ),
             const SizedBox(height: 16),
             if (isLoading)
@@ -523,17 +521,17 @@ class _TarotHeroCard extends StatelessWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Color(0xFFFFFCFA),
-                    Color(0xFFFDF1F8),
-                    Color(0xFFF5EEFF),
+                    AppPalette.moonIvory,
+                    AppPalette.mistLilac,
+                    AppPalette.softLilac,
                   ],
                 ),
-                border: Border.all(color: const Color(0xFFE9D9F2)),
-                boxShadow: const [
+                border: Border.all(color: AppPalette.border),
+                boxShadow: [
                   BoxShadow(
-                    color: Color(0x22B07CC9),
+                    color: AppPalette.orchid.withValues(alpha: 0.22),
                     blurRadius: 24,
-                    offset: Offset(0, 16),
+                    offset: const Offset(0, 16),
                   ),
                 ],
               ),
@@ -652,9 +650,9 @@ class _DailyCompleteSpreadScreenState
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Color(0xFFFFF8F2),
-                Color(0xFFFFFCF9),
-                Color(0xFFF8F3FF),
+                AppPalette.shellGradientTop,
+                AppPalette.shellGradientMid,
+                AppPalette.shellGradientBottom,
               ],
             ),
           ),
@@ -677,9 +675,9 @@ class _DailyCompleteSpreadScreenState
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFFFFF8F2),
-              Color(0xFFFFFCF9),
-              Color(0xFFF8F3FF),
+              AppPalette.shellGradientTop,
+              AppPalette.shellGradientMid,
+              AppPalette.shellGradientBottom,
             ],
           ),
         ),
@@ -705,7 +703,7 @@ class _DailyCompleteSpreadScreenState
                               .headlineSmall
                               ?.copyWith(
                                 fontWeight: FontWeight.w900,
-                                color: const Color(0xFF35203F),
+                                color: AppPalette.midnight,
                               ),
                         ),
                         const SizedBox(height: 4),
@@ -738,7 +736,7 @@ class _DailyCompleteSpreadScreenState
                     const SizedBox(height: 14),
                     _InfoPill(
                       label: l10n.tr('tarotDailySpreadScreenHint'),
-                      accent: const Color(0xFF7B2D94),
+                      accent: AppPalette.royalViolet,
                     ),
                   ],
                 ),
@@ -783,8 +781,8 @@ class _DailyCompleteSpreadScreenState
                     height: 8,
                     decoration: BoxDecoration(
                       color: index == _activeIndex
-                          ? const Color(0xFF7B2D94)
-                          : const Color(0xFFD9C9E7),
+                          ? AppPalette.royalViolet
+                          : AppPalette.border,
                       borderRadius: BorderRadius.circular(999),
                     ),
                   ),
@@ -952,7 +950,7 @@ class _DailySpreadActivePanel extends StatelessWidget {
           ),
           textAlign: TextAlign.center,
           style: const TextStyle(
-            color: Color(0xFF7B2D94),
+            color: AppPalette.royalViolet,
             fontSize: 12,
             fontWeight: FontWeight.w800,
             letterSpacing: 0.35,
@@ -963,7 +961,7 @@ class _DailySpreadActivePanel extends StatelessWidget {
           item.positionLabel,
           textAlign: TextAlign.center,
           style: const TextStyle(
-            color: Color(0xFF8B6B54),
+            color: AppPalette.flameGold,
             fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
@@ -1039,7 +1037,7 @@ class _DailySpreadSequenceRow extends StatelessWidget {
                       item.card.name,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w800,
-                            color: const Color(0xFF35203F),
+                            color: AppPalette.midnight,
                           ),
                     ),
                     const SizedBox(height: 4),
@@ -1059,7 +1057,7 @@ class _DailySpreadSequenceRow extends StatelessWidget {
             const SizedBox(height: 14),
             const Divider(
               height: 1,
-              color: Color(0xFFE9E0D7),
+              color: AppPalette.border,
             ),
           ],
         ],
@@ -1139,29 +1137,41 @@ class _DailyTarotCardArt extends StatefulWidget {
     required this.cardName,
     required this.cardRitual,
     this.imageUrl = '',
-    this.headerLabel = 'Arcano de hoy',
+    this.showHeader = true,
     this.centerFooter = false,
     this.showRefreshLabel = true,
     this.centerHeader = false,
     this.showMetaFooter = true,
+    this.maxFaceHeight = 168,
+    this.imageFit = BoxFit.contain,
+    this.imageScale = 1,
+    this.faceAspectRatio = 0.78,
   });
 
   final String cardName;
   final String cardRitual;
   final String imageUrl;
-  final String headerLabel;
+  final bool showHeader;
   final bool centerFooter;
   final bool showRefreshLabel;
   final bool centerHeader;
   final bool showMetaFooter;
+  final double maxFaceHeight;
+  final BoxFit imageFit;
+  final double imageScale;
+  final double faceAspectRatio;
 
   @override
   State<_DailyTarotCardArt> createState() => _DailyTarotCardArtState();
 }
 
 class _DailyTarotCardArtState extends State<_DailyTarotCardArt>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final AnimationController _controller;
+  late final AnimationController _dragController;
+  Animation<double>? _dragAnimation;
+  double _dragTurn = 0;
+  int _dragSequence = 0;
 
   @override
   void initState() {
@@ -1170,12 +1180,115 @@ class _DailyTarotCardArtState extends State<_DailyTarotCardArt>
       vsync: this,
       duration: const Duration(seconds: 9),
     )..repeat(reverse: true);
+    _dragController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 360),
+    )..addListener(() {
+        final dragAnimation = _dragAnimation;
+        if (dragAnimation == null || !mounted) {
+          return;
+        }
+        setState(() {
+          _dragTurn = dragAnimation.value;
+        });
+      });
   }
 
   @override
   void dispose() {
+    _dragController.dispose();
     _controller.dispose();
     super.dispose();
+  }
+
+  void _handleHorizontalDragStart(DragStartDetails details) {
+    _dragSequence += 1;
+    if (_dragController.isAnimating) {
+      _dragController.stop();
+    }
+  }
+
+  void _handleHorizontalDragUpdate(DragUpdateDetails details) {
+    final delta = details.primaryDelta ?? details.delta.dx;
+    final nextTurn = (_dragTurn + (delta * 0.0032)).clamp(-0.24, 0.24);
+    if ((nextTurn - _dragTurn).abs() < 0.0001) {
+      return;
+    }
+    if (_dragController.isAnimating) {
+      _dragController.stop();
+    }
+    setState(() {
+      _dragTurn = nextTurn;
+    });
+  }
+
+  Future<void> _handleHorizontalDragEnd(DragEndDetails details) async {
+    final sequence = ++_dragSequence;
+    final velocityKick = (details.velocity.pixelsPerSecond.dx / 5400)
+        .clamp(-0.09, 0.09)
+        .toDouble();
+    final overshoot = (_dragTurn + velocityKick).clamp(-0.28, 0.28).toDouble();
+
+    await _animateDragTurnTo(
+      overshoot,
+      duration: const Duration(milliseconds: 110),
+      curve: Curves.easeOut,
+    );
+    if (!mounted || sequence != _dragSequence) {
+      return;
+    }
+    await _animateDragTurnTo(
+      0,
+      duration: const Duration(milliseconds: 420),
+      curve: Curves.easeOutBack,
+    );
+  }
+
+  Future<void> _handleHorizontalDragCancel() {
+    final sequence = ++_dragSequence;
+    return _animateBackToCenter(sequence);
+  }
+
+  Future<void> _animateBackToCenter(int sequence) async {
+    await _animateDragTurnTo(
+      0,
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeOutCubic,
+    );
+    if (!mounted || sequence != _dragSequence) {
+      return;
+    }
+  }
+
+  Future<void> _animateDragTurnTo(
+    double target, {
+    required Duration duration,
+    required Curve curve,
+  }) async {
+    if ((_dragTurn - target).abs() < 0.0001) {
+      if (mounted && target == 0 && _dragTurn != 0) {
+        setState(() {
+          _dragTurn = 0;
+        });
+      }
+      return;
+    }
+    _dragAnimation = Tween<double>(
+      begin: _dragTurn,
+      end: target,
+    ).animate(
+      CurvedAnimation(
+        parent: _dragController,
+        curve: curve,
+      ),
+    );
+    _dragController.duration = duration;
+    _dragController.reset();
+    try {
+      await _dragController.forward().orCancel;
+    } on TickerCanceled {
+      return;
+    }
   }
 
   @override
@@ -1188,27 +1301,38 @@ class _DailyTarotCardArtState extends State<_DailyTarotCardArt>
     final assetPath = _buildTarotCardAssetPath(widget.cardName);
     final hasImage = assetPath.isNotEmpty || resolvedImageUrl.isNotEmpty;
 
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, _) {
-        final phase = _controller.value * pi * 2;
-        final tiltX = sin(phase) * 0.07;
-        final tiltY = cos(phase * 0.86) * 0.12;
-        final floatY = sin(phase * 1.35) * 6;
-        final glow = 0.12 + (sin(phase * 1.5) + 1) * 0.04;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onHorizontalDragStart: _handleHorizontalDragStart,
+      onHorizontalDragUpdate: _handleHorizontalDragUpdate,
+      onHorizontalDragEnd: _handleHorizontalDragEnd,
+      onHorizontalDragCancel: _handleHorizontalDragCancel,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, _) {
+          final phase = _controller.value * pi * 2;
+          final tiltX = sin(phase) * 0.07;
+          final tiltY = cos(phase * 0.86) * 0.12;
+          final floatY = sin(phase * 1.35) * 6;
+          final glow = 0.12 + (sin(phase * 1.5) + 1) * 0.04;
+          final interactiveYaw = -_dragTurn * 1.28;
+          final interactiveRoll = _dragTurn * 0.34;
+          final interactiveLift = _dragTurn.abs() * 0.05;
+          final interactiveShiftX = _dragTurn * 18;
 
-        return Transform(
-          alignment: Alignment.center,
-          transform: Matrix4.identity()
-            ..setEntry(3, 2, 0.0018)
-            ..rotateX(tiltX)
-            ..rotateY(tiltY)
-            ..translateByDouble(0.0, floatY, 0.0, 1.0),
-          child: AspectRatio(
-            aspectRatio: 0.64,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
+          return Transform(
+            alignment: Alignment.center,
+            transform: Matrix4.identity()
+              ..setEntry(3, 2, 0.0018)
+              ..rotateX(tiltX + interactiveLift)
+              ..rotateY(tiltY + interactiveYaw)
+              ..rotateZ(interactiveRoll)
+              ..translateByDouble(interactiveShiftX, floatY, 0.0, 1.0),
+            child: AspectRatio(
+              aspectRatio: 0.64,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
                 Positioned(
                   left: 12,
                   top: 14,
@@ -1280,36 +1404,45 @@ class _DailyTarotCardArtState extends State<_DailyTarotCardArt>
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
+                          padding: EdgeInsets.fromLTRB(
+                            14,
+                            widget.showHeader ? 14 : 12,
+                            14,
+                            widget.showMetaFooter ? 16 : 12,
+                          ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              SizedBox(
-                                width: double.infinity,
-                                child: Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    Align(
-                                      alignment: widget.centerHeader
-                                          ? Alignment.center
-                                          : Alignment.centerLeft,
-                                      child: _InfoPill(
-                                        label: widget.headerLabel,
-                                        accent: style.accent,
+                              if (widget.showHeader) ...[
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      Align(
+                                        alignment: widget.centerHeader
+                                            ? Alignment.center
+                                            : Alignment.centerLeft,
+                                        child: _InfoPill(
+                                          label: context.l10n.tr(
+                                            'arcanaOfDay',
+                                          ),
+                                          accent: style.accent,
+                                        ),
                                       ),
-                                    ),
-                                    Positioned(
-                                      right: 0,
-                                      child: Icon(
-                                        style.icon,
-                                        color: style.accent,
-                                        size: 18,
+                                      Positioned(
+                                        right: 0,
+                                        child: Icon(
+                                          style.icon,
+                                          color: style.accent,
+                                          size: 18,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 12),
+                                const SizedBox(height: 12),
+                              ],
                               Expanded(
                                 child: _TarotCardFace(
                                   assetPath: assetPath,
@@ -1317,6 +1450,10 @@ class _DailyTarotCardArtState extends State<_DailyTarotCardArt>
                                   accent: style.accent,
                                   borderColor:
                                       style.accent.withValues(alpha: 0.16),
+                                  maxHeight: widget.maxFaceHeight,
+                                  imageFit: widget.imageFit,
+                                  imageScale: widget.imageScale,
+                                  aspectRatio: widget.faceAspectRatio,
                                   fallback: _TarotCardGlyph(
                                     cardName: widget.cardName,
                                     icon: style.icon,
@@ -1407,11 +1544,12 @@ class _DailyTarotCardArtState extends State<_DailyTarotCardArt>
                     ),
                   ),
                 ),
-              ],
+                ],
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }
@@ -1423,6 +1561,10 @@ class _TarotCardFace extends StatelessWidget {
     required this.accent,
     required this.borderColor,
     required this.fallback,
+    this.maxHeight = 168,
+    this.imageFit = BoxFit.contain,
+    this.imageScale = 1,
+    this.aspectRatio = 0.78,
   });
 
   final String assetPath;
@@ -1430,6 +1572,10 @@ class _TarotCardFace extends StatelessWidget {
   final Color accent;
   final Color borderColor;
   final Widget fallback;
+  final double maxHeight;
+  final BoxFit imageFit;
+  final double imageScale;
+  final double aspectRatio;
 
   @override
   Widget build(BuildContext context) {
@@ -1438,7 +1584,7 @@ class _TarotCardFace extends StatelessWidget {
     return Center(
       child: Container(
         width: double.infinity,
-        constraints: const BoxConstraints(maxHeight: 168),
+        constraints: BoxConstraints(maxHeight: maxHeight),
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(22),
@@ -1446,16 +1592,20 @@ class _TarotCardFace extends StatelessWidget {
           border: Border.all(color: borderColor),
         ),
         child: AspectRatio(
-          aspectRatio: 0.78,
+          aspectRatio: aspectRatio,
           child: hasImage
               ? Stack(
                   fit: StackFit.expand,
                   children: [
-                    _TarotCardArtwork(
-                      assetPath: assetPath,
-                      imageUrl: imageUrl,
-                      accent: accent,
-                      fallback: fallback,
+                    Transform.scale(
+                      scale: imageScale,
+                      child: _TarotCardArtwork(
+                        assetPath: assetPath,
+                        imageUrl: imageUrl,
+                        accent: accent,
+                        fit: imageFit,
+                        fallback: fallback,
+                      ),
                     ),
                     DecoratedBox(
                       decoration: BoxDecoration(
@@ -1483,6 +1633,7 @@ class _TarotCardArtwork extends StatelessWidget {
     required this.assetPath,
     required this.imageUrl,
     required this.accent,
+    required this.fit,
     required this.fallback,
     this.loaderSize = 22,
     this.loaderStrokeWidth = 2.2,
@@ -1491,6 +1642,7 @@ class _TarotCardArtwork extends StatelessWidget {
   final String assetPath;
   final String imageUrl;
   final Color accent;
+  final BoxFit fit;
   final Widget fallback;
   final double loaderSize;
   final double loaderStrokeWidth;
@@ -1500,7 +1652,7 @@ class _TarotCardArtwork extends StatelessWidget {
     if (assetPath.isNotEmpty) {
       return Image.asset(
         assetPath,
-        fit: BoxFit.contain,
+        fit: fit,
         alignment: Alignment.center,
         errorBuilder: (_, __, ___) => _buildNetworkFallback(),
       );
@@ -1516,7 +1668,7 @@ class _TarotCardArtwork extends StatelessWidget {
 
     return Image.network(
       imageUrl,
-      fit: BoxFit.contain,
+      fit: fit,
       alignment: Alignment.center,
       errorBuilder: (_, __, ___) => fallback,
       loadingBuilder: (context, child, progress) {
@@ -2135,58 +2287,77 @@ class _TarotCardScene extends StatelessWidget {
   List<Widget> _buildWorldScene() {
     return [
       Positioned.fill(
-        child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(10),
           child: Container(
-            width: 118,
-            height: 118,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  style.paperEnd.withValues(alpha: 0.96),
+                  style.paperMid.withValues(alpha: 0.9),
+                  style.paperStart.withValues(alpha: 0.82),
+                ],
+              ),
               border: Border.all(
                 color: style.accent.withValues(alpha: 0.74),
-                width: 6,
+                width: 7,
               ),
             ),
-            child: Icon(
-              Icons.public_rounded,
-              size: 52,
-              color: style.accent,
+            child: Center(
+              child: Container(
+                width: 96,
+                height: 96,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: style.accent.withValues(alpha: 0.12),
+                  border: Border.all(
+                    color: style.accent.withValues(alpha: 0.18),
+                  ),
+                ),
+                child: Icon(
+                  Icons.public_rounded,
+                  size: 68,
+                  color: style.accent,
+                ),
+              ),
             ),
           ),
         ),
       ),
       Positioned(
-        top: 30,
-        left: 36,
+        top: 18,
+        left: 20,
         child: Icon(
           Icons.spa_rounded,
-          size: 20,
+          size: 22,
           color: style.accent.withValues(alpha: 0.58),
         ),
       ),
       Positioned(
-        top: 30,
-        right: 36,
+        top: 18,
+        right: 20,
         child: Icon(
           Icons.spa_rounded,
-          size: 20,
+          size: 22,
           color: style.accent.withValues(alpha: 0.58),
         ),
       ),
       Positioned(
-        bottom: 30,
-        left: 36,
+        bottom: 18,
+        left: 20,
         child: Icon(
           Icons.spa_rounded,
-          size: 20,
+          size: 22,
           color: style.accent.withValues(alpha: 0.58),
         ),
       ),
       Positioned(
-        bottom: 30,
-        right: 36,
+        bottom: 18,
+        right: 20,
         child: Icon(
           Icons.spa_rounded,
-          size: 20,
+          size: 22,
           color: style.accent.withValues(alpha: 0.58),
         ),
       ),
@@ -2403,26 +2574,27 @@ class _TarotCardPoster extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppPalette.moonIvory,
             borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: const Color(0xFFE7DED3)),
-            boxShadow: const [
+            border: Border.all(color: AppPalette.border),
+            boxShadow: [
               BoxShadow(
-                color: Color(0x1F4A2F1C),
+                color: AppPalette.indigo.withValues(alpha: 0.14),
                 blurRadius: 26,
-                offset: Offset(0, 18),
+                offset: const Offset(0, 18),
               ),
             ],
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(22),
             child: ColoredBox(
-              color: const Color(0xFFF9F5EF),
+              color: AppPalette.moonIvory,
               child: hasImage
                   ? _TarotCardArtwork(
                       assetPath: assetPath,
                       imageUrl: resolvedImageUrl,
                       accent: style.accent,
+                      fit: BoxFit.contain,
                       fallback: fallback,
                       loaderSize: 24,
                       loaderStrokeWidth: 2.4,
@@ -2638,9 +2810,9 @@ class _SurfaceCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppPalette.moonIvory,
         borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: const Color(0xFFE7DED3)),
+        border: Border.all(color: AppPalette.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2682,7 +2854,7 @@ class _TarotCardDetailSheet extends StatelessWidget {
       heightFactor: 0.92,
       child: Container(
         decoration: const BoxDecoration(
-          color: Color(0xFFFFFCF8),
+          color: AppPalette.moonIvory,
           borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
         ),
         child: SingleChildScrollView(
@@ -2695,7 +2867,7 @@ class _TarotCardDetailSheet extends StatelessWidget {
                   width: 48,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE3D7CB),
+                    color: AppPalette.border,
                     borderRadius: BorderRadius.circular(99),
                   ),
                 ),
@@ -2715,7 +2887,7 @@ class _TarotCardDetailSheet extends StatelessWidget {
                     ? interpretation
                     : '$userName, $interpretation',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: const Color(0xFF4F5960),
+                      color: _tarotSecondaryText,
                       height: 1.45,
                     ),
               ),
@@ -2729,7 +2901,7 @@ class _TarotCardDetailSheet extends StatelessWidget {
                     .map(
                       (keyword) => _InfoPill(
                         label: keyword,
-                        accent: const Color(0xFF7B2D94),
+                        accent: AppPalette.royalViolet,
                       ),
                     )
                     .toList(),
@@ -2738,21 +2910,21 @@ class _TarotCardDetailSheet extends StatelessWidget {
               _TarotInsightCard(
                 title: l10n.tr('tarotWhatAsksToday'),
                 body: item.card.action,
-                accent: const Color(0xFF7C4023),
+                accent: AppPalette.royalViolet,
                 icon: Icons.bolt_rounded,
               ),
               const SizedBox(height: 10),
               _TarotInsightCard(
                 title: l10n.tr('tarotWhatAvoidToday'),
                 body: item.card.caution,
-                accent: const Color(0xFF8B5E34),
+                accent: AppPalette.flameGold,
                 icon: Icons.visibility_outlined,
               ),
               const SizedBox(height: 10),
               _TarotInsightCard(
                 title: l10n.tr('tarotGuidingQuestion'),
                 body: reflectionQuestion,
-                accent: const Color(0xFF5E4A8D),
+                accent: AppPalette.indigo,
                 icon: Icons.help_outline_rounded,
               ),
               const SizedBox(height: 16),
@@ -2776,7 +2948,7 @@ class _DetailSectionLabel extends StatelessWidget {
     return Text(
       label,
       style: const TextStyle(
-        color: Color(0xFF9A5A33),
+        color: AppPalette.royalViolet,
         fontSize: 12,
         fontWeight: FontWeight.w800,
         letterSpacing: 0.35,
@@ -2866,7 +3038,7 @@ class _InfoPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final chipAccent = accent ?? const Color(0xFF6C675F);
+    final chipAccent = accent ?? AppPalette.mutedLavender;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),

@@ -1,16 +1,16 @@
 import type { FastifyInstance } from "fastify";
 
-import {
-  getBootstrap,
-  getUserIdForAccessToken,
-} from "../../data/persistent-store.js";
-import { readAccessToken } from "../shared/auth.js";
+import { getBootstrap } from "../../data/persistent-store.js";
+import { requireAuthenticatedUser } from "../shared/access.js";
 
 export async function registerBootstrapRoutes(app: FastifyInstance) {
-  app.get("/", async (request) => {
-    const accessToken = readAccessToken(request.headers.authorization);
-    const userId =
-      (await getUserIdForAccessToken(accessToken ?? undefined)) ?? undefined;
+  app.get("/", async (request, reply) => {
+    const userId = await requireAuthenticatedUser(request, reply);
+    if (!userId) {
+      return {
+        error: "Inicia sesión para cargar tu espacio personal.",
+      };
+    }
 
     return getBootstrap(userId);
   });

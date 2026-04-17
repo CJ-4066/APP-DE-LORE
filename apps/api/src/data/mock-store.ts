@@ -60,6 +60,7 @@ export interface UserProfile {
   zodiacSign: string;
   planId: string;
   accountType: AccountType;
+  specialistProfileId?: string;
   natalChart: NatalChart;
   preferences: UserPreferences;
 }
@@ -336,6 +337,7 @@ export interface UpdateUserProfileInput {
   location?: string;
   zodiacSign?: string;
   accountType?: AccountType;
+  specialistProfileId?: string;
   natalChart?: Partial<NatalChart>;
   preferences?: Partial<UserPreferences>;
 }
@@ -1014,6 +1016,7 @@ let currentUser: UserProfile = {
   zodiacSign: "Sagitario",
   planId: "free",
   accountType: "specialist",
+  specialistProfileId: "spec-amaya",
   natalChart: {
     subjectName: "Mark",
     birthDate: "2000-11-28",
@@ -1580,6 +1583,7 @@ function buildPendingPhoneAuthUser(phoneNumber: string): UserProfile {
     zodiacSign: "",
     planId: "free",
     accountType: "client",
+    specialistProfileId: "",
     natalChart: {
       subjectName: "",
       birthDate: "",
@@ -1842,9 +1846,18 @@ export function updateShopOrderStatus(
 
 export function getBookings(userId?: string): Booking[] {
   const user = getUserById(userId);
+  const specialistScope =
+    user.accountType === "specialist" &&
+    Boolean(user.specialistProfileId?.trim());
 
   return [...bookings]
-    .filter((booking) => booking.userId === user.id)
+    .filter((booking) => {
+      if (specialistScope) {
+        return booking.specialistId === user.specialistProfileId;
+      }
+
+      return booking.userId === user.id;
+    })
     .sort((left, right) => left.scheduledAt.localeCompare(right.scheduledAt));
 }
 
@@ -1869,8 +1882,15 @@ export function setBookingStatus(
   userId?: string,
 ): Booking {
   const user = getUserById(userId);
+  const specialistScope =
+    user.accountType === "specialist" &&
+    Boolean(user.specialistProfileId?.trim());
   const bookingIndex = bookings.findIndex(
-    (item) => item.id === bookingId && item.userId === user.id,
+    (item) =>
+      item.id === bookingId &&
+      (specialistScope
+        ? item.specialistId === user.specialistProfileId
+        : item.userId === user.id),
   );
 
   if (bookingIndex < 0) {
@@ -2072,6 +2092,8 @@ export function updateCurrentUser(
     avatarUrl: input.avatarUrl ?? existingUser.avatarUrl,
     location: input.location ?? existingUser.location,
     accountType: input.accountType ?? existingUser.accountType,
+    specialistProfileId:
+      input.specialistProfileId ?? existingUser.specialistProfileId,
     timezone: input.natalChart?.timeZoneId?.trim() || existingUser.timezone,
     zodiacSign:
       requestedZodiacSign == null
@@ -2219,6 +2241,7 @@ export function completePhoneProfile(
       email: input.email?.trim(),
       location: normalizedLocation,
       accountType: input.accountType ?? "client",
+      specialistProfileId: "",
       zodiacSign: input.zodiacSign?.trim() || inferZodiacSign(input.birthDate),
       natalChart: {
         subjectName: input.subjectName?.trim(),
@@ -2317,8 +2340,15 @@ export function updateBooking(
   userId?: string,
 ): Booking {
   const user = getUserById(userId);
+  const specialistScope =
+    user.accountType === "specialist" &&
+    Boolean(user.specialistProfileId?.trim());
   const bookingIndex = bookings.findIndex(
-    (item) => item.id === bookingId && item.userId === user.id,
+    (item) =>
+      item.id === bookingId &&
+      (specialistScope
+        ? item.specialistId === user.specialistProfileId
+        : item.userId === user.id),
   );
 
   if (bookingIndex < 0) {

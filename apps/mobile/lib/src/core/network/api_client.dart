@@ -218,6 +218,31 @@ class ApiClient {
     return Booking.fromJson(response['item'] as Map<String, dynamic>);
   }
 
+  Future<List<SpecialistAvailabilitySlot>> fetchSpecialistAvailability({
+    required String specialistId,
+    required DateTime from,
+    required DateTime to,
+    String? mode,
+    String? serviceId,
+  }) async {
+    final response = await _send(
+      method: 'GET',
+      path: '/api/specialists/$specialistId/availability',
+      queryParameters: {
+        'from': from.toUtc().toIso8601String(),
+        'to': to.toUtc().toIso8601String(),
+        if (mode != null && mode.isNotEmpty) 'mode': mode,
+        if (serviceId != null && serviceId.isNotEmpty) 'serviceId': serviceId,
+      },
+    );
+
+    final items = response['items'] as List<dynamic>? ?? const <dynamic>[];
+    return items
+        .whereType<Map<String, dynamic>>()
+        .map(SpecialistAvailabilitySlot.fromJson)
+        .toList();
+  }
+
   Future<Booking> updateBooking({
     required String accessToken,
     required String bookingId,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/app_palette.dart';
 import '../../core/widgets/mystic_ui.dart';
 import '../../models/app_models.dart';
 
@@ -45,8 +46,8 @@ class _CoursesScreenState extends State<CoursesScreen> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color(0xFFFFF8F1),
-            Color(0xFFF8F3ED),
+            AppPalette.shellGradientTop,
+            AppPalette.shellGradientBottom,
           ],
         ),
       ),
@@ -63,9 +64,9 @@ class _CoursesScreenState extends State<CoursesScreen> {
                     'Por ahora esta pestaña queda intencionalmente mínima para no competir con Inicio, Tarot y Citas.',
                 glyphKind: MysticGlyphKind.course,
                 gradient: const [
-                  Color(0xFF1B2029),
-                  Color(0xFF5B4B41),
-                  Color(0xFFB68B61),
+                  AppPalette.midnight,
+                  AppPalette.indigo,
+                  AppPalette.orchid,
                 ],
                 tags: [
                   '$ritualsCount rituales base',
@@ -154,8 +155,8 @@ class _CourseManagerView extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color(0xFFFFF8F1),
-            Color(0xFFF8F3ED),
+            AppPalette.shellGradientTop,
+            AppPalette.shellGradientBottom,
           ],
         ),
       ),
@@ -172,9 +173,9 @@ class _CourseManagerView extends StatelessWidget {
                     'Administra rutas formativas, lecciones, materiales descargables y estado de publicación.',
                 glyphKind: MysticGlyphKind.course,
                 gradient: const [
-                  Color(0xFF1B2029),
-                  Color(0xFF5B4B41),
-                  Color(0xFFB68B61),
+                  AppPalette.midnight,
+                  AppPalette.indigo,
+                  AppPalette.orchid,
                 ],
                 tags: [
                   '${courses.length} cursos',
@@ -198,7 +199,7 @@ class _CourseManagerView extends StatelessWidget {
               Text(
                 'Contenido publicado',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: const Color(0xFF241D22),
+                      color: AppPalette.butterflyInk,
                       fontWeight: FontWeight.w900,
                     ),
               ),
@@ -209,7 +210,7 @@ class _CourseManagerView extends StatelessWidget {
                   subtitle:
                       'Cuando se conecte la creación de cursos, aquí se administrarán PDFs, módulos y lecciones.',
                   glyphKind: MysticGlyphKind.course,
-                  accent: Color(0xFF5C7A72),
+                  accent: AppPalette.indigo,
                 )
               else
                 ...courses.map(
@@ -253,28 +254,28 @@ class _CourseManagerMetrics extends StatelessWidget {
               icon: Icons.auto_stories_outlined,
               label: 'Cursos',
               value: '$courseCount',
-              color: const Color(0xFF5B4B41),
+              color: AppPalette.indigo,
             ),
             _CourseMetricTile(
               width: width,
               icon: Icons.article_outlined,
               label: 'Lecciones/PDF',
               value: '$lessonCount',
-              color: const Color(0xFF7A6042),
+              color: AppPalette.royalViolet,
             ),
             _CourseMetricTile(
               width: width,
               icon: Icons.auto_awesome_rounded,
               label: 'Destacados',
               value: '$featuredCount',
-              color: const Color(0xFFB68B61),
+              color: AppPalette.flameGold,
             ),
             _CourseMetricTile(
               width: width,
               icon: Icons.workspace_premium_outlined,
               label: 'Premium',
               value: '$premiumCount',
-              color: const Color(0xFF5C7A72),
+              color: AppPalette.berry,
             ),
           ],
         );
@@ -304,9 +305,9 @@ class _CourseMetricTile extends StatelessWidget {
       width: width,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppPalette.moonIvory,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: const Color(0xFFE7DED3)),
+          border: Border.all(color: AppPalette.border),
         ),
         padding: const EdgeInsets.all(14),
         child: Row(
@@ -328,7 +329,7 @@ class _CourseMetricTile extends StatelessWidget {
                   Text(
                     value,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: const Color(0xFF241D22),
+                          color: AppPalette.butterflyInk,
                           fontWeight: FontWeight.w900,
                         ),
                   ),
@@ -337,7 +338,7 @@ class _CourseMetricTile extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: const Color(0xFF6E625B),
+                          color: AppPalette.mutedLavender,
                           fontWeight: FontWeight.w800,
                         ),
                   ),
@@ -362,9 +363,9 @@ class _CourseAdminCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppPalette.moonIvory,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE7DED3)),
+        border: Border.all(color: AppPalette.border),
       ),
       padding: const EdgeInsets.all(16),
       child: Row(
@@ -374,12 +375,12 @@ class _CourseAdminCard extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: const Color(0xFF5C7A72).withValues(alpha: 0.12),
+              color: AppPalette.softLilac,
               borderRadius: BorderRadius.circular(18),
             ),
             child: const Icon(
               Icons.menu_book_outlined,
-              color: Color(0xFF5C7A72),
+              color: AppPalette.indigo,
             ),
           ),
           const SizedBox(width: 14),
@@ -390,7 +391,7 @@ class _CourseAdminCard extends StatelessWidget {
                 Text(
                   course.title,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: const Color(0xFF241D22),
+                        color: AppPalette.butterflyInk,
                         fontWeight: FontWeight.w900,
                       ),
                 ),
@@ -400,7 +401,7 @@ class _CourseAdminCard extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: const Color(0xFF6E625B),
+                        color: AppPalette.mutedLavender,
                         height: 1.32,
                         fontWeight: FontWeight.w600,
                       ),
@@ -443,13 +444,13 @@ class _CourseStatusPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFFF2EBE3),
+        color: AppPalette.petal,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
         label,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: const Color(0xFF5B4B41),
+              color: AppPalette.indigo,
               fontWeight: FontWeight.w900,
             ),
       ),
@@ -470,7 +471,7 @@ class _MenuChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = selected ? const Color(0xFF5C4A40) : const Color(0xFF8A7669);
+    final accent = selected ? AppPalette.indigo : AppPalette.mutedLavender;
 
     return GestureDetector(
       onTap: onTap,
@@ -478,12 +479,10 @@ class _MenuChip extends StatelessWidget {
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: selected ? accent.withValues(alpha: 0.12) : Colors.white,
+          color: selected ? AppPalette.softLilac : AppPalette.moonIvory,
           borderRadius: BorderRadius.circular(999),
           border: Border.all(
-            color: selected
-                ? accent.withValues(alpha: 0.26)
-                : const Color(0xFFE7DED3),
+            color: selected ? AppPalette.borderStrong : AppPalette.border,
           ),
         ),
         child: Text(
@@ -534,7 +533,7 @@ class _RitualsPanel extends StatelessWidget {
                 title: ritual.$1,
                 subtitle: ritual.$2,
                 glyphKind: MysticGlyphKind.ritual,
-                accent: const Color(0xFF8B5A3C),
+                accent: AppPalette.flameGold,
               ),
             ),
           )
@@ -559,7 +558,7 @@ class _CoursesPanel extends StatelessWidget {
         subtitle:
             'Cuando quieras volver a expandir esta pestaña, aquí puede entrar el catálogo completo.',
         glyphKind: MysticGlyphKind.course,
-        accent: Color(0xFF5C7A72),
+        accent: AppPalette.indigo,
       );
     }
 
@@ -575,7 +574,7 @@ class _CoursesPanel extends StatelessWidget {
                 subtitle:
                     '${course.subtitle}\n${course.lessonCount} lecciones · ${course.estimatedHours.toStringAsFixed(1)} h',
                 glyphKind: MysticGlyphKind.course,
-                accent: const Color(0xFF5C7A72),
+                accent: AppPalette.indigo,
               ),
             ),
           )

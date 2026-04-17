@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/app_palette.dart';
 import '../../core/utils/formatters.dart';
 import '../../models/chat_models.dart';
 
@@ -40,7 +41,7 @@ class _CommunityChatScreenState extends State<CommunityChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFBF7),
+      backgroundColor: AppPalette.petalSoft,
       appBar: AppBar(
         title: const Text('Chat general'),
       ),
@@ -52,8 +53,8 @@ class _CommunityChatScreenState extends State<CommunityChatScreen> {
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Color(0xFFF8EFE4),
-                  Color(0xFFFFFBF7),
+                  AppPalette.petal,
+                  AppPalette.petalSoft,
                 ],
               ),
             ),
@@ -63,7 +64,7 @@ class _CommunityChatScreenState extends State<CommunityChatScreen> {
                 Text(
                   'Espacio abierto para comentar tránsitos, sensaciones y preguntas breves del día.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: const Color(0xFF5E676E),
+                        color: AppPalette.mutedLavender,
                         height: 1.4,
                       ),
                 ),
@@ -71,7 +72,7 @@ class _CommunityChatScreenState extends State<CommunityChatScreen> {
                 Text(
                   'Mantén cada mensaje claro y corto para que la conversación sea fácil de seguir.',
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: const Color(0xFF7C675B),
+                        color: AppPalette.mutedLavender,
                       ),
                 ),
               ],
@@ -133,7 +134,7 @@ class _CommunityChatScreenState extends State<CommunityChatScreen> {
             _error!,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: const Color(0xFF8B2C1F),
+                  color: AppPalette.berry,
                   fontWeight: FontWeight.w700,
                 ),
           ),
@@ -228,9 +229,8 @@ class _MessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isGuide = item.authorRole == 'guide';
-    final accent = isGuide ? const Color(0xFF5C3B52) : const Color(0xFF4A6A60);
-    final background =
-        isGuide ? const Color(0xFFF8EFF6) : const Color(0xFFF0F7F3);
+    final accent = isGuide ? AppPalette.indigo : AppPalette.royalViolet;
+    final background = isGuide ? AppPalette.petal : AppPalette.softLilac;
 
     return Container(
       decoration: BoxDecoration(
@@ -256,7 +256,7 @@ class _MessageBubble extends StatelessWidget {
               Text(
                 formatSchedule(item.createdAt),
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: const Color(0xFF7C675B),
+                      color: AppPalette.mutedLavender,
                     ),
               ),
             ],
@@ -266,7 +266,7 @@ class _MessageBubble extends StatelessWidget {
             item.body,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   height: 1.4,
-                  color: const Color(0xFF3B3432),
+                  color: AppPalette.butterflyInk,
                 ),
           ),
         ],

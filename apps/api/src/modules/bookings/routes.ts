@@ -2,7 +2,6 @@ import type { FastifyInstance } from "fastify";
 
 import {
   getBookings,
-  getUserIdForAccessToken,
   type UpdateBookingInput,
   type CreateBookingInput,
 } from "../../data/persistent-store.js";
@@ -12,13 +11,16 @@ import {
   getBookingPolicy,
   updateManagedBooking,
 } from "../../data/scheduling-store.js";
-import { readAccessToken } from "../shared/auth.js";
+import { requireAuthenticatedUser } from "../shared/access.js";
 
 export async function registerBookingRoutes(app: FastifyInstance) {
-  app.get("/", async (request) => {
-    const accessToken = readAccessToken(request.headers.authorization);
-    const userId =
-      (await getUserIdForAccessToken(accessToken ?? undefined)) ?? undefined;
+  app.get("/", async (request, reply) => {
+    const userId = await requireAuthenticatedUser(request, reply);
+    if (!userId) {
+      return {
+        error: "Inicia sesión para ver tus citas.",
+      };
+    }
 
     return {
       items: await getBookings(userId),
@@ -26,12 +28,16 @@ export async function registerBookingRoutes(app: FastifyInstance) {
   });
 
   app.post<{ Body: CreateBookingInput }>("/", async (request, reply) => {
+    const userId = await requireAuthenticatedUser(request, reply);
+    if (!userId) {
+      return {
+        error: "Inicia sesión para reservar una cita.",
+      };
+    }
+
     try {
-        const accessToken = readAccessToken(request.headers.authorization);
-        const userId =
-          (await getUserIdForAccessToken(accessToken ?? undefined)) ?? undefined;
-        const item = await createManagedBooking(request.body ?? {}, userId);
-        reply.code(201);
+      const item = await createManagedBooking(request.body ?? {}, userId);
+      reply.code(201);
 
       return {
         item,
@@ -49,10 +55,14 @@ export async function registerBookingRoutes(app: FastifyInstance) {
   app.patch<{ Params: { bookingId: string }; Body: UpdateBookingInput }>(
     "/:bookingId",
     async (request, reply) => {
+      const userId = await requireAuthenticatedUser(request, reply);
+      if (!userId) {
+        return {
+          error: "Inicia sesión para actualizar la cita.",
+        };
+      }
+
       try {
-        const accessToken = readAccessToken(request.headers.authorization);
-        const userId =
-          (await getUserIdForAccessToken(accessToken ?? undefined)) ?? undefined;
         const item = await updateManagedBooking(
           request.params.bookingId,
           request.body ?? {},
@@ -76,11 +86,14 @@ export async function registerBookingRoutes(app: FastifyInstance) {
   );
 
   app.get<{ Params: { bookingId: string } }>("/:bookingId/policy", async (request, reply) => {
-    try {
-      const accessToken = readAccessToken(request.headers.authorization);
-      const userId =
-        (await getUserIdForAccessToken(accessToken ?? undefined)) ?? undefined;
+    const userId = await requireAuthenticatedUser(request, reply);
+    if (!userId) {
+      return {
+        error: "Inicia sesión para revisar la política de la cita.",
+      };
+    }
 
+    try {
       return {
         item: await getBookingPolicy(request.params.bookingId, userId),
       };
@@ -96,11 +109,14 @@ export async function registerBookingRoutes(app: FastifyInstance) {
   });
 
   app.get<{ Params: { bookingId: string } }>("/:bookingId/history", async (request, reply) => {
-    try {
-      const accessToken = readAccessToken(request.headers.authorization);
-      const userId =
-        (await getUserIdForAccessToken(accessToken ?? undefined)) ?? undefined;
+    const userId = await requireAuthenticatedUser(request, reply);
+    if (!userId) {
+      return {
+        error: "Inicia sesión para ver el historial de la cita.",
+      };
+    }
 
+    try {
       return {
         items: await getBookingHistory(request.params.bookingId, userId),
       };
