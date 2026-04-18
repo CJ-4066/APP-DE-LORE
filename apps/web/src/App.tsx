@@ -69,9 +69,140 @@ type BootstrapResponse = {
   }>;
 };
 
-const apiBaseUrl =
-  (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim() ||
-  "http://127.0.0.1:4000";
+const guestBootstrap: BootstrapResponse = {
+  app: {
+    name: "Lo Renaciente",
+    tagline: "Autoconocimiento, guía y consultas en un mismo lugar.",
+    market: "Perú / Latam",
+    timezone: "America/Lima",
+  },
+  home: {
+    welcomeTitle: "Hola, visitante",
+    welcomeSubtitle: "Explora tarot, astrología, agenda y contenido premium desde la experiencia web.",
+    featuredMessage: "La experiencia web ya puede mostrar oferta, especialistas y agenda base aunque todavía no haya sesión iniciada.",
+    cardOfTheDay: {
+      title: "Carta del día",
+      cardName: "La Estrella",
+      message: "Hoy conviene bajar el ruido, volver a tu centro y avanzar con una decisión pequeña pero muy clara.",
+      ritual: "Escribe una intención breve antes de abrir tu jornada.",
+      imageUrl: "",
+    },
+    upcomingBooking: {
+      specialistName: "Amaya Rivas",
+      serviceName: "Lectura de tarot terapéutico",
+      scheduledAt: "2026-04-24T19:00:00-05:00",
+      status: "confirmed",
+    },
+  },
+  services: [
+    {
+      id: "service-tarot",
+      name: "Lectura de tarot terapéutico",
+      category: "Tarot",
+      description: "Sesión enfocada en claridad emocional, decisiones y cierres de ciclo.",
+      durationMinutes: 45,
+      price: {
+        amount: 32,
+        currency: "USD",
+      },
+    },
+    {
+      id: "service-astro",
+      name: "Astrología natal personalizada",
+      category: "Astrología",
+      description: "Lectura de carta natal con foco en identidad, relaciones y timing.",
+      durationMinutes: 60,
+      price: {
+        amount: 48,
+        currency: "USD",
+      },
+    },
+    {
+      id: "service-numerologia",
+      name: "Consulta de numerología",
+      category: "Numerología",
+      description: "Interpretación de ciclos, talentos y aprendizajes por vibración numérica.",
+      durationMinutes: 40,
+      price: {
+        amount: 29,
+        currency: "USD",
+      },
+    },
+  ],
+  specialists: [
+    {
+      id: "spec-amaya",
+      name: "Amaya Rivas",
+      headline: "Tarot terapéutico y lectura intuitiva",
+      specialties: ["Tarot", "Procesos emocionales", "Rituales de cierre"],
+      featured: true,
+      nextAvailableAt: "2026-04-24T19:00:00-05:00",
+    },
+    {
+      id: "spec-elian",
+      name: "Elian Duarte",
+      headline: "Astrología natal, sinastría y ciclos",
+      specialties: ["Astrología natal", "Sinastría", "Revolución solar"],
+      featured: true,
+      nextAvailableAt: "2026-04-26T18:30:00-05:00",
+    },
+  ],
+  plans: [
+    {
+      id: "free",
+      name: "Free",
+      tier: "free",
+      priceMonthly: 0,
+      currency: "USD",
+      features: [
+        "Carta del día",
+        "Energía astrológica básica",
+        "Agenda limitada",
+        "Chat con límite mensual",
+      ],
+    },
+    {
+      id: "premium",
+      name: "Premium",
+      tier: "premium",
+      priceMonthly: 14.99,
+      currency: "USD",
+      features: [
+        "Cursos premium",
+        "Biblioteca completa",
+        "Más sesiones por mes",
+        "Acceso anticipado a contenidos",
+      ],
+    },
+  ],
+  bookings: [
+    {
+      id: "booking-guest-1",
+      serviceName: "Lectura de tarot terapéutico",
+      specialistName: "Amaya Rivas",
+      scheduledAt: "2026-04-24T19:00:00-05:00",
+      status: "confirmed",
+      mode: "video",
+    },
+  ],
+};
+
+function resolveApiBaseUrl(): string {
+  const envOverride = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim();
+  if (envOverride) {
+    return envOverride.replace(/\/+$/, "");
+  }
+
+  if (typeof window === "undefined") {
+    return "http://127.0.0.1:4000";
+  }
+
+  const protocol = window.location.protocol === "https:" ? "https:" : "http:";
+  const hostname = window.location.hostname === "0.0.0.0" ? "127.0.0.1" : window.location.hostname;
+  return `${protocol}//${hostname}:4000`;
+}
+
+const apiBaseUrl = resolveApiBaseUrl();
 
 function resolveAssetUrl(value: string | undefined): string {
   const trimmed = value?.trim() ?? "";
@@ -101,6 +232,7 @@ function App() {
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [data, setData] = useState<BootstrapResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [expandedCardImageUrl, setExpandedCardImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -108,23 +240,37 @@ function App() {
 
     async function load() {
       try {
-        const [healthResponse, bootstrapResponse] = await Promise.all([
-          fetch(`${apiBaseUrl}/health`),
-          fetch(`${apiBaseUrl}/api/bootstrap`),
-        ]);
-
-        if (!healthResponse.ok || !bootstrapResponse.ok) {
+        const healthResponse = await fetch(`${apiBaseUrl}/health`);
+        if (!healthResponse.ok) {
           throw new Error("La app web no pudo alcanzar la API local.");
         }
 
-        const [healthJson, bootstrapJson] = await Promise.all([
-          healthResponse.json() as Promise<HealthResponse>,
-          bootstrapResponse.json() as Promise<BootstrapResponse>,
-        ]);
-
+        const healthJson = (await healthResponse.json()) as HealthResponse;
         if (!cancelled) {
           setHealth(healthJson);
+        }
+
+        const bootstrapResponse = await fetch(`${apiBaseUrl}/api/bootstrap`);
+        if (bootstrapResponse.status === 401) {
+          if (!cancelled) {
+            setData(guestBootstrap);
+            setNotice(
+              "La API local esta activa. Estas viendo el modo invitado de la web mientras conectamos el inicio de sesion en navegador.",
+            );
+            setError(null);
+          }
+          return;
+        }
+
+        if (!bootstrapResponse.ok) {
+          throw new Error("La API local respondio, pero el bootstrap web fallo.");
+        }
+
+        const bootstrapJson = (await bootstrapResponse.json()) as BootstrapResponse;
+
+        if (!cancelled) {
           setData(bootstrapJson);
+          setNotice(null);
           setError(null);
         }
       } catch (loadError) {
@@ -134,6 +280,7 @@ function App() {
               ? loadError.message
               : "No se pudo cargar la app web.",
           );
+          setNotice(null);
         }
       }
     }
@@ -220,6 +367,14 @@ function App() {
         <section className="message-panel error-panel">
           <h2>Conexion pendiente</h2>
           <p>{error}</p>
+          <code>{apiBaseUrl}</code>
+        </section>
+      ) : null}
+
+      {notice ? (
+        <section className="message-panel">
+          <h2>Modo invitado</h2>
+          <p>{notice}</p>
           <code>{apiBaseUrl}</code>
         </section>
       ) : null}

@@ -638,11 +638,19 @@ class _RescheduleBookingSheet extends StatefulWidget {
   const _RescheduleBookingSheet({
     required this.booking,
     required this.service,
+    required this.onLoadAvailability,
     required this.onSave,
   });
 
   final Booking booking;
   final ServiceOffer service;
+  final Future<List<SpecialistAvailabilitySlot>> Function({
+    required String specialistId,
+    required DateTime from,
+    required DateTime to,
+    String? mode,
+    String? serviceId,
+  }) onLoadAvailability;
   final Future<String?> Function(UpdateBookingInput input) onSave;
 
   @override
@@ -652,21 +660,28 @@ class _RescheduleBookingSheet extends StatefulWidget {
 
 class _RescheduleBookingSheetState extends State<_RescheduleBookingSheet> {
   late final TextEditingController _notesController;
-  late DateTime _selectedDateTime;
   late String _selectedMode;
+  late DateTime _selectedDate;
+  String? _selectedSlotId;
   String? _errorMessage;
+  String? _availabilityMessage;
   bool _isSaving = false;
+  bool _isLoadingAvailability = false;
+  int _availabilityRequestId = 0;
+  List<SpecialistAvailabilitySlot> _availabilitySlots = const [];
 
   @override
   void initState() {
     super.initState();
     _notesController = TextEditingController(text: widget.booking.notes);
-    _selectedDateTime =
-        DateTime.tryParse(widget.booking.scheduledAt)?.toLocal() ??
-            DateTime.now().add(const Duration(days: 1));
+    _selectedDate = DateUtils.dateOnly(
+      DateTime.tryParse(widget.booking.scheduledAt)?.toLocal() ??
+          DateTime.now().add(const Duration(days: 1)),
+    );
     _selectedMode = widget.service.deliveryModes.contains(widget.booking.mode)
         ? widget.booking.mode
         : widget.service.deliveryModes.firstOrNull ?? widget.booking.mode;
+    Future<void>.microtask(_loadAvailabilityForSelection);
   }
 
   @override
@@ -678,7 +693,7 @@ class _RescheduleBookingSheetState extends State<_RescheduleBookingSheet> {
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
-      initialDate: _selectedDateTime,
+      initialDate: _selectedDate,
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 120)),
     );
@@ -687,46 +702,85 @@ class _RescheduleBookingSheetState extends State<_RescheduleBookingSheet> {
     }
 
     setState(() {
-      _selectedDateTime = DateTime(
-        picked.year,
-        picked.month,
-        picked.day,
-        _selectedDateTime.hour,
-        _selectedDateTime.minute,
-      );
+      _selectedDate = DateUtils.dateOnly(picked);
+      _selectedSlotId = null;
+      _availabilityMessage = null;
+      _errorMessage = null;
     });
+
+    await _loadAvailabilityForSelection();
   }
 
-  Future<void> _pickTime() async {
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.fromDateTime(_selectedDateTime),
-      builder: (context, child) {
-        return MediaQuery(
-          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-          child: child ?? const SizedBox.shrink(),
-        );
-      },
-    );
-    if (picked == null) {
-      return;
+  SpecialistAvailabilitySlot? get _selectedSlot {
+    final slotId = _selectedSlotId;
+    if (slotId == null) {
+      return null;
     }
 
+    return _availabilitySlots.where((slot) => slot.id == slotId).firstOrNull;
+  }
+
+  Future<void> _loadAvailabilityForSelection() async {
+    final requestId = ++_availabilityRequestId;
+    final from = DateUtils.dateOnly(_selectedDate);
+    final to = from.add(const Duration(days: 1));
+
     setState(() {
-      _selectedDateTime = DateTime(
-        _selectedDateTime.year,
-        _selectedDateTime.month,
-        _selectedDateTime.day,
-        picked.hour,
-        picked.minute,
-      );
+      _isLoadingAvailability = true;
+      _selectedSlotId = null;
+      _availabilityMessage = null;
+      _errorMessage = null;
     });
+
+    try {
+      final slots = await widget.onLoadAvailability(
+        specialistId: widget.booking.specialistId,
+        serviceId: widget.service.id,
+        mode: _selectedMode,
+        from: from,
+        to: to,
+      );
+
+      if (!mounted || requestId != _availabilityRequestId) {
+        return;
+      }
+
+      final availableSlots = slots
+          .where((slot) => slot.isAvailable)
+          .toList()
+        ..sort((left, right) => left.startsAt.compareTo(right.startsAt));
+
+      setState(() {
+        _availabilitySlots = availableSlots;
+        _selectedSlotId = availableSlots.firstOrNull?.id;
+        _availabilityMessage = availableSlots.isEmpty
+            ? 'No hay horarios disponibles para reprogramar en ese día.'
+            : null;
+        _isLoadingAvailability = false;
+      });
+    } catch (error) {
+      if (!mounted || requestId != _availabilityRequestId) {
+        return;
+      }
+
+      setState(() {
+        _availabilitySlots = const [];
+        _selectedSlotId = null;
+        _availabilityMessage = error.toString().replaceFirst('Exception: ', '');
+        _isLoadingAvailability = false;
+      });
+    }
   }
 
   Future<void> _save() async {
-    if (_selectedDateTime.isBefore(DateTime.now())) {
+    final selectedSlot = _selectedSlot;
+    final scheduledAt = DateTime.tryParse(selectedSlot?.startsAt ?? '');
+    if (selectedSlot == null ||
+        scheduledAt == null ||
+        scheduledAt.isBefore(DateTime.now())) {
       setState(() {
-        _errorMessage = 'Elige una fecha futura para reprogramar la cita.';
+        _errorMessage =
+            'Elige un horario disponible y futuro para reprogramar la cita.';
       });
       return;
     }
@@ -738,7 +792,7 @@ class _RescheduleBookingSheetState extends State<_RescheduleBookingSheet> {
 
     final errorMessage = await widget.onSave(
       UpdateBookingInput(
-        scheduledAt: _selectedDateTime.toIso8601String(),
+        scheduledAt: selectedSlot.startsAt,
         mode: _selectedMode,
         notes: _notesController.text.trim(),
       ),
@@ -799,32 +853,72 @@ class _RescheduleBookingSheetState extends State<_RescheduleBookingSheet> {
                     }
                     setState(() {
                       _selectedMode = value;
+                      _selectedSlotId = null;
+                      _availabilityMessage = null;
                     });
+                    _loadAvailabilityForSelection();
                   },
           ),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _isSaving ? null : _pickDate,
-                  icon: const Icon(Icons.calendar_month_outlined),
-                  label: Text(
-                    '${_selectedDateTime.day}/${_selectedDateTime.month}/${_selectedDateTime.year}',
+          OutlinedButton.icon(
+            onPressed: _isSaving ? null : _pickDate,
+            icon: const Icon(Icons.calendar_month_outlined),
+            label: Text(
+              '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+            ),
+          ),
+          const SizedBox(height: 16),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Horarios disponibles',
+                    style: Theme.of(context).textTheme.titleMedium,
                   ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _isSaving ? null : _pickTime,
-                  icon: const Icon(Icons.schedule_outlined),
-                  label: Text(
-                    TimeOfDay.fromDateTime(_selectedDateTime).format(context),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Selecciona un nuevo horario para ${widget.service.durationMinutes} minutos.',
+                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
-                ),
+                  const SizedBox(height: 14),
+                  if (_isLoadingAvailability)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 18),
+                        child: CircularProgressIndicator(),
+                      ),
+                    )
+                  else if (_availabilityMessage != null)
+                    Text(_availabilityMessage!)
+                  else if (_availabilitySlots.isEmpty)
+                    const Text('No hay horarios disponibles para esta selección.')
+                  else
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: _availabilitySlots
+                          .map(
+                            (slot) => ChoiceChip(
+                              label: Text(_formatSlotLabel(slot)),
+                              selected: slot.id == _selectedSlotId,
+                              onSelected: _isSaving
+                                  ? null
+                                  : (_) {
+                                      setState(() {
+                                        _selectedSlotId = slot.id;
+                                        _errorMessage = null;
+                                      });
+                                    },
+                            ),
+                          )
+                          .toList(),
+                    ),
+                ],
               ),
-            ],
+            ),
           ),
           const SizedBox(height: 16),
           TextField(
@@ -861,6 +955,20 @@ class _RescheduleBookingSheetState extends State<_RescheduleBookingSheet> {
         ],
       ),
     );
+  }
+
+  String _formatSlotLabel(SpecialistAvailabilitySlot slot) {
+    final startsAt = DateTime.tryParse(slot.startsAt)?.toLocal();
+    final endsAt = DateTime.tryParse(slot.endsAt)?.toLocal();
+    if (startsAt == null || endsAt == null) {
+      return slot.startsAt;
+    }
+
+    return '${_formatHour(startsAt)} - ${_formatHour(endsAt)}';
+  }
+
+  String _formatHour(DateTime value) {
+    return '${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}';
   }
 }
 

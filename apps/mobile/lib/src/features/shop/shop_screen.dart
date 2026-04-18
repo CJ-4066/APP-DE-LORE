@@ -145,7 +145,7 @@ class _ShopScreenState extends State<ShopScreen> {
                     eyebrow: widget.data.shop.title,
                     title: widget.canManageShop
                         ? 'Productos y órdenes'
-                        : 'Objetos, mazos y piezas para tu ritual',
+                        : widget.data.shop.title,
                     subtitle: widget.canManageShop
                         ? 'Gestiona catálogo, fotos, stock, destacados y órdenes sin flujo de compra.'
                         : widget.data.shop.subtitle,

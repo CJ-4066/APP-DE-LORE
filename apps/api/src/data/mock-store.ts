@@ -1718,7 +1718,7 @@ export function getShopData(userId?: string): ShopData {
   return {
     title: "Shop Renaciente",
     subtitle:
-      "Objetos rituales, mazos y piezas decorativas para bajar la experiencia a materia.",
+      "Una selección cuidada de productos para acompañar tu espacio y tu práctica.",
     featuredNote:
       "Este catálogo inicial es seed y sirve para validar interés, ticket promedio y familias de producto.",
     supportNote:
@@ -2017,6 +2017,13 @@ export function createShopOrder(
 
 export function getBootstrap(userId?: string): AppBootstrap {
   const user = getUserById(userId);
+  const services =
+    user.accountType === "specialist" &&
+    Boolean(user.specialistProfileId?.trim())
+      ? getServices().filter((service) =>
+          service.specialistIds.includes(user.specialistProfileId ?? ""),
+        )
+      : getServices();
 
   return {
     app: {
@@ -2030,7 +2037,7 @@ export function getBootstrap(userId?: string): AppBootstrap {
     plans: getPlans(),
     subscription: getCurrentSubscription(user.id),
     payments: getPaymentsConfig(),
-    services: getServices(),
+    services: services,
     specialists: getSpecialists(),
     courses: getCourses(),
     shop: getShopData(user.id),

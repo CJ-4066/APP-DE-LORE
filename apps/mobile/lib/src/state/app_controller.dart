@@ -1226,7 +1226,7 @@ class AppController extends ChangeNotifier with WidgetsBindingObserver {
       shop: ShopData(
         title: 'Shop Renaciente',
         subtitle:
-            'Objetos rituales, mazos y piezas decorativas listos para sincronizar.',
+            'Estamos preparando una selección cuidada de productos para tu espacio.',
         featuredNote:
             'Estamos preparando el catálogo inicial con artículos y órdenes.',
         supportNote:

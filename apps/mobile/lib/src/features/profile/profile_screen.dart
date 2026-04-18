@@ -5,6 +5,7 @@ import '../../core/theme/app_palette.dart';
 import '../../core/utils/formatters.dart';
 import '../../models/app_models.dart';
 import 'account_center_screens.dart';
+import 'profile_badges_screen.dart';
 import 'profile_avatar.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -43,6 +44,7 @@ class ProfileScreen extends StatelessWidget {
     final canOpenPrivacy = data.user.id.trim().isNotEmpty;
     final canOpenSupport = data.admin.activeUsers >= 0;
     final isGuestMode = data.user.id.trim().isEmpty;
+    final badgeCenter = buildBadgeCenterData(data);
 
     return SafeArea(
       child: RefreshIndicator(
@@ -90,6 +92,27 @@ class ProfileScreen extends StatelessWidget {
                                 l10n.tr(
                                   'currentPlan',
                                   {'plan': data.subscription.planName},
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppPalette.softLilac,
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: Text(
+                                  '${badgeCenter.currentRank.title} · ${badgeCenter.xp} XP',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelMedium
+                                      ?.copyWith(
+                                        color: AppPalette.butterflyInk,
+                                        fontWeight: FontWeight.w900,
+                                      ),
                                 ),
                               ),
                             ],
@@ -393,6 +416,23 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     const Divider(height: 1),
                   ],
+                  ListTile(
+                    leading: const Icon(Icons.military_tech_outlined),
+                    title: const Text('Insignias'),
+                    subtitle: Text(
+                      '${badgeCenter.currentRank.title} · ${badgeCenter.unlockedCount} activas',
+                    ),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () async {
+                      await Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => ProfileBadgesScreen(data: data),
+                        ),
+                      );
+                    },
+                  ),
+                  if (canOpenSupport || !isGuestMode || canManageSubscription || canOpenPrivacy)
+                    const Divider(height: 1),
                   if (canOpenSupport)
                     ListTile(
                       leading: const Icon(Icons.support_agent),
@@ -413,7 +453,7 @@ class ProfileScreen extends StatelessWidget {
                       },
                     ),
                   if (!isGuestMode) ...[
-                    const Divider(height: 1),
+                    if (canOpenSupport) const Divider(height: 1),
                     ListTile(
                       leading: const Icon(Icons.logout),
                       title: const Text('Cerrar sesión'),

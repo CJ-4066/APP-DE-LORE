@@ -2184,6 +2184,14 @@ export async function getBootstrap(userId?: string): Promise<AppBootstrap> {
   }
 
   const user = await getDatabaseUser(userId);
+  const services = await listServices();
+  const specialistScopedServices =
+    user.accountType === "specialist" &&
+    Boolean(user.specialistProfileId?.trim())
+      ? services.filter((service) =>
+          service.specialistIds.includes(user.specialistProfileId?.trim() ?? ""),
+        )
+      : services;
 
   return {
     app: {
@@ -2197,7 +2205,7 @@ export async function getBootstrap(userId?: string): Promise<AppBootstrap> {
     plans: getPlans(),
     subscription: await getCurrentSubscription(user.id),
     payments: getPaymentsConfigBilling(),
-    services: await listServices(),
+    services: specialistScopedServices,
     specialists: getSpecialists(),
     courses: getCourses(),
     shop: await getShopData(user.id),
