@@ -1,6 +1,17 @@
 import { randomUUID } from "node:crypto";
 
 import { buildDailyHomeContent } from "./home-daily.js";
+import {
+  buildShopOrderDraft,
+  buildShopStoreId,
+  buildShopStoreName,
+  buildShopStockLabel,
+  buildShopViewerScope,
+  canManageShopOrder,
+  filterShopOrdersForScope,
+  filterShopProductsForScope,
+  normalizeShopProductOwnership,
+} from "./shop-domain.js";
 import { buildTarotCardImagePath } from "./tarot-images.js";
 
 export type SessionMode = "chat" | "audio" | "video";
@@ -61,6 +72,7 @@ export interface UserProfile {
   planId: string;
   accountType: AccountType;
   specialistProfileId?: string;
+  roles?: string[];
   natalChart: NatalChart;
   preferences: UserPreferences;
 }
@@ -170,6 +182,10 @@ export interface ShopProduct {
   id: string;
   name: string;
   category: string;
+  specialistId: string;
+  specialistName: string;
+  storeId: string;
+  storeName: string;
   shortDescription: string;
   description: string;
   price: Money;
@@ -178,6 +194,8 @@ export interface ShopProduct {
   badge: string;
   featured: boolean;
   stockLabel: string;
+  stockQuantity: number;
+  madeToOrder: boolean;
   tags: string[];
 }
 
@@ -191,7 +209,8 @@ export interface CreateShopProductInput {
   artwork?: string;
   badge?: string;
   featured?: boolean;
-  stockLabel?: string;
+  stockQuantity?: number;
+  madeToOrder?: boolean;
   tags?: string[];
 }
 
@@ -205,7 +224,8 @@ export interface UpdateShopProductInput {
   artwork?: string;
   badge?: string;
   featured?: boolean;
-  stockLabel?: string;
+  stockQuantity?: number;
+  madeToOrder?: boolean;
   tags?: string[];
 }
 
@@ -229,6 +249,10 @@ export interface ShopOrder {
   orderCode: string;
   status: ShopOrderStatus;
   createdAt: string;
+  specialistId: string;
+  specialistName: string;
+  storeId: string;
+  storeName: string;
   deliveryAddress: string;
   notes: string;
   subtotal: Money;
@@ -1017,6 +1041,7 @@ let currentUser: UserProfile = {
   planId: "free",
   accountType: "specialist",
   specialistProfileId: "spec-amaya",
+  roles: ["admin"],
   natalChart: {
     subjectName: "Mark",
     birthDate: "2000-11-28",
@@ -1105,7 +1130,7 @@ const adminSummary: AdminSummary = {
   openIncidents: 2,
 };
 
-const shopProducts: ShopProduct[] = [
+const seedShopProducts = [
   {
     id: "shop-vela-luna-nueva",
     name: "Vela ritual Luna Nueva",
@@ -1300,6 +1325,43 @@ const shopProducts: ShopProduct[] = [
   },
 ];
 
+function getShopSeedOwner(category: string, index: number): Specialist {
+  if (category === "Velas" || category === "Tarot") {
+    return specialists.find((item) => item.id === "spec-amaya") ?? specialists[0];
+  }
+  if (category === "Cuadros" || category === "Símbolos") {
+    return specialists.find((item) => item.id === "spec-elian") ?? specialists[0];
+  }
+
+  return specialists.find((item) => item.id === "spec-mila") ?? specialists[0];
+}
+
+const shopProducts: ShopProduct[] = seedShopProducts.map((product, index) => {
+  const owner = getShopSeedOwner(product.category, index);
+  const stockQuantity =
+    product.stockLabel === "Pocas unidades"
+      ? 3
+      : product.stockLabel === "Nueva llegada"
+        ? 7
+        : product.stockLabel === "Hecho a pedido"
+          ? 0
+          : 9;
+
+  return normalizeShopProductOwnership(
+    {
+      ...product,
+      specialistId: owner.id,
+      specialistName: owner.name,
+      storeId: buildShopStoreId(owner.id),
+      storeName: buildShopStoreName(owner.name),
+      stockQuantity,
+      madeToOrder: product.stockLabel === "Hecho a pedido",
+    },
+    owner.id,
+    owner.name,
+  );
+});
+
 const shopOrdersByUserId = new Map<string, ShopOrder[]>([
   [
     currentUser.id,
@@ -1310,6 +1372,10 @@ const shopOrdersByUserId = new Map<string, ShopOrder[]>([
         orderCode: "LR-2026-041",
         status: "confirmed",
         createdAt: "2026-03-18T16:40:00-05:00",
+        specialistId: "spec-amaya",
+        specialistName: "Amaya Rivas",
+        storeId: buildShopStoreId("spec-amaya"),
+        storeName: buildShopStoreName("Amaya Rivas"),
         deliveryAddress: "Miraflores, Lima, Perú",
         notes: "Entrega en portería.",
         subtotal: { amount: 51, currency: "USD" },
@@ -1584,6 +1650,7 @@ function buildPendingPhoneAuthUser(phoneNumber: string): UserProfile {
     planId: "free",
     accountType: "client",
     specialistProfileId: "",
+    roles: [],
     natalChart: {
       subjectName: "",
       birthDate: "",
@@ -1706,15 +1773,18 @@ export function getCourses(): Course[] {
 }
 
 export function getShopOrders(userId?: string): ShopOrder[] {
-  const ownerId = resolveShopOwnerId(userId);
-  const items = shopOrdersByUserId.get(ownerId) ?? [];
+  const user = getUserById(userId);
+  const scope = buildShopViewerScope(user, user.roles?.includes("admin") ?? false);
+  const items = [...shopOrdersByUserId.values()].flat();
 
-  return [...items].sort((left, right) =>
+  return filterShopOrdersForScope(items, scope).sort((left, right) =>
     right.createdAt.localeCompare(left.createdAt),
   );
 }
 
 export function getShopData(userId?: string): ShopData {
+  const user = getUserById(userId);
+  const scope = buildShopViewerScope(user, user.roles?.includes("admin") ?? false);
   return {
     title: "Shop Renaciente",
     subtitle:
@@ -1724,15 +1794,21 @@ export function getShopData(userId?: string): ShopData {
     supportNote:
       "Las órdenes se generan dentro de la app y quedan listas para pago o coordinación manual.",
     currency: "USD",
-    products: shopProducts,
+    products: filterShopProductsForScope(shopProducts, scope),
     orders: getShopOrders(userId),
   };
 }
 
-export function createShopProduct(input: CreateShopProductInput): ShopProduct {
+export function createShopProduct(
+  input: CreateShopProductInput,
+  specialistProfileId?: string,
+): ShopProduct {
   const name = input.name?.trim() ?? "";
   const category = input.category?.trim() ?? "";
   const amount = Number(input.price?.amount ?? 0);
+  const ownerId =
+    specialistProfileId?.trim() || currentUser.specialistProfileId?.trim() || "";
+  const owner = specialists.find((item) => item.id === ownerId);
 
   if (name.length < 3) {
     throw new Error("Ingresa un nombre de producto válido.");
@@ -1743,30 +1819,51 @@ export function createShopProduct(input: CreateShopProductInput): ShopProduct {
   if (!Number.isFinite(amount) || amount <= 0) {
     throw new Error("Ingresa un precio válido.");
   }
+  if (!owner) {
+    throw new Error("No se encontró el especialista dueño de esta tienda.");
+  }
 
-  const product: ShopProduct = {
-    id: `shop-${slugifyShopValue(name)}-${randomUUID().slice(0, 8)}`,
-    name,
-    category,
-    shortDescription:
-      input.shortDescription?.trim() ||
-      input.description?.trim() ||
-      "Producto agregado desde administración.",
-    description:
-      input.description?.trim() ||
-      input.shortDescription?.trim() ||
-      "Producto agregado desde administración de tienda.",
-    price: {
-      amount: Number(amount.toFixed(2)),
-      currency: input.price?.currency?.trim() || "USD",
+  const madeToOrder = Boolean(input.madeToOrder);
+  const stockQuantity = madeToOrder
+    ? 0
+    : Math.max(0, Math.round(Number(input.stockQuantity ?? 0)));
+  if (!madeToOrder && stockQuantity < 0) {
+    throw new Error("Ingresa un stock válido.");
+  }
+
+  const product = normalizeShopProductOwnership(
+    {
+      id: `shop-${slugifyShopValue(name)}-${randomUUID().slice(0, 8)}`,
+      name,
+      category,
+      specialistId: owner.id,
+      specialistName: owner.name,
+      storeId: buildShopStoreId(owner.id),
+      storeName: buildShopStoreName(owner.name),
+      shortDescription:
+        input.shortDescription?.trim() ||
+        input.description?.trim() ||
+        "Producto agregado desde administración.",
+      description:
+        input.description?.trim() ||
+        input.shortDescription?.trim() ||
+        "Producto agregado desde administración de tienda.",
+      price: {
+        amount: Number(amount.toFixed(2)),
+        currency: input.price?.currency?.trim() || "USD",
+      },
+      imageUrl: input.imageUrl?.trim() ?? "",
+      artwork: input.artwork?.trim() || inferShopArtwork(category),
+      badge: input.badge?.trim() || "Nuevo",
+      featured: input.featured ?? false,
+      stockLabel: buildShopStockLabel(stockQuantity, madeToOrder),
+      stockQuantity,
+      madeToOrder,
+      tags: normalizeShopTags(input.tags),
     },
-    imageUrl: input.imageUrl?.trim() ?? "",
-    artwork: input.artwork?.trim() || inferShopArtwork(category),
-    badge: input.badge?.trim() || "Nuevo",
-    featured: input.featured ?? false,
-    stockLabel: input.stockLabel?.trim() || "Disponible",
-    tags: normalizeShopTags(input.tags),
-  };
+    owner.id,
+    owner.name,
+  );
 
   shopProducts.unshift(product);
   return product;
@@ -1792,26 +1889,38 @@ export function updateShopProduct(
   }
 
   const category = input.category?.trim() || existing.category;
-  const updated: ShopProduct = {
-    ...existing,
-    name: input.name?.trim() || existing.name,
-    category,
-    shortDescription:
-      input.shortDescription?.trim() || existing.shortDescription,
-    description: input.description?.trim() || existing.description,
-    price: {
-      amount: Number(amount.toFixed(2)),
-      currency: input.price?.currency?.trim() || existing.price.currency,
+  const madeToOrder = input.madeToOrder ?? existing.madeToOrder;
+  const stockQuantity = madeToOrder
+    ? 0
+    : input.stockQuantity === undefined
+      ? existing.stockQuantity
+      : Math.max(0, Math.round(Number(input.stockQuantity)));
+  const updated: ShopProduct = normalizeShopProductOwnership(
+    {
+      ...existing,
+      name: input.name?.trim() || existing.name,
+      category,
+      shortDescription:
+        input.shortDescription?.trim() || existing.shortDescription,
+      description: input.description?.trim() || existing.description,
+      price: {
+        amount: Number(amount.toFixed(2)),
+        currency: input.price?.currency?.trim() || existing.price.currency,
+      },
+      imageUrl: input.imageUrl?.trim() ?? existing.imageUrl,
+      artwork:
+        input.artwork?.trim() || existing.artwork || inferShopArtwork(category),
+      badge: input.badge?.trim() || existing.badge,
+      featured: input.featured ?? existing.featured,
+      stockLabel: buildShopStockLabel(stockQuantity, madeToOrder),
+      stockQuantity,
+      madeToOrder,
+      tags:
+        input.tags === undefined ? existing.tags : normalizeShopTags(input.tags),
     },
-    imageUrl: input.imageUrl?.trim() ?? existing.imageUrl,
-    artwork:
-      input.artwork?.trim() || existing.artwork || inferShopArtwork(category),
-    badge: input.badge?.trim() || existing.badge,
-    featured: input.featured ?? existing.featured,
-    stockLabel: input.stockLabel?.trim() || existing.stockLabel,
-    tags:
-      input.tags === undefined ? existing.tags : normalizeShopTags(input.tags),
-  };
+    existing.specialistId,
+    existing.specialistName,
+  );
 
   shopProducts[index] = updated;
   return updated;
@@ -1827,12 +1936,27 @@ export function updateShopOrderStatus(
     throw new Error("Selecciona un estado de orden válido.");
   }
 
-  const ownerId = resolveShopOwnerId(userId);
-  const orders = shopOrdersByUserId.get(ownerId) ?? [];
-  const index = orders.findIndex((item) => item.id === orderId);
-  if (index < 0) {
+  const user = getUserById(userId);
+  const scope = buildShopViewerScope(user, user.roles?.includes("admin") ?? false);
+  let ownerId: string | null = null;
+  let index = -1;
+
+  for (const [candidateOwnerId, orders] of shopOrdersByUserId.entries()) {
+    const candidateIndex = orders.findIndex(
+      (item) => item.id === orderId && canManageShopOrder(item, scope),
+    );
+    if (candidateIndex >= 0) {
+      ownerId = candidateOwnerId;
+      index = candidateIndex;
+      break;
+    }
+  }
+
+  if (!ownerId || index < 0) {
     throw new Error("La orden no existe.");
   }
+
+  const orders = shopOrdersByUserId.get(ownerId) ?? [];
 
   const updated: ShopOrder = {
     ...orders[index],
@@ -1846,12 +1970,17 @@ export function updateShopOrderStatus(
 
 export function getBookings(userId?: string): Booking[] {
   const user = getUserById(userId);
+  const isAdmin = user.roles?.includes("admin") ?? false;
   const specialistScope =
     user.accountType === "specialist" &&
-    Boolean(user.specialistProfileId?.trim());
+    Boolean(user.specialistProfileId?.trim()) &&
+    !isAdmin;
 
   return [...bookings]
     .filter((booking) => {
+      if (isAdmin) {
+        return true;
+      }
       if (specialistScope) {
         return booking.specialistId === user.specialistProfileId;
       }
@@ -1946,73 +2075,21 @@ export function createShopOrder(
   input: CreateShopOrderInput,
   userId?: string,
 ): ShopOrder {
-  const ownerId = resolveShopOwnerId(userId);
-  const requestedItems = input.items ?? [];
-  if (requestedItems.length === 0) {
-    throw new Error("Agrega al menos un producto al carrito.");
-  }
-
-  const items: ShopOrderItem[] = requestedItems.map((entry) => {
-    const productId = entry.productId?.trim() ?? "";
-    const quantity = Math.max(0, entry.quantity ?? 0);
-    if (productId.length === 0 || quantity < 1) {
-      throw new Error("El carrito contiene un producto inválido.");
-    }
-
-    const product = shopProducts.find((item) => item.id === productId);
-    if (!product) {
-      throw new Error("Uno de los productos ya no está disponible.");
-    }
-
-    return {
-      productId: product.id,
-      productName: product.name,
-      category: product.category,
-      quantity,
-      imageUrl: product.imageUrl,
-      unitPrice: cloneMoney(product.price),
-      lineTotal: {
-        amount: Number((product.price.amount * quantity).toFixed(2)),
-        currency: product.price.currency,
-      },
-    };
+  const user = getUserById(userId);
+  const existingOrders = getShopOrders(user.id);
+  const result = buildShopOrderDraft({
+    input,
+    products: shopProducts,
+    viewer: buildShopViewerScope(user, false),
+    orderId: randomUUID(),
+    orderCode: buildOrderCode(existingOrders.length + 1),
+    createdAt: new Date().toISOString(),
+    deliveryAddressFallback: getUserLocationFallback(user.id),
   });
 
-  const subtotalAmount = items.reduce(
-    (sum, item) => sum + item.lineTotal.amount,
-    0,
-  );
-  const shippingAmount = subtotalAmount >= 120 ? 0 : 9;
-  const subtotal = {
-    amount: Number(subtotalAmount.toFixed(2)),
-    currency: "USD",
-  };
-  const shipping = { amount: shippingAmount, currency: "USD" };
-  const total = {
-    amount: Number((subtotal.amount + shipping.amount).toFixed(2)),
-    currency: "USD",
-  };
-  const existingOrders = getShopOrders(ownerId);
-  const order: ShopOrder = {
-    id: randomUUID(),
-    userId: ownerId,
-    orderCode: buildOrderCode(existingOrders.length + 1),
-    status: "pending",
-    createdAt: new Date().toISOString(),
-    deliveryAddress:
-      (input.deliveryAddress?.trim().length ?? 0) > 0
-        ? input.deliveryAddress!.trim()
-        : getUserLocationFallback(ownerId),
-    notes: input.notes?.trim() ?? "",
-    subtotal,
-    shipping,
-    total,
-    itemCount: items.reduce((sum, item) => sum + item.quantity, 0),
-    items,
-  };
-
-  shopOrdersByUserId.set(ownerId, [order, ...existingOrders]);
-  return order;
+  shopProducts.splice(0, shopProducts.length, ...result.updatedProducts);
+  shopOrdersByUserId.set(user.id, [result.order, ...existingOrders]);
+  return result.order;
 }
 
 export function getBootstrap(userId?: string): AppBootstrap {

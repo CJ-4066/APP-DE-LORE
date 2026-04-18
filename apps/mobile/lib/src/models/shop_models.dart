@@ -44,7 +44,8 @@ class CreateShopProductInput {
     required this.priceAmount,
     required this.imageUrl,
     required this.badge,
-    required this.stockLabel,
+    required this.stockQuantity,
+    required this.madeToOrder,
     required this.featured,
     required this.tags,
   });
@@ -56,7 +57,8 @@ class CreateShopProductInput {
   final double priceAmount;
   final String imageUrl;
   final String badge;
-  final String stockLabel;
+  final int stockQuantity;
+  final bool madeToOrder;
   final bool featured;
   final List<String> tags;
 
@@ -72,7 +74,8 @@ class CreateShopProductInput {
         'currency': 'USD',
       },
       'badge': badge,
-      'stockLabel': stockLabel,
+      'stockQuantity': stockQuantity,
+      'madeToOrder': madeToOrder,
       'featured': featured,
       'tags': tags,
     };
@@ -88,7 +91,8 @@ class UpdateShopProductInput {
     this.priceAmount,
     this.imageUrl,
     this.badge,
-    this.stockLabel,
+    this.stockQuantity,
+    this.madeToOrder,
     this.featured,
     this.tags,
   });
@@ -100,7 +104,8 @@ class UpdateShopProductInput {
   final double? priceAmount;
   final String? imageUrl;
   final String? badge;
-  final String? stockLabel;
+  final int? stockQuantity;
+  final bool? madeToOrder;
   final bool? featured;
   final List<String>? tags;
 
@@ -117,7 +122,8 @@ class UpdateShopProductInput {
           'currency': 'USD',
         },
       if (badge != null) 'badge': badge,
-      if (stockLabel != null) 'stockLabel': stockLabel,
+      if (stockQuantity != null) 'stockQuantity': stockQuantity,
+      if (madeToOrder != null) 'madeToOrder': madeToOrder,
       if (featured != null) 'featured': featured,
       if (tags != null) 'tags': tags,
     };

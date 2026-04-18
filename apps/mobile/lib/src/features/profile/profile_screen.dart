@@ -44,6 +44,7 @@ class ProfileScreen extends StatelessWidget {
     final canOpenPrivacy = data.user.id.trim().isNotEmpty;
     final canOpenSupport = data.admin.activeUsers >= 0;
     final isGuestMode = data.user.id.trim().isEmpty;
+    final isAdmin = data.user.roles.contains('admin');
     final badgeCenter = buildBadgeCenterData(data);
 
     return SafeArea(
@@ -95,25 +96,54 @@ class ProfileScreen extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(height: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppPalette.softLilac,
-                                  borderRadius: BorderRadius.circular(999),
-                                ),
-                                child: Text(
-                                  '${badgeCenter.currentRank.title} · ${badgeCenter.xp} XP',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .labelMedium
-                                      ?.copyWith(
-                                        color: AppPalette.butterflyInk,
-                                        fontWeight: FontWeight.w900,
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppPalette.softLilac,
+                                      borderRadius: BorderRadius.circular(999),
+                                    ),
+                                    child: Text(
+                                      '${badgeCenter.currentRank.title} · ${badgeCenter.xp} XP',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelMedium
+                                          ?.copyWith(
+                                            color: AppPalette.butterflyInk,
+                                            fontWeight: FontWeight.w900,
+                                          ),
+                                    ),
+                                  ),
+                                  if (isAdmin)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 6,
                                       ),
-                                ),
+                                      decoration: BoxDecoration(
+                                        color: AppPalette.orchid.withValues(
+                                          alpha: 0.15,
+                                        ),
+                                        borderRadius: BorderRadius.circular(999),
+                                      ),
+                                      child: Text(
+                                        'Usuario madre',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelMedium
+                                            ?.copyWith(
+                                              color: AppPalette.indigo,
+                                              fontWeight: FontWeight.w900,
+                                            ),
+                                      ),
+                                    ),
+                                ],
                               ),
                             ],
                           ),

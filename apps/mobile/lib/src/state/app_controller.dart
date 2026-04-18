@@ -1266,6 +1266,7 @@ class AppController extends ChangeNotifier with WidgetsBindingObserver {
         zodiacSign: '',
         planId: freePlan?.id ?? 'free',
         accountType: 'client',
+        roles: const [],
         natalChart: NatalChart(
           subjectName: '',
           birthDate: '',

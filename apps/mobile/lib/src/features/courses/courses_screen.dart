@@ -37,9 +37,6 @@ class _CoursesScreenState extends State<CoursesScreen> {
       );
     }
 
-    final ritualsCount = 4;
-    final coursesCount = widget.data.courses.length;
-
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -57,37 +54,6 @@ class _CoursesScreenState extends State<CoursesScreen> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
             children: [
-              MysticBannerCard(
-                eyebrow: 'Biblioteca',
-                title: 'Un hub simple para rituales y cursos',
-                subtitle:
-                    'Por ahora esta pestaña queda intencionalmente mínima para no competir con Inicio, Tarot y Citas.',
-                glyphKind: MysticGlyphKind.course,
-                gradient: const [
-                  AppPalette.midnight,
-                  AppPalette.indigo,
-                  AppPalette.orchid,
-                ],
-                tags: [
-                  '$ritualsCount rituales base',
-                  '$coursesCount cursos seed',
-                  'menú reducido',
-                  'listo para crecer',
-                ],
-                primaryLabel: 'Rituales',
-                onPrimaryTap: () {
-                  setState(() {
-                    _selectedSection = _LibrarySection.rituals;
-                  });
-                },
-                secondaryLabel: 'Cursos',
-                onSecondaryTap: () {
-                  setState(() {
-                    _selectedSection = _LibrarySection.courses;
-                  });
-                },
-              ),
-              const SizedBox(height: 20),
               Wrap(
                 spacing: 10,
                 runSpacing: 10,

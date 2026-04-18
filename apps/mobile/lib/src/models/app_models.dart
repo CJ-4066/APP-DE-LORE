@@ -87,6 +87,7 @@ class UserProfile {
     required this.zodiacSign,
     required this.planId,
     required this.accountType,
+    required this.roles,
     required this.natalChart,
     required this.preferences,
   });
@@ -102,6 +103,7 @@ class UserProfile {
   final String zodiacSign;
   final String planId;
   final String accountType;
+  final List<String> roles;
   final NatalChart natalChart;
   final UserPreferences preferences;
 
@@ -118,6 +120,7 @@ class UserProfile {
       zodiacSign: json['zodiacSign'] as String? ?? '',
       planId: json['planId'] as String? ?? '',
       accountType: json['accountType'] as String? ?? 'client',
+      roles: _stringList(json['roles']),
       natalChart:
           NatalChart.fromJson(json['natalChart'] as Map<String, dynamic>),
       preferences: UserPreferences.fromJson(
@@ -139,6 +142,7 @@ class UserProfile {
       'zodiacSign': zodiacSign,
       'planId': planId,
       'accountType': accountType,
+      'roles': roles,
       'natalChart': natalChart.toJson(),
       'preferences': preferences.toJson(),
     };
@@ -771,6 +775,10 @@ class ShopProduct {
     required this.id,
     required this.name,
     required this.category,
+    required this.specialistId,
+    required this.specialistName,
+    required this.storeId,
+    required this.storeName,
     required this.shortDescription,
     required this.description,
     required this.price,
@@ -779,12 +787,18 @@ class ShopProduct {
     required this.badge,
     required this.featured,
     required this.stockLabel,
+    required this.stockQuantity,
+    required this.madeToOrder,
     required this.tags,
   });
 
   final String id;
   final String name;
   final String category;
+  final String specialistId;
+  final String specialistName;
+  final String storeId;
+  final String storeName;
   final String shortDescription;
   final String description;
   final Money price;
@@ -793,6 +807,8 @@ class ShopProduct {
   final String badge;
   final bool featured;
   final String stockLabel;
+  final int stockQuantity;
+  final bool madeToOrder;
   final List<String> tags;
 
   factory ShopProduct.fromJson(Map<String, dynamic> json) {
@@ -800,6 +816,10 @@ class ShopProduct {
       id: json['id'] as String? ?? '',
       name: json['name'] as String? ?? '',
       category: json['category'] as String? ?? '',
+      specialistId: json['specialistId'] as String? ?? '',
+      specialistName: json['specialistName'] as String? ?? '',
+      storeId: json['storeId'] as String? ?? '',
+      storeName: json['storeName'] as String? ?? '',
       shortDescription: json['shortDescription'] as String? ?? '',
       description: json['description'] as String? ?? '',
       price: Money.fromJson(json['price'] as Map<String, dynamic>),
@@ -808,6 +828,8 @@ class ShopProduct {
       badge: json['badge'] as String? ?? '',
       featured: json['featured'] as bool? ?? false,
       stockLabel: json['stockLabel'] as String? ?? '',
+      stockQuantity: (json['stockQuantity'] as num?)?.toInt() ?? 0,
+      madeToOrder: json['madeToOrder'] as bool? ?? false,
       tags: _stringList(json['tags']),
     );
   }
@@ -820,6 +842,10 @@ class ShopOrder {
     required this.orderCode,
     required this.status,
     required this.createdAt,
+    required this.specialistId,
+    required this.specialistName,
+    required this.storeId,
+    required this.storeName,
     required this.deliveryAddress,
     required this.notes,
     required this.subtotal,
@@ -834,6 +860,10 @@ class ShopOrder {
   final String orderCode;
   final String status;
   final String createdAt;
+  final String specialistId;
+  final String specialistName;
+  final String storeId;
+  final String storeName;
   final String deliveryAddress;
   final String notes;
   final Money subtotal;
@@ -849,6 +879,10 @@ class ShopOrder {
       orderCode: json['orderCode'] as String? ?? '',
       status: json['status'] as String? ?? '',
       createdAt: json['createdAt'] as String? ?? '',
+      specialistId: json['specialistId'] as String? ?? '',
+      specialistName: json['specialistName'] as String? ?? '',
+      storeId: json['storeId'] as String? ?? '',
+      storeName: json['storeName'] as String? ?? '',
       deliveryAddress: json['deliveryAddress'] as String? ?? '',
       notes: json['notes'] as String? ?? '',
       subtotal: Money.fromJson(json['subtotal'] as Map<String, dynamic>),

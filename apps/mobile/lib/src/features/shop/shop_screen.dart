@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../core/utils/formatters.dart';
-import '../../core/widgets/mystic_ui.dart';
 import '../../models/app_models.dart';
 import '../../models/shop_models.dart';
 
@@ -56,8 +55,7 @@ class _ShopScreenState extends State<ShopScreen> {
   void didUpdateWidget(covariant ShopScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    final validIds = widget.data.shop.products.map((item) => item.id).toSet();
-    _cart.removeWhere((productId, _) => !validIds.contains(productId));
+    _normalizeCart();
 
     if (widget.canManageShop) {
       _cart.clear();
@@ -141,50 +139,17 @@ class _ShopScreenState extends State<ShopScreen> {
                   widget.canManageShop || cartLines.isEmpty ? 28 : 126,
                 ),
                 children: [
-                  MysticBannerCard(
-                    eyebrow: widget.data.shop.title,
-                    title: widget.canManageShop
-                        ? 'Productos y órdenes'
-                        : widget.data.shop.title,
-                    subtitle: widget.canManageShop
-                        ? 'Gestiona catálogo, fotos, stock, destacados y órdenes sin flujo de compra.'
-                        : widget.data.shop.subtitle,
-                    glyphKind: MysticGlyphKind.ritual,
-                    gradient: const [
-                      AppPalette.midnight,
-                      AppPalette.indigo,
-                      AppPalette.orchid,
-                    ],
-                    tags: [
-                      '${products.length} productos',
-                      '$pendingOrders pendientes',
-                      '${lowStockProducts.length} bajo stock',
-                      '${customizableProducts.length} personalizables',
-                    ],
-                    primaryLabel: widget.canManageShop
-                        ? 'Nuevo producto'
-                        : cartLines.isEmpty
-                            ? 'Ir al catálogo'
-                            : 'Revisar pedido · ${_formatUsd(cartTotal)}',
-                    onPrimaryTap: widget.canManageShop
-                        ? _openCreateProductSheet
-                        : cartLines.isEmpty
-                            ? () {
-                                setState(() {
-                                  _selectedSection = _ShopSection.catalog;
-                                });
-                              }
-                            : _openCheckoutSheet,
-                    secondaryLabel: widget.canManageShop ? null : 'Órdenes',
-                    onSecondaryTap: widget.canManageShop
-                        ? null
-                        : () {
-                            setState(() {
-                              _selectedSection = _ShopSection.orders;
-                            });
-                          },
-                  ),
-                  const SizedBox(height: 18),
+                  if (widget.canManageShop) ...[
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: FilledButton.icon(
+                        onPressed: _openCreateProductSheet,
+                        icon: const Icon(Icons.add_shopping_cart_outlined),
+                        label: const Text('Nuevo producto'),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                  ],
                   _ShopMetricsGrid(
                     productCount: products.length,
                     featuredCount: featured.length,
@@ -216,9 +181,10 @@ class _ShopScreenState extends State<ShopScreen> {
                             cart: _cart,
                             onAdd: _incrementProduct,
                             onRemove: _decrementProduct,
-                            onOpenCatalog: () {
+                            onOpenCatalog: (category) {
                               setState(() {
                                 _selectedSection = _ShopSection.catalog;
+                                _selectedCategory = category ?? _allCategory;
                               });
                             },
                           ),
@@ -346,8 +312,94 @@ class _ShopScreenState extends State<ShopScreen> {
         .toList(growable: false);
   }
 
+  void _normalizeCart() {
+    final productsById = {
+      for (final product in widget.data.shop.products) product.id: product,
+    };
+    final nextCart = <String, int>{};
+    String? activeStoreId;
+
+    for (final entry in _cart.entries) {
+      final product = productsById[entry.key];
+      if (product == null) {
+        continue;
+      }
+
+      final normalizedQuantity = product.madeToOrder
+          ? entry.value
+          : entry.value > product.stockQuantity
+              ? product.stockQuantity
+              : entry.value;
+      if (normalizedQuantity <= 0) {
+        continue;
+      }
+
+      activeStoreId ??= product.storeId;
+      if (product.storeId != activeStoreId) {
+        continue;
+      }
+
+      nextCart[entry.key] = normalizedQuantity;
+    }
+
+    _cart
+      ..clear()
+      ..addAll(nextCart);
+  }
+
+  ShopProduct? _findProductById(String productId) {
+    for (final product in widget.data.shop.products) {
+      if (product.id == productId) {
+        return product;
+      }
+    }
+
+    return null;
+  }
+
+  void _showCartMessage(String message) {
+    if (!mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
   void _incrementProduct(String productId) {
     if (widget.canManageShop) {
+      return;
+    }
+
+    final product = _findProductById(productId);
+    if (product == null) {
+      return;
+    }
+
+    final currentQuantity = _cart[productId] ?? 0;
+    final cartLines = _cartLines(widget.data.shop.products);
+    final currentStoreId =
+        cartLines.isEmpty ? null : cartLines.first.product.storeId;
+
+    if (currentStoreId != null &&
+        currentStoreId != product.storeId &&
+        currentQuantity == 0) {
+      _showCartMessage(
+        'Cada pedido debe salir de una sola tienda. Finaliza o vacía el carrito para cambiar de especialista.',
+      );
+      return;
+    }
+
+    if (!product.madeToOrder && product.stockQuantity <= 0) {
+      _showCartMessage('${product.name} está agotado por ahora.');
+      return;
+    }
+
+    if (!product.madeToOrder && currentQuantity >= product.stockQuantity) {
+      _showCartMessage(
+        'Ya agregaste todo el stock disponible de ${product.name}.',
+      );
       return;
     }
 
@@ -412,10 +464,13 @@ class _ShopScreenState extends State<ShopScreen> {
       builder: (context) {
         return _StockManagerSheet(
           products: widget.data.shop.products,
-          onUpdateStock: (product, stockLabel) {
+          onUpdateStock: (product, stockQuantity, madeToOrder) {
             return widget.onUpdateProduct(
               productId: product.id,
-              input: UpdateShopProductInput(stockLabel: stockLabel),
+              input: UpdateShopProductInput(
+                stockQuantity: stockQuantity,
+                madeToOrder: madeToOrder,
+              ),
             );
           },
         );
@@ -708,7 +763,7 @@ class _ShopHomeView extends StatelessWidget {
   final Map<String, int> cart;
   final ValueChanged<String> onAdd;
   final ValueChanged<String> onRemove;
-  final VoidCallback onOpenCatalog;
+  final ValueChanged<String?> onOpenCatalog;
 
   @override
   Widget build(BuildContext context) {
@@ -768,7 +823,7 @@ class _ShopHomeView extends StatelessWidget {
             return _CollectionTile(
               label: category,
               count: count,
-              onTap: onOpenCatalog,
+              onTap: () => onOpenCatalog(category),
             );
           }).toList(),
         ),
@@ -776,7 +831,7 @@ class _ShopHomeView extends StatelessWidget {
         SizedBox(
           width: double.infinity,
           child: OutlinedButton.icon(
-            onPressed: onOpenCatalog,
+            onPressed: () => onOpenCatalog(null),
             icon: const Icon(Icons.grid_view_rounded),
             label: const Text('Ver catálogo completo'),
           ),
@@ -943,6 +998,11 @@ class _CatalogProductTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final addEnabled = product.madeToOrder || quantity < product.stockQuantity;
+    final addLabel = !product.madeToOrder && product.stockQuantity <= 0
+        ? 'Agotado'
+        : 'Agregar';
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -991,6 +1051,16 @@ class _CatalogProductTile extends StatelessWidget {
                         height: 1.08,
                       ),
                 ),
+                const SizedBox(height: 4),
+                Text(
+                  product.storeName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: AppPalette.indigo,
+                        fontWeight: FontWeight.w800,
+                      ),
+                ),
                 const SizedBox(height: 7),
                 Text(
                   product.stockLabel,
@@ -999,6 +1069,16 @@ class _CatalogProductTile extends StatelessWidget {
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: _stockColor(product.stockLabel),
                         fontWeight: FontWeight.w800,
+                      ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _stockSummary(product),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppPalette.mutedLavender,
+                        fontWeight: FontWeight.w700,
                       ),
                 ),
                 const SizedBox(height: 10),
@@ -1011,6 +1091,8 @@ class _CatalogProductTile extends StatelessWidget {
                 const SizedBox(height: 12),
                 _CompactQuantityControl(
                   quantity: quantity,
+                  addEnabled: addEnabled,
+                  emptyLabel: addLabel,
                   onAdd: onAdd,
                   onRemove: onRemove,
                 ),
@@ -1026,11 +1108,15 @@ class _CatalogProductTile extends StatelessWidget {
 class _CompactQuantityControl extends StatelessWidget {
   const _CompactQuantityControl({
     required this.quantity,
+    required this.addEnabled,
+    required this.emptyLabel,
     required this.onAdd,
     required this.onRemove,
   });
 
   final int quantity;
+  final bool addEnabled;
+  final String emptyLabel;
   final VoidCallback onAdd;
   final VoidCallback onRemove;
 
@@ -1040,12 +1126,12 @@ class _CompactQuantityControl extends StatelessWidget {
       return SizedBox(
         width: double.infinity,
         child: FilledButton(
-          onPressed: onAdd,
+          onPressed: addEnabled ? onAdd : null,
           style: FilledButton.styleFrom(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
             visualDensity: VisualDensity.compact,
           ),
-          child: const Text('Agregar'),
+          child: Text(emptyLabel),
         ),
       );
     }
@@ -1070,7 +1156,7 @@ class _CompactQuantityControl extends StatelessWidget {
                 ),
           ),
           IconButton(
-            onPressed: onAdd,
+            onPressed: addEnabled ? onAdd : null,
             visualDensity: VisualDensity.compact,
             icon: const Icon(Icons.add_rounded),
           ),
@@ -1443,9 +1529,10 @@ class _ProductEditorSheetState extends State<_ProductEditorSheet> {
   late final TextEditingController _priceController;
   late final TextEditingController _imageUrlController;
   late final TextEditingController _badgeController;
-  late final TextEditingController _stockController;
+  late final TextEditingController _stockQuantityController;
   late final TextEditingController _tagsController;
   bool _featured = false;
+  bool _madeToOrder = false;
   bool _isSubmitting = false;
   String? _error;
 
@@ -1460,7 +1547,7 @@ class _ProductEditorSheetState extends State<_ProductEditorSheet> {
     _priceController = TextEditingController();
     _imageUrlController = TextEditingController();
     _badgeController = TextEditingController(text: 'Nuevo');
-    _stockController = TextEditingController(text: 'Disponible');
+    _stockQuantityController = TextEditingController(text: '9');
     _tagsController = TextEditingController(text: 'nuevo, tienda');
   }
 
@@ -1473,7 +1560,7 @@ class _ProductEditorSheetState extends State<_ProductEditorSheet> {
     _priceController.dispose();
     _imageUrlController.dispose();
     _badgeController.dispose();
-    _stockController.dispose();
+    _stockQuantityController.dispose();
     _tagsController.dispose();
     super.dispose();
   }
@@ -1558,17 +1645,31 @@ class _ProductEditorSheetState extends State<_ProductEditorSheet> {
               const SizedBox(width: 12),
               Expanded(
                 child: TextField(
-                  controller: _stockController,
-                  textCapitalization: TextCapitalization.sentences,
+                  controller: _stockQuantityController,
+                  keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
-                    labelText: 'Stock',
-                    hintText: 'Disponible',
+                    labelText: 'Unidades',
+                    hintText: '9',
                   ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
+          SwitchListTile.adaptive(
+            value: _madeToOrder,
+            onChanged: (value) {
+              setState(() {
+                _madeToOrder = value;
+              });
+            },
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Hecho a pedido'),
+            subtitle: const Text(
+              'Úsalo cuando el producto no dependa de inventario fijo.',
+            ),
+          ),
+          const SizedBox(height: 8),
           TextField(
             controller: _tagsController,
             textCapitalization: TextCapitalization.sentences,
@@ -1628,7 +1729,7 @@ class _ProductEditorSheetState extends State<_ProductEditorSheet> {
     final price = double.tryParse(_priceController.text.trim());
     final imageUrl = _imageUrlController.text.trim();
     final badge = _badgeController.text.trim();
-    final stockLabel = _stockController.text.trim();
+    final stockQuantity = int.tryParse(_stockQuantityController.text.trim());
     final tags = _tagsController.text
         .split(',')
         .map((tag) => tag.trim())
@@ -1638,6 +1739,13 @@ class _ProductEditorSheetState extends State<_ProductEditorSheet> {
     if (name.length < 3 || category.length < 3 || price == null || price <= 0) {
       setState(() {
         _error = 'Completa nombre, categoría y precio válido.';
+      });
+      return;
+    }
+
+    if (!_madeToOrder && (stockQuantity == null || stockQuantity < 0)) {
+      setState(() {
+        _error = 'Ingresa un número de unidades válido.';
       });
       return;
     }
@@ -1659,7 +1767,8 @@ class _ProductEditorSheetState extends State<_ProductEditorSheet> {
           priceAmount: price,
           imageUrl: imageUrl,
           badge: badge.isEmpty ? 'Nuevo' : badge,
-          stockLabel: stockLabel.isEmpty ? 'Disponible' : stockLabel,
+          stockQuantity: _madeToOrder ? 0 : stockQuantity ?? 0,
+          madeToOrder: _madeToOrder,
           featured: _featured,
           tags: tags.isEmpty ? ['nuevo'] : tags,
         ),
@@ -1689,30 +1798,30 @@ class _StockManagerSheet extends StatefulWidget {
   });
 
   final List<ShopProduct> products;
-  final Future<ShopProduct> Function(ShopProduct product, String stockLabel)
-      onUpdateStock;
+  final Future<ShopProduct> Function(
+    ShopProduct product,
+    int stockQuantity,
+    bool madeToOrder,
+  ) onUpdateStock;
 
   @override
   State<_StockManagerSheet> createState() => _StockManagerSheetState();
 }
 
 class _StockManagerSheetState extends State<_StockManagerSheet> {
-  static const _options = [
-    'Disponible',
-    'Pocas unidades',
-    'Nueva llegada',
-    'Hecho a pedido',
-  ];
-
-  late final Map<String, String> _stockByProductId;
+  late final Map<String, int> _quantityByProductId;
+  late final Map<String, bool> _madeToOrderByProductId;
   final Set<String> _updatingIds = <String>{};
   String? _error;
 
   @override
   void initState() {
     super.initState();
-    _stockByProductId = {
-      for (final product in widget.products) product.id: product.stockLabel,
+    _quantityByProductId = {
+      for (final product in widget.products) product.id: product.stockQuantity,
+    };
+    _madeToOrderByProductId = {
+      for (final product in widget.products) product.id: product.madeToOrder,
     };
   }
 
@@ -1720,7 +1829,8 @@ class _StockManagerSheetState extends State<_StockManagerSheet> {
   Widget build(BuildContext context) {
     return _ShopSheetShell(
       title: 'Editar stock',
-      subtitle: 'Actualiza etiquetas operativas para ordenar mejor la tienda.',
+      subtitle:
+          'Actualiza unidades reales por producto y marca solo lo que va por pedido.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1739,11 +1849,26 @@ class _StockManagerSheetState extends State<_StockManagerSheet> {
               padding: const EdgeInsets.only(bottom: 12),
               child: _StockEditorRow(
                 product: product,
-                selectedLabel:
-                    _stockByProductId[product.id] ?? product.stockLabel,
+                quantity:
+                    _quantityByProductId[product.id] ?? product.stockQuantity,
+                madeToOrder:
+                    _madeToOrderByProductId[product.id] ?? product.madeToOrder,
                 updating: _updatingIds.contains(product.id),
-                options: _options,
-                onSelected: (label) => _update(product, label),
+                onDecrease: () {
+                  final current =
+                      _quantityByProductId[product.id] ?? product.stockQuantity;
+                  _update(product, current - 1, false);
+                },
+                onIncrease: () {
+                  final current =
+                      _quantityByProductId[product.id] ?? product.stockQuantity;
+                  _update(product, current + 1, false);
+                },
+                onToggleMadeToOrder: (value) {
+                  final current =
+                      _quantityByProductId[product.id] ?? product.stockQuantity;
+                  _update(product, value ? 0 : current, value);
+                },
               ),
             ),
           ),
@@ -1752,7 +1877,11 @@ class _StockManagerSheetState extends State<_StockManagerSheet> {
     );
   }
 
-  Future<void> _update(ShopProduct product, String stockLabel) async {
+  Future<void> _update(
+    ShopProduct product,
+    int stockQuantity,
+    bool madeToOrder,
+  ) async {
     if (_updatingIds.contains(product.id)) {
       return;
     }
@@ -1763,12 +1892,17 @@ class _StockManagerSheetState extends State<_StockManagerSheet> {
     });
 
     try {
-      final updated = await widget.onUpdateStock(product, stockLabel);
+      final updated = await widget.onUpdateStock(
+        product,
+        madeToOrder ? 0 : stockQuantity.clamp(0, 9999),
+        madeToOrder,
+      );
       if (!mounted) {
         return;
       }
       setState(() {
-        _stockByProductId[product.id] = updated.stockLabel;
+        _quantityByProductId[product.id] = updated.stockQuantity;
+        _madeToOrderByProductId[product.id] = updated.madeToOrder;
       });
     } catch (error) {
       if (!mounted) {
@@ -1790,17 +1924,21 @@ class _StockManagerSheetState extends State<_StockManagerSheet> {
 class _StockEditorRow extends StatelessWidget {
   const _StockEditorRow({
     required this.product,
-    required this.selectedLabel,
+    required this.quantity,
+    required this.madeToOrder,
     required this.updating,
-    required this.options,
-    required this.onSelected,
+    required this.onDecrease,
+    required this.onIncrease,
+    required this.onToggleMadeToOrder,
   });
 
   final ShopProduct product;
-  final String selectedLabel;
+  final int quantity;
+  final bool madeToOrder;
   final bool updating;
-  final List<String> options;
-  final ValueChanged<String> onSelected;
+  final VoidCallback onDecrease;
+  final VoidCallback onIncrease;
+  final ValueChanged<bool> onToggleMadeToOrder;
 
   @override
   Widget build(BuildContext context) {
@@ -1817,13 +1955,26 @@ class _StockEditorRow extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text(
-                  product.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w900,
-                      ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      product.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w900,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      product.storeName,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppPalette.mutedLavender,
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                  ],
                 ),
               ),
               if (updating)
@@ -1835,16 +1986,51 @@ class _StockEditorRow extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: options.map((option) {
-              return ChoiceChip(
-                label: Text(option),
-                selected: selectedLabel == option,
-                onSelected: updating ? null : (_) => onSelected(option),
-              );
-            }).toList(),
+          Row(
+            children: [
+              IconButton(
+                onPressed:
+                    updating || madeToOrder || quantity <= 0 ? null : onDecrease,
+                icon: const Icon(Icons.remove_circle_outline_rounded),
+              ),
+              Expanded(
+                child: Column(
+                  children: [
+                    Text(
+                      madeToOrder ? 'Hecho a pedido' : '$quantity unidades',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w900,
+                            color: _stockColor(
+                              _stockStatusLabel(quantity, madeToOrder),
+                            ),
+                          ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      _stockStatusLabel(quantity, madeToOrder),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppPalette.mutedLavender,
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                onPressed: updating || madeToOrder ? null : onIncrease,
+                icon: const Icon(Icons.add_circle_outline_rounded),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: FilterChip(
+              label: const Text('Hecho a pedido'),
+              selected: madeToOrder,
+              onSelected:
+                  updating ? null : (value) => onToggleMadeToOrder(value),
+            ),
           ),
         ],
       ),
@@ -2014,7 +2200,7 @@ class _AdminOrderRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${order.itemCount} artículos · ${formatMoney(order.total)}',
+                  '${order.storeName} · ${order.itemCount} artículos · ${formatMoney(order.total)}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppPalette.mutedLavender,
                         fontWeight: FontWeight.w700,
@@ -2158,6 +2344,16 @@ class _InventoryRow extends StatelessWidget {
                         fontWeight: FontWeight.w800,
                       ),
                 ),
+                const SizedBox(height: 2),
+                Text(
+                  '${product.storeName} · ${_stockSummary(product)}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: AppPalette.mutedLavender,
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
               ],
             ),
           ),
@@ -2293,6 +2489,11 @@ class _FeaturedProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final addEnabled = product.madeToOrder || quantity < product.stockQuantity;
+    final addLabel = !product.madeToOrder && product.stockQuantity <= 0
+        ? 'Agotado'
+        : 'Agregar';
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -2334,6 +2535,16 @@ class _FeaturedProductCard extends StatelessWidget {
                         fontWeight: FontWeight.w800,
                       ),
                 ),
+                const SizedBox(height: 4),
+                Text(
+                  product.storeName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: AppPalette.indigo,
+                        fontWeight: FontWeight.w800,
+                      ),
+                ),
                 const SizedBox(height: 6),
                 Text(
                   product.shortDescription,
@@ -2357,6 +2568,8 @@ class _FeaturedProductCard extends StatelessWidget {
                     const Spacer(),
                     _QuantityControl(
                       quantity: quantity,
+                      addEnabled: addEnabled,
+                      emptyLabel: addLabel,
                       onAdd: onAdd,
                       onRemove: onRemove,
                     ),
@@ -2422,11 +2635,15 @@ class _BadgeRow extends StatelessWidget {
 class _QuantityControl extends StatelessWidget {
   const _QuantityControl({
     required this.quantity,
+    required this.addEnabled,
+    required this.emptyLabel,
     required this.onAdd,
     required this.onRemove,
   });
 
   final int quantity;
+  final bool addEnabled;
+  final String emptyLabel;
   final VoidCallback onAdd;
   final VoidCallback onRemove;
 
@@ -2434,9 +2651,9 @@ class _QuantityControl extends StatelessWidget {
   Widget build(BuildContext context) {
     if (quantity == 0) {
       return FilledButton.icon(
-        onPressed: onAdd,
+        onPressed: addEnabled ? onAdd : null,
         icon: const Icon(Icons.add_shopping_cart_rounded, size: 18),
-        label: const Text('Agregar'),
+        label: Text(emptyLabel),
       );
     }
 
@@ -2460,7 +2677,7 @@ class _QuantityControl extends StatelessWidget {
                 ),
           ),
           IconButton(
-            onPressed: onAdd,
+            onPressed: addEnabled ? onAdd : null,
             visualDensity: VisualDensity.compact,
             icon: const Icon(Icons.add_rounded),
           ),
@@ -2591,6 +2808,14 @@ class _OrderCard extends StatelessWidget {
             '${formatSchedule(order.createdAt)} · ${order.itemCount} artículos',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppPalette.mutedLavender,
+                ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            order.storeName,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppPalette.indigo,
+                  fontWeight: FontWeight.w800,
                 ),
           ),
           const SizedBox(height: 10),
@@ -3368,21 +3593,47 @@ IconData _categoryIcon(String category) {
 }
 
 bool _isLowStockProduct(ShopProduct product) {
-  final stock = product.stockLabel.toLowerCase();
-  return stock.contains('pocas') ||
-      stock.contains('bajo') ||
-      stock.contains('últimas');
+  return !product.madeToOrder && product.stockQuantity > 0 && product.stockQuantity <= 3;
 }
 
 bool _isCustomizableProduct(ShopProduct product) {
   final badge = product.badge.toLowerCase();
-  final stock = product.stockLabel.toLowerCase();
   final tags = product.tags.join(' ').toLowerCase();
 
-  return badge.contains('personal') ||
-      stock.contains('pedido') ||
+  return product.madeToOrder ||
+      badge.contains('personal') ||
       tags.contains('carta natal') ||
       tags.contains('foil');
+}
+
+String _stockSummary(ShopProduct product) {
+  if (product.madeToOrder) {
+    return 'Se prepara por encargo';
+  }
+
+  if (product.stockQuantity <= 0) {
+    return 'Sin unidades disponibles';
+  }
+
+  if (product.stockQuantity == 1) {
+    return '1 unidad disponible';
+  }
+
+  return '${product.stockQuantity} unidades disponibles';
+}
+
+String _stockStatusLabel(int quantity, bool madeToOrder) {
+  if (madeToOrder) {
+    return 'Hecho a pedido';
+  }
+  if (quantity <= 0) {
+    return 'Agotado';
+  }
+  if (quantity <= 3) {
+    return 'Pocas unidades';
+  }
+
+  return 'Disponible';
 }
 
 Color _stockColor(String stockLabel) {

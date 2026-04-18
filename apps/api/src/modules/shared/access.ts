@@ -80,3 +80,31 @@ export async function requireManagedSpecialistProfile(
 
   return { userId, specialistProfileId };
 }
+
+export async function requireShopManagerAccess(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<{
+  userId: string;
+  specialistProfileId?: string;
+  isAdmin: boolean;
+} | null> {
+  const userId = await requireAuthenticatedUser(request, reply);
+  if (!userId) {
+    return null;
+  }
+
+  const isAdmin = await userHasRole(userId, "admin");
+  const specialistProfileId = await getManagedSpecialistProfileId(userId);
+
+  if (!isAdmin && !specialistProfileId) {
+    reply.code(403);
+    return null;
+  }
+
+  return {
+    userId,
+    specialistProfileId: specialistProfileId ?? undefined,
+    isAdmin,
+  };
+}

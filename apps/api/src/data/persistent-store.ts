@@ -17,7 +17,18 @@ import {
   isRedisConfigured,
   setRedisString,
 } from "../infrastructure/redis.js";
+import { getUserRoles, userHasRole } from "./authz-store.js";
 import { buildDailyHomeContent } from "./home-daily.js";
+import {
+  buildShopOrderDraft,
+  buildShopStockLabel,
+  buildShopViewerScope,
+  canManageShopOrder,
+  canManageShopProduct,
+  filterShopOrdersForScope,
+  filterShopProductsForScope,
+  normalizeShopProductOwnership,
+} from "./shop-domain.js";
 import {
   completePhoneProfile as completePhoneProfileMock,
   createBooking as createBookingMock,
@@ -190,6 +201,10 @@ interface ShopProductOverrideRow extends QueryResultRow {
   product_id: string;
   name: string;
   category: string;
+  specialist_id: string;
+  specialist_name: string;
+  store_id: string;
+  store_name: string;
   short_description: string;
   description: string;
   price_amount: string | number;
@@ -199,6 +214,8 @@ interface ShopProductOverrideRow extends QueryResultRow {
   badge: string;
   featured: boolean;
   stock_label: string;
+  stock_quantity: number;
+  made_to_order: boolean;
   tags: unknown;
   created_at: Date | string;
   updated_at: Date | string;
@@ -210,6 +227,10 @@ interface ShopOrderRow extends QueryResultRow {
   order_code: string;
   status: ShopOrderStatus;
   created_at: Date | string;
+  specialist_id: string;
+  specialist_name: string;
+  store_id: string;
+  store_name: string;
   delivery_address: string;
   notes: string;
   subtotal_amount: string | number;
@@ -362,6 +383,7 @@ function mapUserRow(row: UserRow): UserProfile {
     planId: row.plan_id,
     accountType: row.account_type,
     specialistProfileId: row.specialist_profile_id,
+    roles: [],
     natalChart: {
       subjectName: row.subject_name,
       birthDate: row.birth_date,
@@ -453,6 +475,10 @@ function mapShopProductOverrideRow(row: ShopProductOverrideRow): ShopProduct {
     id: row.product_id,
     name: row.name,
     category: row.category,
+    specialistId: row.specialist_id,
+    specialistName: row.specialist_name,
+    storeId: row.store_id,
+    storeName: row.store_name,
     shortDescription: row.short_description,
     description: row.description,
     price: mapMoney(row.price_amount, row.price_currency),
@@ -461,6 +487,8 @@ function mapShopProductOverrideRow(row: ShopProductOverrideRow): ShopProduct {
     badge: row.badge,
     featured: row.featured,
     stockLabel: row.stock_label,
+    stockQuantity: Number(row.stock_quantity),
+    madeToOrder: Boolean(row.made_to_order),
     tags: readStringArray(row.tags),
   };
 }
@@ -475,6 +503,10 @@ function mapShopOrderRows(
     orderCode: order.order_code,
     status: order.status,
     createdAt: toIsoString(order.created_at),
+    specialistId: order.specialist_id,
+    specialistName: order.specialist_name,
+    storeId: order.store_id,
+    storeName: order.store_name,
     deliveryAddress: order.delivery_address,
     notes: order.notes,
     subtotal: mapMoney(order.subtotal_amount, order.subtotal_currency),
@@ -562,6 +594,7 @@ function buildDefaultUser(): UserProfile {
     planId: "free",
     accountType: "client",
     specialistProfileId: "",
+    roles: [],
     natalChart: {
       subjectName: "",
       birthDate: "",
@@ -866,7 +899,7 @@ async function buildPhoneAuthSessionPayloadFromSession(
   session: SessionRow,
   runner?: QueryRunner,
 ): Promise<PhoneAuthSessionPayload> {
-  const user = await findUserById(session.user_id, runner);
+  const user = await getDatabaseUser(session.user_id, runner);
   const identity = await findIdentityByPhone(session.phone_number, runner);
 
   if (!user || !identity) {
@@ -936,7 +969,14 @@ async function getDatabaseUser(
     throw new Error("El usuario solicitado no existe.");
   }
 
-  return user;
+  return {
+    ...user,
+    roles: await getUserRoles(user.id),
+  };
+}
+
+async function isAdminUser(userId?: string): Promise<boolean> {
+  return userHasRole(userId ?? demoUserId, "admin");
 }
 
 export async function getManagedSpecialistProfileId(
@@ -1326,9 +1366,11 @@ export async function getBookings(userId?: string): Promise<Booking[]> {
   }
 
   const user = await getDatabaseUser(userId);
+  const isAdmin = user.roles?.includes("admin") ?? false;
   const specialistScope =
     user.accountType === "specialist" &&
-    Boolean(user.specialistProfileId?.trim());
+    Boolean(user.specialistProfileId?.trim()) &&
+    !isAdmin;
   const result = await runQuery<BookingRow>(
     `
       select
@@ -1345,14 +1387,16 @@ export async function getBookings(userId?: string): Promise<Booking[]> {
         price_currency,
         notes
       from bookings
-      where ${specialistScope ? "specialist_id" : "user_id"} = $1
+      ${isAdmin ? "" : `where ${specialistScope ? "specialist_id" : "user_id"} = $1`}
       order by scheduled_at asc
     `,
-    [
-      specialistScope
-        ? user.specialistProfileId?.trim() ?? user.id
-        : user.id,
-    ],
+    isAdmin
+        ? []
+        : [
+            specialistScope
+                ? user.specialistProfileId?.trim() ?? user.id
+                : user.id,
+          ],
   );
 
   return result.rows.map(mapBookingRow);
@@ -1563,6 +1607,10 @@ async function listShopProducts(): Promise<ShopProduct[]> {
         product_id,
         name,
         category,
+        specialist_id,
+        specialist_name,
+        store_id,
+        store_name,
         short_description,
         description,
         price_amount,
@@ -1572,6 +1620,8 @@ async function listShopProducts(): Promise<ShopProduct[]> {
         badge,
         featured,
         stock_label,
+        stock_quantity,
+        made_to_order,
         tags,
         created_at,
         updated_at
@@ -1604,13 +1654,20 @@ async function listShopProducts(): Promise<ShopProduct[]> {
   ];
 }
 
-async function upsertShopProductOverride(product: ShopProduct): Promise<void> {
+async function upsertShopProductOverride(
+  product: ShopProduct,
+  runner?: QueryRunner,
+): Promise<void> {
   await runQuery(
     `
       insert into shop_product_overrides (
         product_id,
         name,
         category,
+        specialist_id,
+        specialist_name,
+        store_id,
+        store_name,
         short_description,
         description,
         price_amount,
@@ -1620,14 +1677,20 @@ async function upsertShopProductOverride(product: ShopProduct): Promise<void> {
         badge,
         featured,
         stock_label,
+        stock_quantity,
+        made_to_order,
         tags,
         updated_at
       ) values (
-        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13::jsonb, now()
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19::jsonb, now()
       )
       on conflict (product_id) do update set
         name = excluded.name,
         category = excluded.category,
+        specialist_id = excluded.specialist_id,
+        specialist_name = excluded.specialist_name,
+        store_id = excluded.store_id,
+        store_name = excluded.store_name,
         short_description = excluded.short_description,
         description = excluded.description,
         price_amount = excluded.price_amount,
@@ -1637,6 +1700,8 @@ async function upsertShopProductOverride(product: ShopProduct): Promise<void> {
         badge = excluded.badge,
         featured = excluded.featured,
         stock_label = excluded.stock_label,
+        stock_quantity = excluded.stock_quantity,
+        made_to_order = excluded.made_to_order,
         tags = excluded.tags,
         updated_at = now()
     `,
@@ -1644,6 +1709,10 @@ async function upsertShopProductOverride(product: ShopProduct): Promise<void> {
       product.id,
       product.name,
       product.category,
+      product.specialistId,
+      product.specialistName,
+      product.storeId,
+      product.storeName,
       product.shortDescription,
       product.description,
       product.price.amount,
@@ -1653,9 +1722,12 @@ async function upsertShopProductOverride(product: ShopProduct): Promise<void> {
       product.badge,
       product.featured,
       product.stockLabel,
-      JSON.stringify(product.tags),
-    ],
-  );
+        product.stockQuantity,
+        product.madeToOrder,
+        JSON.stringify(product.tags),
+      ],
+      runner,
+    );
 }
 
 export async function getShopData(userId?: string): Promise<ShopData> {
@@ -1664,10 +1736,13 @@ export async function getShopData(userId?: string): Promise<ShopData> {
   }
 
   const seed = getShopDataMock(userId);
+  const user = await getDatabaseUser(userId);
+  const scope = buildShopViewerScope(user, await isAdminUser(user.id));
+  const products = filterShopProductsForScope(await listShopProducts(), scope);
 
   return {
     ...seed,
-    products: await listShopProducts(),
+    products,
     orders: await getShopOrders(userId),
   };
 }
@@ -1678,7 +1753,8 @@ export async function getShopOrders(userId?: string): Promise<ShopOrder[]> {
   }
 
   const user = await getDatabaseUser(userId);
-  const specialistScope = user.accountType === "specialist";
+  const scope = buildShopViewerScope(user, await isAdminUser(user.id));
+  const specialistScope = user.accountType === "specialist" && !scope.isAdmin;
   const ordersResult = await runQuery<ShopOrderRow>(
     `
       select
@@ -1687,6 +1763,10 @@ export async function getShopOrders(userId?: string): Promise<ShopOrder[]> {
         order_code,
         status,
         created_at,
+        specialist_id,
+        specialist_name,
+        store_id,
+        store_name,
         delivery_address,
         notes,
         subtotal_amount,
@@ -1697,14 +1777,14 @@ export async function getShopOrders(userId?: string): Promise<ShopOrder[]> {
         total_currency,
         item_count
       from shop_orders
-      ${specialistScope ? "" : "where user_id = $1"}
+      ${scope.isAdmin || specialistScope ? "" : "where user_id = $1"}
       order by created_at desc
     `,
-    specialistScope ? [] : [user.id],
+    scope.isAdmin || specialistScope ? [] : [user.id],
   );
 
   if (ordersResult.rows.length === 0) {
-    return getShopOrdersMock(specialistScope ? undefined : user.id);
+    return getShopOrdersMock(user.id);
   }
 
   const orderIds = ordersResult.rows.map((order) => order.id);
@@ -1737,13 +1817,16 @@ export async function getShopOrders(userId?: string): Promise<ShopOrder[]> {
   const databaseOrders = ordersResult.rows.map((order) =>
     mapShopOrderRows(order, itemsByOrderId.get(order.id) ?? []),
   );
-  const seedOrders = getShopOrdersMock(specialistScope ? undefined : user.id);
+  const seedOrders = getShopOrdersMock(user.id);
   const databaseOrderIds = new Set(databaseOrders.map((order) => order.id));
 
-  return [
-    ...databaseOrders,
-    ...seedOrders.filter((order) => !databaseOrderIds.has(order.id)),
-  ];
+  return filterShopOrdersForScope(
+    [
+      ...databaseOrders,
+      ...seedOrders.filter((order) => !databaseOrderIds.has(order.id)),
+    ],
+    scope,
+  );
 }
 
 export async function listServices(): Promise<ServiceOffer[]> {
@@ -1823,72 +1906,30 @@ export async function createShopOrder(
   }
 
   const user = await getDatabaseUser(userId);
-  const requestedItems = input.items ?? [];
-  if (requestedItems.length === 0) {
-    throw new Error("Agrega al menos un producto al carrito.");
-  }
-
   const products = await listShopProducts();
-  const items: ShopOrderItem[] = requestedItems.map((entry) => {
-    const productId = entry.productId?.trim() ?? "";
-    const quantity = Math.max(0, entry.quantity ?? 0);
-    if (productId.length === 0 || quantity < 1) {
-      throw new Error("El carrito contiene un producto inválido.");
-    }
-
-    const product = products.find((item) => item.id === productId);
-    if (!product) {
-      throw new Error("Uno de los productos ya no está disponible.");
-    }
-
-    return {
-      productId: product.id,
-      productName: product.name,
-      category: product.category,
-      quantity,
-      imageUrl: product.imageUrl,
-      unitPrice: cloneMoney(product.price),
-      lineTotal: {
-        amount: Number((product.price.amount * quantity).toFixed(2)),
-        currency: product.price.currency,
-      },
-    };
-  });
-  const subtotalAmount = items.reduce(
-    (sum, item) => sum + item.lineTotal.amount,
-    0,
-  );
-  const shippingAmount = subtotalAmount >= 120 ? 0 : 9;
-  const subtotal = {
-    amount: Number(subtotalAmount.toFixed(2)),
-    currency: "USD",
-  };
-  const shipping = { amount: shippingAmount, currency: "USD" };
-  const total = {
-    amount: Number((subtotal.amount + shipping.amount).toFixed(2)),
-    currency: "USD",
-  };
   const orderCountResult = await runQuery<{ count: string }>(
     "select count(*)::text as count from shop_orders where user_id = $1",
     [user.id],
   );
-  const order: ShopOrder = {
-    id: randomUUID(),
-    userId: user.id,
+  const orderDraft = buildShopOrderDraft({
+    input,
+    products,
+    viewer: buildShopViewerScope(user, false),
+    orderId: randomUUID(),
     orderCode: buildOrderCode(Number(orderCountResult.rows[0]?.count ?? 0) + 1),
-    status: "pending",
     createdAt: new Date().toISOString(),
-    deliveryAddress:
-      (input.deliveryAddress?.trim().length ?? 0) > 0
-        ? input.deliveryAddress!.trim()
-        : user.location,
-    notes: input.notes?.trim() ?? "",
-    subtotal,
-    shipping,
-    total,
-    itemCount: items.reduce((sum, item) => sum + item.quantity, 0),
-    items,
-  };
+    deliveryAddressFallback: user.location,
+  });
+  const order = orderDraft.order;
+  const updatedProducts = orderDraft.updatedProducts.filter((product) => {
+    const previous = products.find((item) => item.id === product.id);
+    return (
+      previous &&
+      (previous.stockQuantity !== product.stockQuantity ||
+        previous.stockLabel !== product.stockLabel ||
+        previous.madeToOrder !== product.madeToOrder)
+    );
+  });
 
   await withTransaction(async (client) => {
     await runQuery(
@@ -1899,6 +1940,10 @@ export async function createShopOrder(
           order_code,
           status,
           created_at,
+          specialist_id,
+          specialist_name,
+          store_id,
+          store_name,
           delivery_address,
           notes,
           subtotal_amount,
@@ -1910,7 +1955,7 @@ export async function createShopOrder(
           item_count,
           updated_at
         ) values (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, now()
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, now()
         )
       `,
       [
@@ -1919,6 +1964,10 @@ export async function createShopOrder(
         order.orderCode,
         order.status,
         order.createdAt,
+        order.specialistId,
+        order.specialistName,
+        order.storeId,
+        order.storeName,
         order.deliveryAddress,
         order.notes,
         order.subtotal.amount,
@@ -1965,6 +2014,10 @@ export async function createShopOrder(
         client,
       );
     }
+
+    for (const product of updatedProducts) {
+      await upsertShopProductOverride(product, client);
+    }
   });
 
   return order;
@@ -1972,14 +2025,17 @@ export async function createShopOrder(
 
 export async function createShopProduct(
   input: CreateShopProductInput,
+  specialistProfileId?: string,
 ): Promise<ShopProduct> {
   if (!isDatabaseConfigured()) {
-    return createShopProductMock(input);
+    return createShopProductMock(input, specialistProfileId);
   }
 
   const name = input.name?.trim() ?? "";
   const category = input.category?.trim() ?? "";
   const amount = Number(input.price?.amount ?? 0);
+  const ownerId = specialistProfileId?.trim() ?? "";
+  const owner = getSpecialists().find((item) => item.id === ownerId);
 
   if (name.length < 3) {
     throw new Error("Ingresa un nombre de producto válido.");
@@ -1990,30 +2046,47 @@ export async function createShopProduct(
   if (!Number.isFinite(amount) || amount <= 0) {
     throw new Error("Ingresa un precio válido.");
   }
+  if (!owner) {
+    throw new Error("No se encontró el especialista dueño de esta tienda.");
+  }
 
-  const product: ShopProduct = {
-    id: `shop-${slugifyShopValue(name)}-${randomUUID().slice(0, 8)}`,
-    name,
-    category,
-    shortDescription:
-      input.shortDescription?.trim() ||
-      input.description?.trim() ||
-      "Producto agregado desde administración.",
-    description:
-      input.description?.trim() ||
-      input.shortDescription?.trim() ||
-      "Producto agregado desde administración de tienda.",
-    price: {
-      amount: Number(amount.toFixed(2)),
-      currency: input.price?.currency?.trim() || "USD",
+  const madeToOrder = Boolean(input.madeToOrder);
+  const stockQuantity = madeToOrder
+    ? 0
+    : Math.max(0, Math.round(Number(input.stockQuantity ?? 0)));
+  const product = normalizeShopProductOwnership(
+    {
+      id: `shop-${slugifyShopValue(name)}-${randomUUID().slice(0, 8)}`,
+      name,
+      category,
+      specialistId: owner.id,
+      specialistName: owner.name,
+      storeId: ownerId,
+      storeName: owner.name,
+      shortDescription:
+        input.shortDescription?.trim() ||
+        input.description?.trim() ||
+        "Producto agregado desde administración.",
+      description:
+        input.description?.trim() ||
+        input.shortDescription?.trim() ||
+        "Producto agregado desde administración de tienda.",
+      price: {
+        amount: Number(amount.toFixed(2)),
+        currency: input.price?.currency?.trim() || "USD",
+      },
+      imageUrl: input.imageUrl?.trim() ?? "",
+      artwork: input.artwork?.trim() || inferShopArtwork(category),
+      badge: input.badge?.trim() || "Nuevo",
+      featured: input.featured ?? false,
+      stockLabel: buildShopStockLabel(stockQuantity, madeToOrder),
+      stockQuantity,
+      madeToOrder,
+      tags: normalizeShopTags(input.tags),
     },
-    imageUrl: input.imageUrl?.trim() ?? "",
-    artwork: input.artwork?.trim() || inferShopArtwork(category),
-    badge: input.badge?.trim() || "Nuevo",
-    featured: input.featured ?? false,
-    stockLabel: input.stockLabel?.trim() || "Disponible",
-    tags: normalizeShopTags(input.tags),
-  };
+    owner.id,
+    owner.name,
+  );
 
   await upsertShopProductOverride(product);
   return product;
@@ -2022,6 +2095,7 @@ export async function createShopProduct(
 export async function updateShopProduct(
   productId: string,
   input: UpdateShopProductInput,
+  managerScope?: { specialistProfileId?: string; isAdmin?: boolean },
 ): Promise<ShopProduct> {
   if (!isDatabaseConfigured()) {
     return updateShopProductMock(productId, input);
@@ -2042,28 +2116,51 @@ export async function updateShopProduct(
   if (!Number.isFinite(amount) || amount <= 0) {
     throw new Error("Ingresa un precio válido.");
   }
+  if (
+    managerScope &&
+    !canManageShopProduct(existing, {
+      userId: "",
+      accountType: "specialist",
+      specialistProfileId: managerScope.specialistProfileId,
+      isAdmin: Boolean(managerScope.isAdmin),
+    })
+  ) {
+    throw new Error("No puedes editar un producto de otra tienda especialista.");
+  }
 
   const category = input.category?.trim() || existing.category;
-  const updated: ShopProduct = {
-    ...existing,
-    name: input.name?.trim() || existing.name,
-    category,
-    shortDescription:
-      input.shortDescription?.trim() || existing.shortDescription,
-    description: input.description?.trim() || existing.description,
-    price: {
-      amount: Number(amount.toFixed(2)),
-      currency: input.price?.currency?.trim() || existing.price.currency,
+  const madeToOrder = input.madeToOrder ?? existing.madeToOrder;
+  const stockQuantity = madeToOrder
+    ? 0
+    : input.stockQuantity === undefined
+      ? existing.stockQuantity
+      : Math.max(0, Math.round(Number(input.stockQuantity)));
+  const updated: ShopProduct = normalizeShopProductOwnership(
+    {
+      ...existing,
+      name: input.name?.trim() || existing.name,
+      category,
+      shortDescription:
+        input.shortDescription?.trim() || existing.shortDescription,
+      description: input.description?.trim() || existing.description,
+      price: {
+        amount: Number(amount.toFixed(2)),
+        currency: input.price?.currency?.trim() || existing.price.currency,
+      },
+      imageUrl: input.imageUrl?.trim() ?? existing.imageUrl,
+      artwork:
+        input.artwork?.trim() || existing.artwork || inferShopArtwork(category),
+      badge: input.badge?.trim() || existing.badge,
+      featured: input.featured ?? existing.featured,
+      stockLabel: buildShopStockLabel(stockQuantity, madeToOrder),
+      stockQuantity,
+      madeToOrder,
+      tags:
+        input.tags === undefined ? existing.tags : normalizeShopTags(input.tags),
     },
-    imageUrl: input.imageUrl?.trim() ?? existing.imageUrl,
-    artwork:
-      input.artwork?.trim() || existing.artwork || inferShopArtwork(category),
-    badge: input.badge?.trim() || existing.badge,
-    featured: input.featured ?? existing.featured,
-    stockLabel: input.stockLabel?.trim() || existing.stockLabel,
-    tags:
-      input.tags === undefined ? existing.tags : normalizeShopTags(input.tags),
-  };
+    existing.specialistId,
+    existing.specialistName,
+  );
 
   await upsertShopProductOverride(updated);
   return updated;
@@ -2084,19 +2181,29 @@ export async function updateShopOrderStatus(
   }
 
   const user = await getDatabaseUser(userId);
+  const scope = buildShopViewerScope(user, await isAdminUser(user.id));
+  const currentOrders = await getShopOrders(user.id);
+  const currentOrder = currentOrders.find((item) => item.id === orderId);
+  if (!currentOrder || !canManageShopOrder(currentOrder, scope)) {
+    throw new Error("La orden no existe.");
+  }
   const result = await runQuery<ShopOrderRow>(
     `
       update shop_orders
       set status = $2,
           updated_at = now()
       where id = $1
-        ${user.accountType === "specialist" ? "" : "and user_id = $3"}
+        ${scope.isAdmin ? "" : "and specialist_id = $3"}
       returning
         id,
         user_id,
         order_code,
         status,
         created_at,
+        specialist_id,
+        specialist_name,
+        store_id,
+        store_name,
         delivery_address,
         notes,
         subtotal_amount,
@@ -2107,9 +2214,9 @@ export async function updateShopOrderStatus(
         total_currency,
         item_count
     `,
-    user.accountType === "specialist"
+    scope.isAdmin
       ? [orderId, status]
-      : [orderId, status, user.id],
+      : [orderId, status, currentOrder.specialistId],
   );
 
   const row = result.rows[0];

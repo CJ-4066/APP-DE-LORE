@@ -20,6 +20,7 @@ class BookingsScreen extends StatefulWidget {
     required this.onLoadCommunityChat,
     required this.onSendCommunityChatMessage,
     this.canManageBookings = false,
+    this.isAdminView = false,
   });
 
   final AppBootstrap data;
@@ -41,6 +42,7 @@ class BookingsScreen extends StatefulWidget {
   final Future<List<CommunityChatMessage>> Function(String body)
       onSendCommunityChatMessage;
   final bool canManageBookings;
+  final bool isAdminView;
 
   @override
   State<BookingsScreen> createState() => _BookingsScreenState();
@@ -305,6 +307,80 @@ class _BookingsScreenState extends State<BookingsScreen> {
     );
   }
 
+  Widget _buildAdminAgenda({
+    required int confirmedCount,
+    required int pendingPaymentCount,
+    required int cancelledCount,
+  }) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            AppPalette.shellGradientTop,
+            AppPalette.shellGradientMid,
+            AppPalette.shellGradientBottom,
+          ],
+        ),
+      ),
+      child: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: widget.onRefresh,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+            children: [
+              MysticBannerCard(
+                eyebrow: 'Agenda global',
+                title: 'Vista usuario madre',
+                subtitle:
+                    'Lectura transversal de las citas de la plataforma sin mezclarlas con el rol del cliente o del especialista.',
+                glyphKind: MysticGlyphKind.agenda,
+                gradient: AppPalette.darkBrandGradient,
+                tags: [
+                  '${widget.data.bookings.length} visibles',
+                  '$confirmedCount confirmadas',
+                  '$pendingPaymentCount pendientes',
+                  if (cancelledCount > 0) '$cancelledCount canceladas',
+                ],
+                primaryLabel: 'Chat comunidad',
+                onPrimaryTap: _openCommunityChat,
+              ),
+              const SizedBox(height: 20),
+              if (widget.data.bookings.isEmpty)
+                const MysticMiniBanner(
+                  title: 'Sin reservas globales',
+                  subtitle:
+                      'Cuando la API devuelva reservas, aquí aparecerán de forma consolidada para supervisión.',
+                  glyphKind: MysticGlyphKind.agenda,
+                  accent: AppPalette.orchid,
+                )
+              else
+                ...widget.data.bookings.map(
+                  (booking) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: MysticMiniBanner(
+                      title:
+                          '${booking.specialistName} · ${booking.serviceName}',
+                      subtitle:
+                          '${formatSchedule(booking.scheduledAt)} · ${formatMoney(booking.price)}\n${_modeLabel(booking.mode)} · ${_statusLabel(booking.status)}',
+                      glyphKind: booking.mode == 'video'
+                          ? MysticGlyphKind.video
+                          : booking.mode == 'audio'
+                              ? MysticGlyphKind.audio
+                              : MysticGlyphKind.chat,
+                      accent: _statusAccent(booking.status),
+                      onTap: () => _showBookingDetail(booking),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final tarotSpecialists = widget.data.specialists.where((specialist) {
@@ -324,6 +400,14 @@ class _BookingsScreenState extends State<BookingsScreen> {
 
     if (widget.canManageBookings) {
       return _buildSpecialistAgenda(
+        confirmedCount: confirmedCount,
+        pendingPaymentCount: pendingPaymentCount,
+        cancelledCount: cancelledCount,
+      );
+    }
+
+    if (widget.isAdminView) {
+      return _buildAdminAgenda(
         confirmedCount: confirmedCount,
         pendingPaymentCount: pendingPaymentCount,
         cancelledCount: cancelledCount,

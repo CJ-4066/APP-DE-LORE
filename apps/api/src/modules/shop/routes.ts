@@ -13,7 +13,8 @@ import {
 } from "../../data/persistent-store.js";
 import {
   requireAuthenticatedUser,
-  requireSpecialistProfile,
+  requireManagedSpecialistProfile,
+  requireShopManagerAccess,
 } from "../shared/access.js";
 
 export async function registerShopRoutes(app: FastifyInstance) {
@@ -59,18 +60,21 @@ export async function registerShopRoutes(app: FastifyInstance) {
   app.post<{ Body: CreateShopProductInput }>(
     "/products",
     async (request, reply) => {
-      const userId = await requireSpecialistProfile(request, reply);
-      if (!userId) {
+      const access = await requireManagedSpecialistProfile(request, reply);
+      if (!access) {
         return {
           error:
             reply.statusCode === 403
-              ? "Tu perfil debe estar en modo especialista."
+              ? "Configura tu perfil especialista para administrar tu tienda."
               : "Inicia sesión como especialista para administrar tienda.",
         };
       }
 
       try {
-        const item = await createShopProduct(request.body ?? {});
+        const item = await createShopProduct(
+          request.body ?? {},
+          access.specialistProfileId,
+        );
         reply.code(201);
 
         return {
@@ -91,12 +95,12 @@ export async function registerShopRoutes(app: FastifyInstance) {
   app.patch<{ Params: { productId: string }; Body: UpdateShopProductInput }>(
     "/products/:productId",
     async (request, reply) => {
-      const userId = await requireSpecialistProfile(request, reply);
-      if (!userId) {
+      const access = await requireManagedSpecialistProfile(request, reply);
+      if (!access) {
         return {
           error:
             reply.statusCode === 403
-              ? "Tu perfil debe estar en modo especialista."
+              ? "Configura tu perfil especialista para administrar tu tienda."
               : "Inicia sesión como especialista para administrar tienda.",
         };
       }
@@ -105,6 +109,10 @@ export async function registerShopRoutes(app: FastifyInstance) {
         const item = await updateShopProduct(
           request.params.productId,
           request.body ?? {},
+          {
+            specialistProfileId: access.specialistProfileId,
+            isAdmin: false,
+          },
         );
 
         return {
@@ -126,13 +134,13 @@ export async function registerShopRoutes(app: FastifyInstance) {
     Params: { orderId: string };
     Body: UpdateShopOrderStatusInput;
   }>("/orders/:orderId", async (request, reply) => {
-    const userId = await requireSpecialistProfile(request, reply);
-    if (!userId) {
+    const access = await requireShopManagerAccess(request, reply);
+    if (!access) {
       return {
         error:
           reply.statusCode === 403
-            ? "Tu perfil debe estar en modo especialista."
-            : "Inicia sesión como especialista para administrar tienda.",
+            ? "Necesitas permisos de especialista o usuario madre para administrar órdenes."
+            : "Inicia sesión para administrar órdenes de tienda.",
       };
     }
 
@@ -140,7 +148,7 @@ export async function registerShopRoutes(app: FastifyInstance) {
       const item = await updateShopOrderStatus(
         request.params.orderId,
         request.body ?? {},
-        userId,
+        access.userId,
       );
 
       return {

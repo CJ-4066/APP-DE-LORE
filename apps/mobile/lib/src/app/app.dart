@@ -5,6 +5,7 @@ import '../core/branding/renaciente_logo.dart';
 import '../core/i18n/app_i18n.dart';
 import '../core/theme/app_palette.dart';
 import '../core/theme/app_theme.dart';
+import '../features/admin/admin_workspace_screen.dart';
 import '../features/astro/astral_chart_screen.dart';
 import '../features/auth/auth_screens.dart';
 import '../features/bookings/bookings_screen.dart';
@@ -245,8 +246,70 @@ class _AuthenticatedShell extends StatelessWidget {
       return error;
     }
 
+    final isAdmin = data.user.roles.contains('admin');
     final isSpecialist = data.user.accountType == 'specialist';
-    final screens = isSpecialist
+    final screens = isAdmin
+        ? [
+            AdminWorkspaceScreen(
+              data: data,
+              onRefresh: controller.refreshHome,
+              onOpenShop: () => controller.setCurrentIndex(1),
+              onOpenCourses: () => controller.setCurrentIndex(2),
+              onOpenBookings: () => controller.setCurrentIndex(3),
+              onOpenProfile: () => controller.setCurrentIndex(4),
+              onUpdateOrderStatus: controller.updateShopOrderStatus,
+            ),
+            ShopScreen(
+              data: data,
+              onRefresh: controller.refreshHome,
+              onCreateOrder: controller.createShopOrder,
+              onCreateProduct: controller.createShopProduct,
+              onUpdateProduct: controller.updateShopProduct,
+              onUpdateOrderStatus: controller.updateShopOrderStatus,
+              canManageShop: isSpecialist,
+            ),
+            CoursesScreen(
+              data: data,
+              onRefresh: controller.refreshHome,
+              canManageCourses: isSpecialist,
+            ),
+            BookingsScreen(
+              data: data,
+              onRefresh: controller.refreshHome,
+              onCreateBooking: openBooking,
+              onLoadAvailability: controller.loadSpecialistAvailability,
+              onUpdateBooking: controller.updateBooking,
+              onCancelBooking: controller.cancelBooking,
+              onLoadCommunityChat: controller.loadCommunityChat,
+              onSendCommunityChatMessage: controller.sendCommunityChatMessage,
+              canManageBookings: false,
+              isAdminView: true,
+            ),
+            ProfileScreen(
+              data: data,
+              onRefresh: controller.refreshHome,
+              onOpenAstralChart: openAstralChart,
+              onEnterSpecialistMode: enterSpecialistMode,
+              onExitSpecialistMode: exitSpecialistMode,
+              currentLocale: controller.locale,
+              onChangeLocale: controller.setLocale,
+              onStartPhoneLogin: controller.goBackToPhoneEntry,
+              onLogout: controller.signOut,
+              onEditProfile: () async {
+                await Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => EditProfileScreen(
+                      user: data.user,
+                      onSave: controller.updateProfile,
+                      onUploadAvatar: controller.uploadProfileAvatar,
+                      onSearchBirthPlaces: controller.searchBirthPlaces,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ]
+        : isSpecialist
         ? [
             SpecialistWorkspaceScreen(
               data: data,
@@ -377,7 +440,35 @@ class _AuthenticatedShell extends StatelessWidget {
       bottomNavigationBar: NavigationBar(
         selectedIndex: selectedIndex,
         onDestinationSelected: controller.setCurrentIndex,
-        destinations: isSpecialist
+        destinations: isAdmin
+            ? [
+                const NavigationDestination(
+                  icon: Icon(Icons.admin_panel_settings_outlined),
+                  selectedIcon: Icon(Icons.admin_panel_settings),
+                  label: 'Madre',
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.shopping_bag_outlined),
+                  selectedIcon: const Icon(Icons.shopping_bag),
+                  label: l10n.tr('navShop'),
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.auto_stories_outlined),
+                  selectedIcon: const Icon(Icons.auto_stories),
+                  label: l10n.tr('navCourses'),
+                ),
+                const NavigationDestination(
+                  icon: Icon(Icons.calendar_month_outlined),
+                  selectedIcon: Icon(Icons.calendar_month),
+                  label: 'Agenda',
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.person_outline),
+                  selectedIcon: const Icon(Icons.person),
+                  label: l10n.tr('navProfile'),
+                ),
+              ]
+            : isSpecialist
             ? [
                 const NavigationDestination(
                   icon: Icon(Icons.dashboard_customize_outlined),
