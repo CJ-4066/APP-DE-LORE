@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/i18n/app_i18n.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/utils/formatters.dart';
 import '../../models/app_models.dart';
@@ -72,6 +73,7 @@ class _ShopScreenState extends State<ShopScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final products = widget.data.shop.products;
     final categories = <String>{
       _allCategory,
@@ -95,10 +97,6 @@ class _ShopScreenState extends State<ShopScreen> {
     );
     final cartShipping = cartSubtotal >= 120 || cartSubtotal == 0 ? 0.0 : 9.0;
     final cartTotal = cartSubtotal + cartShipping;
-    final pendingOrders = widget.data.shop.orders
-        .where(
-            (order) => order.status == 'pending' || order.status == 'confirmed')
-        .length;
     final lowStockProducts = products.where(_isLowStockProduct).toList();
     final customizableProducts =
         products.where(_isCustomizableProduct).toList(growable: false);
@@ -145,18 +143,11 @@ class _ShopScreenState extends State<ShopScreen> {
                       child: FilledButton.icon(
                         onPressed: _openCreateProductSheet,
                         icon: const Icon(Icons.add_shopping_cart_outlined),
-                        label: const Text('Nuevo producto'),
+                        label: Text(l10n.ts('Nuevo producto')),
                       ),
                     ),
                     const SizedBox(height: 18),
                   ],
-                  _ShopMetricsGrid(
-                    productCount: products.length,
-                    featuredCount: featured.length,
-                    pendingOrderCount: pendingOrders,
-                    lowStockCount: lowStockProducts.length,
-                  ),
-                  const SizedBox(height: 18),
                   _ShopSectionTabs(
                     sections: visibleSections,
                     selected: effectiveSection,
@@ -291,7 +282,13 @@ class _ShopScreenState extends State<ShopScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Orden ${order.orderCode} creada por ${formatMoney(order.total)}.',
+          context.l10n.ts(
+            'Orden {code} creada por {total}.',
+            {
+              'code': order.orderCode,
+              'total': formatMoney(order.total),
+            },
+          ),
         ),
       ),
     );
@@ -386,19 +383,29 @@ class _ShopScreenState extends State<ShopScreen> {
         currentStoreId != product.storeId &&
         currentQuantity == 0) {
       _showCartMessage(
-        'Cada pedido debe salir de una sola tienda. Finaliza o vacía el carrito para cambiar de especialista.',
+        context.l10n.ts(
+          'Cada pedido debe salir de una sola tienda. Finaliza o vacía el carrito para cambiar de especialista.',
+        ),
       );
       return;
     }
 
     if (!product.madeToOrder && product.stockQuantity <= 0) {
-      _showCartMessage('${product.name} está agotado por ahora.');
+      _showCartMessage(
+        context.l10n.ts(
+          '{name} está agotado por ahora.',
+          {'name': product.name},
+        ),
+      );
       return;
     }
 
     if (!product.madeToOrder && currentQuantity >= product.stockQuantity) {
       _showCartMessage(
-        'Ya agregaste todo el stock disponible de ${product.name}.',
+        context.l10n.ts(
+          'Ya agregaste todo el stock disponible de {name}.',
+          {'name': product.name},
+        ),
       );
       return;
     }
@@ -452,7 +459,14 @@ class _ShopScreenState extends State<ShopScreen> {
       _selectedCategory = product.category;
     });
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${product.name} agregado al catálogo.')),
+      SnackBar(
+        content: Text(
+          context.l10n.ts(
+            '{name} agregado al catálogo.',
+            {'name': product.name},
+          ),
+        ),
+      ),
     );
   }
 
@@ -509,7 +523,13 @@ class _ShopScreenState extends State<ShopScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            '${updated.orderCode} actualizado a ${_statusCopy(updated.status).label}.',
+            context.l10n.ts(
+              '{code} actualizado a {status}.',
+              {
+                'code': updated.orderCode,
+                'status': _statusCopy(context, updated.status).label,
+              },
+            ),
           ),
         ),
       );
@@ -527,140 +547,6 @@ class _ShopScreenState extends State<ShopScreen> {
 }
 
 enum _ShopSection { home, catalog, orders, admin }
-
-class _ShopMetricsGrid extends StatelessWidget {
-  const _ShopMetricsGrid({
-    required this.productCount,
-    required this.featuredCount,
-    required this.pendingOrderCount,
-    required this.lowStockCount,
-  });
-
-  final int productCount;
-  final int featuredCount;
-  final int pendingOrderCount;
-  final int lowStockCount;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final tileWidth = (constraints.maxWidth - 12) / 2;
-
-        return Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: [
-            _MetricTile(
-              width: tileWidth,
-              icon: Icons.inventory_2_outlined,
-              label: 'Productos',
-              value: '$productCount',
-              tone: AppPalette.royalViolet,
-            ),
-            _MetricTile(
-              width: tileWidth,
-              icon: Icons.auto_awesome_rounded,
-              label: 'Destacados',
-              value: '$featuredCount',
-              tone: AppPalette.flameGold,
-            ),
-            _MetricTile(
-              width: tileWidth,
-              icon: Icons.receipt_long_rounded,
-              label: 'Pendientes',
-              value: '$pendingOrderCount',
-              tone: AppPalette.indigo,
-            ),
-            _MetricTile(
-              width: tileWidth,
-              icon: Icons.warning_amber_rounded,
-              label: 'Bajo stock',
-              value: '$lowStockCount',
-              tone: AppPalette.berry,
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class _MetricTile extends StatelessWidget {
-  const _MetricTile({
-    required this.width,
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.tone,
-  });
-
-  final double width;
-  final IconData icon;
-  final String label;
-  final String value;
-  final Color tone;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: width,
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppPalette.moonIvory.withValues(alpha: 0.96),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppPalette.border),
-          boxShadow: [
-            BoxShadow(
-              color: tone.withValues(alpha: 0.08),
-              blurRadius: 18,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.all(14),
-        child: Row(
-          children: [
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: tone.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Icon(icon, color: tone, size: 22),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    value,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w900,
-                          color: AppPalette.midnight,
-                        ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: AppPalette.mutedLavender,
-                          fontWeight: FontWeight.w700,
-                        ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 class _ShopSectionTabs extends StatelessWidget {
   const _ShopSectionTabs({
@@ -732,7 +618,7 @@ class _ShopSectionButton extends StatelessWidget {
               Icon(_sectionIcon(section), color: accent, size: 18),
               const SizedBox(width: 8),
               Text(
-                _sectionLabel(section),
+                _sectionLabel(context, section),
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
                       color: accent,
                       fontWeight: FontWeight.w800,
@@ -767,23 +653,19 @@ class _ShopHomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final catalogCategories = categories
         .where((category) => category != _ShopScreenState._allCategory);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _SectionTitle(
-          title: 'Selección destacada',
-          subtitle:
-              'Piezas con más intención visual para abrir la tienda como una boutique ritual.',
-        ),
-        const SizedBox(height: 12),
         if (featured.isEmpty)
-          const _EmptyState(
-            title: 'Todavía no hay destacados',
-            subtitle:
-                'Cuando el catálogo tenga piezas marcadas como favoritas aparecerán aquí.',
+          _EmptyState(
+            title: l10n.ts('Todavía no hay destacados'),
+            subtitle: l10n.ts(
+              'Cuando el catálogo tenga piezas marcadas como favoritas aparecerán aquí.',
+            ),
           )
         else
           SizedBox(
@@ -808,9 +690,10 @@ class _ShopHomeView extends StatelessWidget {
           ),
         const SizedBox(height: 24),
         _SectionTitle(
-          title: 'Colecciones',
-          subtitle:
-              'Agrupa la tienda por familias para ubicar stock, destacados y piezas personalizadas más rápido.',
+          title: l10n.ts('Colecciones'),
+          subtitle: l10n.ts(
+            'Agrupa la tienda por familias para ubicar stock, destacados y piezas personalizadas más rápido.',
+          ),
         ),
         const SizedBox(height: 12),
         Wrap(
@@ -826,15 +709,6 @@ class _ShopHomeView extends StatelessWidget {
               onTap: () => onOpenCatalog(category),
             );
           }).toList(),
-        ),
-        const SizedBox(height: 16),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: () => onOpenCatalog(null),
-            icon: const Icon(Icons.grid_view_rounded),
-            label: const Text('Ver catálogo completo'),
-          ),
         ),
       ],
     );
@@ -854,6 +728,7 @@ class _CollectionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return SizedBox(
       width: 158,
       child: Material(
@@ -884,14 +759,14 @@ class _CollectionTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
                 Text(
-                  label,
+                  _categoryLabel(context, label),
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w900,
                       ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '$count productos',
+                  l10n.ts('{count} productos', {'count': '$count'}),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppPalette.mutedLavender,
                         fontWeight: FontWeight.w700,
@@ -927,13 +802,15 @@ class _ShopCatalogView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionTitle(
-          title: 'Catálogo visual',
-          subtitle:
-              'Vista tipo boutique: imagen primero, precio claro, stock visible y acción rápida para agregar.',
+        _SectionTitle(
+          title: l10n.ts('Catálogo visual'),
+          subtitle: l10n.ts(
+            'Vista tipo boutique: imagen primero, precio claro, stock visible y acción rápida para agregar.',
+          ),
         ),
         const SizedBox(height: 12),
         Wrap(
@@ -951,10 +828,11 @@ class _ShopCatalogView extends StatelessWidget {
         ),
         const SizedBox(height: 18),
         if (visibleProducts.isEmpty)
-          const _EmptyState(
-            title: 'No hay artículos en esta categoría',
-            subtitle:
-                'Prueba otro filtro o vuelve a Todos para ver el catálogo completo.',
+          _EmptyState(
+            title: l10n.ts('No hay artículos en esta categoría'),
+            subtitle: l10n.ts(
+              'Prueba otro filtro o vuelve a Todos para ver el catálogo completo.',
+            ),
           )
         else
           LayoutBuilder(
@@ -1000,8 +878,8 @@ class _CatalogProductTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final addEnabled = product.madeToOrder || quantity < product.stockQuantity;
     final addLabel = !product.madeToOrder && product.stockQuantity <= 0
-        ? 'Agotado'
-        : 'Agregar';
+        ? context.l10n.ts('Agotado')
+        : context.l10n.ts('Agregar');
 
     return Container(
       decoration: BoxDecoration(
@@ -1063,7 +941,7 @@ class _CatalogProductTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 7),
                 Text(
-                  product.stockLabel,
+                  _stockLabel(context, product.stockLabel),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
@@ -1073,7 +951,7 @@ class _CatalogProductTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  _stockSummary(product),
+                  _stockSummary(context, product),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -1177,21 +1055,23 @@ class _ShopOrdersView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _SectionTitle(
-          title: 'Órdenes',
+          title: l10n.ts('Órdenes'),
           subtitle: supportNote,
         ),
         const SizedBox(height: 12),
         _OrderPipeline(orders: orders),
         const SizedBox(height: 16),
         if (orders.isEmpty)
-          const _EmptyState(
-            title: 'Aún no hay órdenes',
-            subtitle:
-                'Cuando generes tu primer checkout aparecerá aquí con código y total.',
+          _EmptyState(
+            title: l10n.ts('Aún no hay órdenes'),
+            subtitle: l10n.ts(
+              'Cuando generes tu primer checkout aparecerá aquí con código y total.',
+            ),
           )
         else
           ...orders.map(
@@ -1215,10 +1095,18 @@ class _OrderPipeline extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final stages = [
-      _PipelineStage('Pendiente', 'pending', AppPalette.berry),
-      _PipelineStage('Confirmada', 'confirmed', AppPalette.success),
-      _PipelineStage('Preparando', 'preparing', AppPalette.flameGold),
-      _PipelineStage('Enviada', 'shipped', AppPalette.indigo),
+      _PipelineStage(context.l10n.ts('Pendiente'), 'pending', AppPalette.berry),
+      _PipelineStage(
+        context.l10n.ts('Confirmada'),
+        'confirmed',
+        AppPalette.success,
+      ),
+      _PipelineStage(
+        context.l10n.ts('Preparando'),
+        'preparing',
+        AppPalette.flameGold,
+      ),
+      _PipelineStage(context.l10n.ts('Enviada'), 'shipped', AppPalette.indigo),
     ];
 
     return SizedBox(
@@ -1315,13 +1203,15 @@ class _ShopAdminView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionTitle(
-          title: 'Administrar tienda',
-          subtitle:
-              'Centro visual para preparar gestión de productos, stock, destacados y seguimiento de órdenes.',
+        _SectionTitle(
+          title: l10n.ts('Administrar tienda'),
+          subtitle: l10n.ts(
+            'Centro visual para preparar gestión de productos, stock, destacados y seguimiento de órdenes.',
+          ),
         ),
         const SizedBox(height: 12),
         LayoutBuilder(
@@ -1334,33 +1224,47 @@ class _ShopAdminView extends StatelessWidget {
               children: [
                 _AdminActionCard(
                   width: tileWidth,
-                  title: 'Nuevo producto',
-                  subtitle: '${products.length} en catálogo',
+                  title: l10n.ts('Nuevo producto'),
+                  subtitle: l10n.ts(
+                    '{count} en catálogo',
+                    {'count': '${products.length}'},
+                  ),
                   icon: Icons.add_box_outlined,
                   color: AppPalette.indigo,
                   onTap: onCreateProduct,
                 ),
                 _AdminActionCard(
                   width: tileWidth,
-                  title: 'Editar stock',
-                  subtitle: '${lowStockProducts.length} alertas',
+                  title: l10n.ts('Editar stock'),
+                  subtitle: l10n.ts(
+                    '{count} alertas',
+                    {'count': '${lowStockProducts.length}'},
+                  ),
                   icon: Icons.inventory_outlined,
                   color: AppPalette.berry,
                   onTap: onEditStock,
                 ),
                 _AdminActionCard(
                   width: tileWidth,
-                  title: 'Destacados',
-                  subtitle:
-                      '${products.where((product) => product.featured).length} activos',
+                  title: l10n.ts('Destacados'),
+                  subtitle: l10n.ts(
+                    '{count} activos',
+                    {
+                      'count':
+                          '${products.where((product) => product.featured).length}',
+                    },
+                  ),
                   icon: Icons.auto_awesome_rounded,
                   color: AppPalette.roseDust,
                   onTap: onEditFeatured,
                 ),
                 _AdminActionCard(
                   width: tileWidth,
-                  title: 'Órdenes',
-                  subtitle: '${orders.length} recientes',
+                  title: l10n.ts('Órdenes'),
+                  subtitle: l10n.ts(
+                    '{count} recientes',
+                    {'count': '${orders.length}'},
+                  ),
                   icon: Icons.receipt_long_rounded,
                   color: AppPalette.success,
                   onTap: onOpenOrders,
@@ -1371,17 +1275,22 @@ class _ShopAdminView extends StatelessWidget {
         ),
         const SizedBox(height: 22),
         _SectionTitle(
-          title: 'Alertas de inventario',
+          title: l10n.ts('Alertas de inventario'),
           subtitle: lowStockProducts.isEmpty
-              ? 'No hay productos marcados con bajo stock en este momento.'
-              : 'Prioriza estas piezas antes de empujar campañas o destacados.',
+              ? l10n.ts(
+                  'No hay productos marcados con bajo stock en este momento.',
+                )
+              : l10n.ts(
+                  'Prioriza estas piezas antes de empujar campañas o destacados.',
+                ),
         ),
         const SizedBox(height: 12),
         if (lowStockProducts.isEmpty)
-          const _EmptyState(
-            title: 'Stock estable',
-            subtitle:
-                'Cuando un producto indique pocas unidades aparecerá en este bloque.',
+          _EmptyState(
+            title: l10n.ts('Stock estable'),
+            subtitle: l10n.ts(
+              'Cuando un producto indique pocas unidades aparecerá en este bloque.',
+            ),
           )
         else
           ...lowStockProducts.map(
@@ -1392,16 +1301,18 @@ class _ShopAdminView extends StatelessWidget {
           ),
         const SizedBox(height: 14),
         _SectionTitle(
-          title: 'Personalizables',
-          subtitle:
-              'Productos que requieren coordinación extra antes de preparar la orden.',
+          title: l10n.ts('Personalizables'),
+          subtitle: l10n.ts(
+            'Productos que requieren coordinación extra antes de preparar la orden.',
+          ),
         ),
         const SizedBox(height: 12),
         if (customizableProducts.isEmpty)
-          const _EmptyState(
-            title: 'Sin piezas personalizables',
-            subtitle:
-                'Los cuadros o pedidos hechos a medida aparecerán aquí cuando el catálogo los marque.',
+          _EmptyState(
+            title: l10n.ts('Sin piezas personalizables'),
+            subtitle: l10n.ts(
+              'Los cuadros o pedidos hechos a medida aparecerán aquí cuando el catálogo los marque.',
+            ),
           )
         else
           ...customizableProducts.map(
@@ -1411,17 +1322,19 @@ class _ShopAdminView extends StatelessWidget {
             ),
           ),
         const SizedBox(height: 14),
-        const _SectionTitle(
-          title: 'Gestión de órdenes',
-          subtitle:
-              'Cambia el estado operativo de cada orden sin salir de la tienda.',
+        _SectionTitle(
+          title: l10n.ts('Gestión de órdenes'),
+          subtitle: l10n.ts(
+            'Cambia el estado operativo de cada orden sin salir de la tienda.',
+          ),
         ),
         const SizedBox(height: 12),
         if (orders.isEmpty)
-          const _EmptyState(
-            title: 'Sin órdenes para gestionar',
-            subtitle:
-                'Cuando existan pedidos, podrás moverlos entre pendiente, confirmada, preparando y enviada.',
+          _EmptyState(
+            title: l10n.ts('Sin órdenes para gestionar'),
+            subtitle: l10n.ts(
+              'Cuando existan pedidos, podrás moverlos entre pendiente, confirmada, preparando y enviada.',
+            ),
           )
         else
           ...orders.take(6).map(
@@ -1567,18 +1480,20 @@ class _ProductEditorSheetState extends State<_ProductEditorSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return _ShopSheetShell(
-      title: 'Nuevo producto',
-      subtitle:
-          'Crea una ficha inicial para que aparezca al instante en el catálogo.',
+      title: l10n.ts('Nuevo producto'),
+      subtitle: l10n.ts(
+        'Crea una ficha inicial para que aparezca al instante en el catálogo.',
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           TextField(
             controller: _nameController,
             textCapitalization: TextCapitalization.words,
-            decoration: const InputDecoration(
-              labelText: 'Nombre',
+            decoration: InputDecoration(
+              labelText: l10n.ts('Nombre'),
               hintText: 'Ej. Tarot Lunar Vision',
             ),
           ),
@@ -1586,8 +1501,8 @@ class _ProductEditorSheetState extends State<_ProductEditorSheet> {
           TextField(
             controller: _categoryController,
             textCapitalization: TextCapitalization.words,
-            decoration: const InputDecoration(
-              labelText: 'Categoría',
+            decoration: InputDecoration(
+              labelText: l10n.ts('Categoría'),
               hintText: 'Tarot, Velas, Cuadros',
             ),
           ),
@@ -1595,8 +1510,8 @@ class _ProductEditorSheetState extends State<_ProductEditorSheet> {
           TextField(
             controller: _priceController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(
-              labelText: 'Precio USD',
+            decoration: InputDecoration(
+              labelText: l10n.ts('Precio USD'),
               hintText: '39.00',
             ),
           ),
@@ -1604,9 +1519,9 @@ class _ProductEditorSheetState extends State<_ProductEditorSheet> {
           TextField(
             controller: _shortDescriptionController,
             textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(
-              labelText: 'Descripción corta',
-              hintText: 'Una línea para la tarjeta del catálogo',
+            decoration: InputDecoration(
+              labelText: l10n.ts('Descripción corta'),
+              hintText: l10n.ts('Una línea para la tarjeta del catálogo'),
             ),
           ),
           const SizedBox(height: 12),
@@ -1614,19 +1529,21 @@ class _ProductEditorSheetState extends State<_ProductEditorSheet> {
             controller: _descriptionController,
             maxLines: 3,
             textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(
-              labelText: 'Descripción completa',
-              hintText: 'Detalles del producto, intención o uso',
+            decoration: InputDecoration(
+              labelText: l10n.ts('Descripción completa'),
+              hintText: l10n.ts('Detalles del producto, intención o uso'),
             ),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _imageUrlController,
             keyboardType: TextInputType.url,
-            decoration: const InputDecoration(
-              labelText: 'Foto del producto',
+            decoration: InputDecoration(
+              labelText: l10n.ts('Foto del producto'),
               hintText: 'https://.../producto.jpg',
-              helperText: 'Usa imagen vertical, nítida y bien iluminada.',
+              helperText: l10n.ts(
+                'Usa imagen vertical, nítida y bien iluminada.',
+              ),
             ),
           ),
           const SizedBox(height: 12),
@@ -1636,9 +1553,9 @@ class _ProductEditorSheetState extends State<_ProductEditorSheet> {
                 child: TextField(
                   controller: _badgeController,
                   textCapitalization: TextCapitalization.sentences,
-                  decoration: const InputDecoration(
-                    labelText: 'Badge',
-                    hintText: 'Nuevo',
+                  decoration: InputDecoration(
+                    labelText: l10n.ts('Badge'),
+                    hintText: l10n.ts('Nuevo'),
                   ),
                 ),
               ),
@@ -1647,8 +1564,8 @@ class _ProductEditorSheetState extends State<_ProductEditorSheet> {
                 child: TextField(
                   controller: _stockQuantityController,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Unidades',
+                  decoration: InputDecoration(
+                    labelText: l10n.ts('Unidades'),
                     hintText: '9',
                   ),
                 ),
@@ -1664,18 +1581,20 @@ class _ProductEditorSheetState extends State<_ProductEditorSheet> {
               });
             },
             contentPadding: EdgeInsets.zero,
-            title: const Text('Hecho a pedido'),
-            subtitle: const Text(
-              'Úsalo cuando el producto no dependa de inventario fijo.',
+            title: Text(l10n.ts('Hecho a pedido')),
+            subtitle: Text(
+              l10n.ts(
+                'Úsalo cuando el producto no dependa de inventario fijo.',
+              ),
             ),
           ),
           const SizedBox(height: 8),
           TextField(
             controller: _tagsController,
             textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(
-              labelText: 'Tags',
-              hintText: 'Separados por coma',
+            decoration: InputDecoration(
+              labelText: l10n.ts('Tags'),
+              hintText: l10n.ts('Separados por coma'),
             ),
           ),
           const SizedBox(height: 8),
@@ -1687,7 +1606,7 @@ class _ProductEditorSheetState extends State<_ProductEditorSheet> {
               });
             },
             contentPadding: EdgeInsets.zero,
-            title: const Text('Marcar como destacado'),
+            title: Text(l10n.ts('Marcar como destacado')),
           ),
           if (_error != null) ...[
             const SizedBox(height: 8),
@@ -1712,7 +1631,9 @@ class _ProductEditorSheetState extends State<_ProductEditorSheet> {
                     )
                   : const Icon(Icons.add_box_outlined),
               label: Text(
-                _isSubmitting ? 'Guardando...' : 'Crear producto',
+                _isSubmitting
+                    ? l10n.ts('Guardando...')
+                    : l10n.ts('Crear producto'),
               ),
             ),
           ),
@@ -1738,14 +1659,16 @@ class _ProductEditorSheetState extends State<_ProductEditorSheet> {
 
     if (name.length < 3 || category.length < 3 || price == null || price <= 0) {
       setState(() {
-        _error = 'Completa nombre, categoría y precio válido.';
+        _error = context.l10n.ts(
+          'Completa nombre, categoría y precio válido.',
+        );
       });
       return;
     }
 
     if (!_madeToOrder && (stockQuantity == null || stockQuantity < 0)) {
       setState(() {
-        _error = 'Ingresa un número de unidades válido.';
+        _error = context.l10n.ts('Ingresa un número de unidades válido.');
       });
       return;
     }
@@ -1761,16 +1684,16 @@ class _ProductEditorSheetState extends State<_ProductEditorSheet> {
           name: name,
           category: category,
           shortDescription: shortDescription.isEmpty
-              ? 'Producto agregado desde administración.'
+              ? context.l10n.ts('Producto agregado desde administración.')
               : shortDescription,
           description: description.isEmpty ? shortDescription : description,
           priceAmount: price,
           imageUrl: imageUrl,
-          badge: badge.isEmpty ? 'Nuevo' : badge,
+          badge: badge.isEmpty ? context.l10n.ts('Nuevo') : badge,
           stockQuantity: _madeToOrder ? 0 : stockQuantity ?? 0,
           madeToOrder: _madeToOrder,
           featured: _featured,
-          tags: tags.isEmpty ? ['nuevo'] : tags,
+          tags: tags.isEmpty ? [context.l10n.ts('nuevo')] : tags,
         ),
       );
       if (!mounted) {
@@ -1827,10 +1750,12 @@ class _StockManagerSheetState extends State<_StockManagerSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return _ShopSheetShell(
-      title: 'Editar stock',
-      subtitle:
-          'Actualiza unidades reales por producto y marca solo lo que va por pedido.',
+      title: l10n.ts('Editar stock'),
+      subtitle: l10n.ts(
+        'Actualiza unidades reales por producto y marca solo lo que va por pedido.',
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1942,6 +1867,7 @@ class _StockEditorRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -1989,25 +1915,26 @@ class _StockEditorRow extends StatelessWidget {
           Row(
             children: [
               IconButton(
-                onPressed:
-                    updating || madeToOrder || quantity <= 0 ? null : onDecrease,
+                onPressed: updating || madeToOrder || quantity <= 0
+                    ? null
+                    : onDecrease,
                 icon: const Icon(Icons.remove_circle_outline_rounded),
               ),
               Expanded(
                 child: Column(
                   children: [
                     Text(
-                      madeToOrder ? 'Hecho a pedido' : '$quantity unidades',
+                      madeToOrder
+                          ? l10n.ts('Hecho a pedido')
+                          : l10n.ts('{count} unidades', {'count': '$quantity'}),
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.w900,
-                            color: _stockColor(
-                              _stockStatusLabel(quantity, madeToOrder),
-                            ),
+                            color: _stockStateColor(quantity, madeToOrder),
                           ),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      _stockStatusLabel(quantity, madeToOrder),
+                      _stockStatusLabel(context, quantity, madeToOrder),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: AppPalette.mutedLavender,
                             fontWeight: FontWeight.w700,
@@ -2026,7 +1953,7 @@ class _StockEditorRow extends StatelessWidget {
           Align(
             alignment: Alignment.centerLeft,
             child: FilterChip(
-              label: const Text('Hecho a pedido'),
+              label: Text(l10n.ts('Hecho a pedido')),
               selected: madeToOrder,
               onSelected:
                   updating ? null : (value) => onToggleMadeToOrder(value),
@@ -2067,10 +1994,12 @@ class _FeaturedManagerSheetState extends State<_FeaturedManagerSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return _ShopSheetShell(
-      title: 'Destacados',
-      subtitle:
-          'Controla qué productos aparecen en la vitrina principal de Shop.',
+      title: l10n.ts('Destacados'),
+      subtitle: l10n.ts(
+        'Controla qué productos aparecen en la vitrina principal de Shop.',
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -2099,7 +2028,9 @@ class _FeaturedManagerSheetState extends State<_FeaturedManagerSheet> {
                           fontWeight: FontWeight.w900,
                         ),
                   ),
-                  subtitle: Text('${product.category} · ${product.stockLabel}'),
+                  subtitle: Text(
+                    '${_categoryLabel(context, product.category)} · ${_stockStatusLabel(context, product.stockQuantity, product.madeToOrder)}',
+                  ),
                   secondary: updating
                       ? const SizedBox(
                           width: 22,
@@ -2167,7 +2098,7 @@ class _AdminOrderRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final status = _statusCopy(order.status);
+    final status = _statusCopy(context, order.status);
 
     return Container(
       decoration: BoxDecoration(
@@ -2200,7 +2131,14 @@ class _AdminOrderRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${order.storeName} · ${order.itemCount} artículos · ${formatMoney(order.total)}',
+                  context.l10n.ts(
+                    '{store} · {count} artículos · {total}',
+                    {
+                      'store': order.storeName,
+                      'count': '${order.itemCount}',
+                      'total': formatMoney(order.total),
+                    },
+                  ),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppPalette.mutedLavender,
                         fontWeight: FontWeight.w700,
@@ -2211,11 +2149,23 @@ class _AdminOrderRow extends StatelessWidget {
           ),
           PopupMenuButton<String>(
             onSelected: onUpdateStatus,
-            itemBuilder: (context) => const [
-              PopupMenuItem(value: 'pending', child: Text('Pendiente')),
-              PopupMenuItem(value: 'confirmed', child: Text('Confirmada')),
-              PopupMenuItem(value: 'preparing', child: Text('Preparando')),
-              PopupMenuItem(value: 'shipped', child: Text('Enviada')),
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'pending',
+                child: Text(context.l10n.ts('Pendiente')),
+              ),
+              PopupMenuItem(
+                value: 'confirmed',
+                child: Text(context.l10n.ts('Confirmada')),
+              ),
+              PopupMenuItem(
+                value: 'preparing',
+                child: Text(context.l10n.ts('Preparando')),
+              ),
+              PopupMenuItem(
+                value: 'shipped',
+                child: Text(context.l10n.ts('Enviada')),
+              ),
             ],
             child: _MiniPill(
               label: status.label,
@@ -2336,7 +2286,7 @@ class _InventoryRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${product.category} · ${product.stockLabel}',
+                  '${_categoryLabel(context, product.category)} · ${_stockStatusLabel(context, product.stockQuantity, product.madeToOrder)}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -2346,7 +2296,7 @@ class _InventoryRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${product.storeName} · ${_stockSummary(product)}',
+                  '${product.storeName} · ${_stockSummary(context, product)}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
@@ -2463,7 +2413,7 @@ class _CategoryChip extends StatelessWidget {
           ),
         ),
         child: Text(
-          label,
+          _categoryLabel(context, label),
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
                 color: accent,
                 fontWeight: FontWeight.w700,
@@ -2491,8 +2441,8 @@ class _FeaturedProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final addEnabled = product.madeToOrder || quantity < product.stockQuantity;
     final addLabel = !product.madeToOrder && product.stockQuantity <= 0
-        ? 'Agotado'
-        : 'Agregar';
+        ? context.l10n.ts('Agotado')
+        : context.l10n.ts('Agregar');
 
     return Container(
       decoration: BoxDecoration(
@@ -2620,7 +2570,7 @@ class _BadgeRow extends StatelessWidget {
             borderRadius: BorderRadius.circular(999),
           ),
           child: Text(
-            stockLabel,
+            _stockLabel(context, stockLabel),
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: AppPalette.success,
                   fontWeight: FontWeight.w700,
@@ -2700,6 +2650,7 @@ class _FloatingCartBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -2733,7 +2684,10 @@ class _FloatingCartBar extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  '$itemCount artículos en carrito',
+                  l10n.ts(
+                    '{count} artículos en carrito',
+                    {'count': '$itemCount'},
+                  ),
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
@@ -2764,7 +2718,8 @@ class _OrderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final status = _statusCopy(order.status);
+    final l10n = context.l10n;
+    final status = _statusCopy(context, order.status);
 
     return Container(
       decoration: BoxDecoration(
@@ -2805,7 +2760,13 @@ class _OrderCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '${formatSchedule(order.createdAt)} · ${order.itemCount} artículos',
+            l10n.ts(
+              '{date} · {count} artículos',
+              {
+                'date': formatSchedule(order.createdAt),
+                'count': '${order.itemCount}',
+              },
+            ),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppPalette.mutedLavender,
                 ),
@@ -2823,7 +2784,13 @@ class _OrderCard extends StatelessWidget {
                 (item) => Padding(
                   padding: const EdgeInsets.only(bottom: 6),
                   child: Text(
-                    '• ${item.productName} x${item.quantity}',
+                    l10n.ts(
+                      '• {name} x{quantity}',
+                      {
+                        'name': item.productName,
+                        'quantity': '${item.quantity}',
+                      },
+                    ),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: AppPalette.butterflyInk,
                         ),
@@ -2832,14 +2799,17 @@ class _OrderCard extends StatelessWidget {
               ),
           const SizedBox(height: 6),
           Text(
-            'Entrega: ${order.deliveryAddress}',
+            l10n.ts(
+              'Entrega: {address}',
+              {'address': order.deliveryAddress},
+            ),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppPalette.mutedLavender,
                 ),
           ),
           const SizedBox(height: 10),
           _SummaryRow(
-            label: 'Total',
+            label: l10n.ts('Total'),
             value: formatMoney(order.total),
             highlight: true,
           ),
@@ -2925,6 +2895,7 @@ class _CheckoutSheetState extends State<_CheckoutSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final subtotal = widget.lines.fold<double>(
       0,
       (sum, line) => sum + (line.product.price.amount * line.quantity),
@@ -2973,8 +2944,10 @@ class _CheckoutSheetState extends State<_CheckoutSheet> {
                 const SizedBox(height: 16),
                 _CheckoutSectionCard(
                   step: '1',
-                  title: 'Productos del pedido',
-                  subtitle: 'Revisa cantidades y productos antes de confirmar.',
+                  title: l10n.ts('Productos del pedido'),
+                  subtitle: l10n.ts(
+                    'Revisa cantidades y productos antes de confirmar.',
+                  ),
                   child: Column(
                     children: widget.lines
                         .map(
@@ -2989,14 +2962,16 @@ class _CheckoutSheetState extends State<_CheckoutSheet> {
                 const SizedBox(height: 14),
                 _CheckoutSectionCard(
                   step: '2',
-                  title: 'Entrega',
-                  subtitle: 'Agrega dirección, distrito y una referencia útil.',
+                  title: l10n.ts('Entrega'),
+                  subtitle: l10n.ts(
+                    'Agrega dirección, distrito y una referencia útil.',
+                  ),
                   child: TextField(
                     controller: _addressController,
                     textCapitalization: TextCapitalization.sentences,
-                    decoration: const InputDecoration(
-                      labelText: 'Dirección de entrega',
-                      hintText: 'Distrito, ciudad, referencia',
+                    decoration: InputDecoration(
+                      labelText: l10n.ts('Dirección de entrega'),
+                      hintText: l10n.ts('Distrito, ciudad, referencia'),
                       prefixIcon: Icon(Icons.location_on_outlined),
                     ),
                   ),
@@ -3004,16 +2979,19 @@ class _CheckoutSheetState extends State<_CheckoutSheet> {
                 const SizedBox(height: 14),
                 _CheckoutSectionCard(
                   step: '3',
-                  title: 'Notas',
-                  subtitle:
-                      'Opcional: horario, referencia o pedido personalizado.',
+                  title: l10n.ts('Notas'),
+                  subtitle: l10n.ts(
+                    'Opcional: horario, referencia o pedido personalizado.',
+                  ),
                   child: TextField(
                     controller: _notesController,
                     maxLines: 3,
                     textCapitalization: TextCapitalization.sentences,
-                    decoration: const InputDecoration(
-                      labelText: 'Notas para la orden',
-                      hintText: 'Horario, referencia, pedido especial',
+                    decoration: InputDecoration(
+                      labelText: l10n.ts('Notas para la orden'),
+                      hintText: l10n.ts(
+                        'Horario, referencia, pedido especial',
+                      ),
                       prefixIcon: Icon(Icons.edit_note_outlined),
                     ),
                   ),
@@ -3057,8 +3035,11 @@ class _CheckoutSheetState extends State<_CheckoutSheet> {
                         : const Icon(Icons.shopping_bag_rounded),
                     label: Text(
                       _isSubmitting
-                          ? 'Generando pedido...'
-                          : 'Crear pedido · ${_formatUsd(total)}',
+                          ? l10n.ts('Generando pedido...')
+                          : l10n.ts(
+                              'Crear pedido · {total}',
+                              {'total': _formatUsd(total)},
+                            ),
                     ),
                   ),
                 ),
@@ -3074,7 +3055,9 @@ class _CheckoutSheetState extends State<_CheckoutSheet> {
     final deliveryAddress = _addressController.text.trim();
     if (deliveryAddress.isEmpty) {
       setState(() {
-        _error = 'Ingresa una dirección o referencia de entrega.';
+        _error = context.l10n.ts(
+          'Ingresa una dirección o referencia de entrega.',
+        );
       });
       return;
     }
@@ -3120,6 +3103,7 @@ class _CheckoutHeroHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
@@ -3164,7 +3148,7 @@ class _CheckoutHeroHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Crear nuevo pedido',
+                  l10n.ts('Crear nuevo pedido'),
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w900,
@@ -3172,7 +3156,10 @@ class _CheckoutHeroHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  '$itemCount artículos · ${_formatUsd(total)}',
+                  l10n.ts(
+                    '{count} artículos · {total}',
+                    {'count': '$itemCount', 'total': _formatUsd(total)},
+                  ),
                   style: const TextStyle(
                     color: AppPalette.softLilac,
                     fontSize: 13,
@@ -3183,8 +3170,10 @@ class _CheckoutHeroHeader extends StatelessWidget {
                 const SizedBox(height: 5),
                 Text(
                   hasFreeShipping
-                      ? 'Envío incluido por monto del pedido.'
-                      : 'Confirma entrega y coordinación antes de pagar.',
+                      ? l10n.ts('Envío incluido por monto del pedido.')
+                      : l10n.ts(
+                          'Confirma entrega y coordinación antes de pagar.',
+                        ),
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.76),
                     fontSize: 13,
@@ -3304,14 +3293,16 @@ class _CheckoutTotalCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          _SummaryRow(label: 'Subtotal', value: _formatUsd(subtotal)),
+          _SummaryRow(
+              label: context.l10n.ts('Subtotal'), value: _formatUsd(subtotal)),
           const SizedBox(height: 8),
-          _SummaryRow(label: 'Envío', value: _formatUsd(shipping)),
+          _SummaryRow(
+              label: context.l10n.ts('Envío'), value: _formatUsd(shipping)),
           const SizedBox(height: 12),
           const Divider(height: 1),
           const SizedBox(height: 12),
           _SummaryRow(
-            label: 'Total del pedido',
+            label: context.l10n.ts('Total del pedido'),
             value: _formatUsd(total),
             highlight: true,
           ),
@@ -3549,16 +3540,16 @@ class _ArtworkStyle {
   final List<Color> colors;
 }
 
-String _sectionLabel(_ShopSection section) {
+String _sectionLabel(BuildContext context, _ShopSection section) {
   switch (section) {
     case _ShopSection.home:
-      return 'Inicio';
+      return context.l10n.ts('Inicio');
     case _ShopSection.catalog:
-      return 'Catálogo';
+      return context.l10n.ts('Catálogo');
     case _ShopSection.orders:
-      return 'Órdenes';
+      return context.l10n.ts('Órdenes');
     case _ShopSection.admin:
-      return 'Admin';
+      return context.l10n.ts('Admin');
   }
 }
 
@@ -3592,8 +3583,29 @@ IconData _categoryIcon(String category) {
   }
 }
 
+String _categoryLabel(BuildContext context, String category) {
+  switch (category) {
+    case 'Velas':
+      return context.l10n.ts('Velas');
+    case 'Cuadros':
+      return context.l10n.ts('Cuadros');
+    case 'Estatuas':
+      return context.l10n.ts('Estatuas');
+    case 'Símbolos':
+      return context.l10n.ts('Símbolos');
+    case 'Tarot':
+      return context.l10n.ts('Tarot');
+    case 'Todos':
+      return context.l10n.ts('Todos');
+    default:
+      return category;
+  }
+}
+
 bool _isLowStockProduct(ShopProduct product) {
-  return !product.madeToOrder && product.stockQuantity > 0 && product.stockQuantity <= 3;
+  return !product.madeToOrder &&
+      product.stockQuantity > 0 &&
+      product.stockQuantity <= 3;
 }
 
 bool _isCustomizableProduct(ShopProduct product) {
@@ -3606,34 +3618,69 @@ bool _isCustomizableProduct(ShopProduct product) {
       tags.contains('foil');
 }
 
-String _stockSummary(ShopProduct product) {
+String _stockSummary(BuildContext context, ShopProduct product) {
   if (product.madeToOrder) {
-    return 'Se prepara por encargo';
+    return context.l10n.ts('Se prepara por encargo');
   }
 
   if (product.stockQuantity <= 0) {
-    return 'Sin unidades disponibles';
+    return context.l10n.ts('Sin unidades disponibles');
   }
 
   if (product.stockQuantity == 1) {
-    return '1 unidad disponible';
+    return context.l10n.ts('1 unidad disponible');
   }
 
-  return '${product.stockQuantity} unidades disponibles';
+  return context.l10n.ts(
+    '{count} unidades disponibles',
+    {'count': '${product.stockQuantity}'},
+  );
 }
 
-String _stockStatusLabel(int quantity, bool madeToOrder) {
+String _stockStatusLabel(BuildContext context, int quantity, bool madeToOrder) {
   if (madeToOrder) {
-    return 'Hecho a pedido';
+    return context.l10n.ts('Hecho a pedido');
   }
   if (quantity <= 0) {
-    return 'Agotado';
+    return context.l10n.ts('Agotado');
   }
   if (quantity <= 3) {
-    return 'Pocas unidades';
+    return context.l10n.ts('Pocas unidades');
   }
 
-  return 'Disponible';
+  return context.l10n.ts('Disponible');
+}
+
+String _stockLabel(BuildContext context, String stockLabel) {
+  final stock = stockLabel.toLowerCase();
+  if (stock.contains('pocas') ||
+      stock.contains('bajo') ||
+      stock.contains('últimas')) {
+    return context.l10n.ts('Pocas unidades');
+  }
+  if (stock.contains('pedido')) {
+    return context.l10n.ts('Hecho a pedido');
+  }
+  if (stock.contains('nueva')) {
+    return context.l10n.ts('Disponible');
+  }
+  if (stock.contains('agot')) {
+    return context.l10n.ts('Agotado');
+  }
+  return stockLabel;
+}
+
+Color _stockStateColor(int quantity, bool madeToOrder) {
+  if (madeToOrder) {
+    return AppPalette.flameGold;
+  }
+  if (quantity <= 0) {
+    return AppPalette.berry;
+  }
+  if (quantity <= 3) {
+    return AppPalette.berry;
+  }
+  return AppPalette.success;
 }
 
 Color _stockColor(String stockLabel) {
@@ -3652,26 +3699,26 @@ Color _stockColor(String stockLabel) {
   return AppPalette.success;
 }
 
-_OrderStatusCopy _statusCopy(String status) {
+_OrderStatusCopy _statusCopy(BuildContext context, String status) {
   switch (status) {
     case 'confirmed':
-      return const _OrderStatusCopy(
-        label: 'Confirmada',
+      return _OrderStatusCopy(
+        label: context.l10n.ts('Confirmada'),
         color: AppPalette.success,
       );
     case 'preparing':
-      return const _OrderStatusCopy(
-        label: 'Preparando',
+      return _OrderStatusCopy(
+        label: context.l10n.ts('Preparando'),
         color: AppPalette.flameGold,
       );
     case 'shipped':
-      return const _OrderStatusCopy(
-        label: 'Enviada',
+      return _OrderStatusCopy(
+        label: context.l10n.ts('Enviada'),
         color: AppPalette.indigo,
       );
     default:
-      return const _OrderStatusCopy(
-        label: 'Pendiente',
+      return _OrderStatusCopy(
+        label: context.l10n.ts('Pendiente'),
         color: AppPalette.berry,
       );
   }

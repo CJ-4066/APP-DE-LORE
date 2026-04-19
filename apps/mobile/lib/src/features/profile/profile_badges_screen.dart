@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/i18n/app_i18n.dart';
 import '../../core/theme/app_palette.dart';
 import '../../models/app_models.dart';
 
@@ -85,15 +86,12 @@ class BadgeMedal {
 BadgeCenterData buildBadgeCenterData(AppBootstrap data) {
   final profileComplete = _hasCompletedProfile(data.user);
   final bookingCount = data.bookings.length;
-  final activeBookingCount = data.bookings
-      .where((booking) => booking.status != 'cancelled')
-      .length;
-  final completedBookingCount = data.bookings
-      .where((booking) => booking.status == 'completed')
-      .length;
-  final coursesInProgress = data.courses
-      .where((course) => course.progressPercent > 0)
-      .length;
+  final activeBookingCount =
+      data.bookings.where((booking) => booking.status != 'cancelled').length;
+  final completedBookingCount =
+      data.bookings.where((booking) => booking.status == 'completed').length;
+  final coursesInProgress =
+      data.courses.where((course) => course.progressPercent > 0).length;
   final courseProgressPoints = data.courses.fold<int>(
     0,
     (sum, course) => sum + course.progressPercent,
@@ -219,7 +217,8 @@ BadgeCenterData buildBadgeCenterData(AppBootstrap data) {
     BadgeMedal(
       id: 'guide-mode',
       title: 'Guía Activa',
-      description: 'Entraste en modo especialista y abriste tu panel operativo.',
+      description:
+          'Entraste en modo especialista y abriste tu panel operativo.',
       requirement: 'Activa el perfil especialista.',
       icon: Icons.psychology_alt_outlined,
       color: AppPalette.midnight,
@@ -255,29 +254,30 @@ class ProfileBadgesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final center = buildBadgeCenterData(data);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Insignias'),
+        title: Text(l10n.ts('Insignias')),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
         children: [
           _RankHeroCard(
             userName: data.user.firstName.trim().isEmpty
-                ? 'Tu perfil'
+                ? l10n.ts('Tu perfil')
                 : data.user.firstName.trim(),
             center: center,
           ),
           const SizedBox(height: 16),
           _SectionCard(
-            title: 'Progreso',
+            title: l10n.ts('Progreso'),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  center.currentRank.subtitle,
+                  l10n.ts(center.currentRank.subtitle),
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 14),
@@ -289,8 +289,8 @@ class ProfileBadgesScreen extends StatelessWidget {
                         minHeight: 10,
                         borderRadius: BorderRadius.circular(999),
                         backgroundColor: AppPalette.softLilac,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(center.currentRank.color),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                            center.currentRank.color),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -305,8 +305,14 @@ class ProfileBadgesScreen extends StatelessWidget {
                 const SizedBox(height: 12),
                 Text(
                   center.nextRank == null
-                      ? 'Ya alcanzaste el rango más alto disponible.'
-                      : 'Te faltan ${center.xpToNextRank} XP para ${center.nextRank!.title}.',
+                      ? l10n.ts('Ya alcanzaste el rango más alto disponible.')
+                      : l10n.ts(
+                          'Te faltan {xp} XP para {rank}.',
+                          {
+                            'xp': '${center.xpToNextRank}',
+                            'rank': l10n.ts(center.nextRank!.title),
+                          },
+                        ),
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: AppPalette.mutedLavender,
                       ),
@@ -316,16 +322,19 @@ class ProfileBadgesScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           _SectionHeader(
-            title: 'Insignias activas',
-            subtitle:
-                '${center.unlockedCount} desbloqueadas en este momento.',
+            title: l10n.ts('Insignias activas'),
+            subtitle: l10n.ts(
+              '{count} desbloqueadas en este momento.',
+              {'count': '${center.unlockedCount}'},
+            ),
           ),
           const SizedBox(height: 12),
           if (center.unlockedBadges.isEmpty)
-            const _EmptyBadgeState(
-              title: 'Todavía no hay insignias activas',
-              subtitle:
-                  'Completa tu perfil o agenda tu primera consulta para empezar a desbloquearlas.',
+            _EmptyBadgeState(
+              title: l10n.ts('Todavía no hay insignias activas'),
+              subtitle: l10n.ts(
+                'Completa tu perfil o agenda tu primera consulta para empezar a desbloquearlas.',
+              ),
             )
           else
             ...center.unlockedBadges.map(
@@ -336,8 +345,8 @@ class ProfileBadgesScreen extends StatelessWidget {
             ),
           const SizedBox(height: 12),
           _SectionHeader(
-            title: 'Por desbloquear',
-            subtitle: 'Estas son las siguientes metas visibles.',
+            title: l10n.ts('Por desbloquear'),
+            subtitle: l10n.ts('Estas son las siguientes metas visibles.'),
           ),
           const SizedBox(height: 12),
           ...center.lockedBadges.map(
@@ -363,6 +372,8 @@ class _RankHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(30),
@@ -400,7 +411,10 @@ class _RankHeroCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Insignias de $userName',
+                  l10n.ts(
+                    'Insignias de {name}',
+                    {'name': userName},
+                  ),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: Colors.white.withValues(alpha: 0.82),
                         fontWeight: FontWeight.w700,
@@ -408,7 +422,7 @@ class _RankHeroCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  center.currentRank.title,
+                  l10n.ts(center.currentRank.title),
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w900,
@@ -416,7 +430,7 @@ class _RankHeroCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  center.currentRank.subtitle,
+                  l10n.ts(center.currentRank.subtitle),
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Colors.white.withValues(alpha: 0.8),
                         height: 1.45,
@@ -428,11 +442,19 @@ class _RankHeroCard extends StatelessWidget {
                   runSpacing: 10,
                   children: [
                     _HeroPill(label: '${center.xp} XP'),
-                    _HeroPill(label: '${center.unlockedCount} insignias'),
+                    _HeroPill(
+                      label: l10n.ts(
+                        '{count} insignias',
+                        {'count': '${center.unlockedCount}'},
+                      ),
+                    ),
                     _HeroPill(
                       label: center.nextRank == null
-                          ? 'Rango máximo'
-                          : 'Siguiente: ${center.nextRank!.title}',
+                          ? l10n.ts('Rango máximo')
+                          : l10n.ts(
+                              'Siguiente: {rank}',
+                              {'rank': l10n.ts(center.nextRank!.title)},
+                            ),
                     ),
                   ],
                 ),
@@ -548,6 +570,8 @@ class _BadgeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Container(
       decoration: BoxDecoration(
         color: unlocked ? Colors.white : AppPalette.petalSoft,
@@ -585,13 +609,14 @@ class _BadgeCard extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        badge.title,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w900,
-                              color: unlocked
-                                  ? AppPalette.butterflyInk
-                                  : AppPalette.mutedLavender,
-                            ),
+                        l10n.ts(badge.title),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w900,
+                                  color: unlocked
+                                      ? AppPalette.butterflyInk
+                                      : AppPalette.mutedLavender,
+                                ),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -607,7 +632,7 @@ class _BadgeCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(999),
                       ),
                       child: Text(
-                        unlocked ? 'Activa' : 'Meta',
+                        unlocked ? l10n.ts('Activa') : l10n.ts('Meta'),
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
                               fontWeight: FontWeight.w900,
                               color: unlocked
@@ -620,7 +645,7 @@ class _BadgeCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  badge.description,
+                  l10n.ts(badge.description),
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: unlocked
                             ? AppPalette.butterflyInk
@@ -630,7 +655,7 @@ class _BadgeCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  badge.requirement,
+                  l10n.ts(badge.requirement),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppPalette.mutedLavender,
                         fontWeight: FontWeight.w700,

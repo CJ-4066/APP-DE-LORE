@@ -98,6 +98,7 @@ class _CalculationConfigurationPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final nodePointOptions = _technicalPointOptions
         .where(
             (point) => point.key == 'north_node' || point.key == 'south_node')
@@ -139,15 +140,17 @@ class _CalculationConfigurationPanel extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Configuración profesional',
+            l10n.ts('Configuración profesional'),
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w800,
                 ),
           ),
           const SizedBox(height: 6),
-          const Text(
-            'Define qué cuerpos visibles quieres usar, el criterio de nodos, el tipo de Lilith y la lógica de partes arábigas antes de generar la carta.',
-            style: TextStyle(
+          Text(
+            l10n.ts(
+              'Define qué cuerpos visibles quieres usar, el criterio de nodos, el tipo de Lilith y la lógica de partes arábigas antes de generar la carta.',
+            ),
+            style: const TextStyle(
               fontSize: 13.5,
               height: 1.35,
               color: AppPalette.mutedLavender,
@@ -155,10 +158,11 @@ class _CalculationConfigurationPanel extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _MultiSelectMenuCard(
-            title: 'Planetas visibles',
-            subtitle:
-                'Selecciona los cuerpos que quieres dibujar y listar dentro de la rueda natal.',
-            emptyLabel: 'Sin planetas visibles',
+            title: l10n.ts('Planetas visibles'),
+            subtitle: l10n.ts(
+              'Selecciona los cuerpos que quieres dibujar y listar dentro de la rueda natal.',
+            ),
+            emptyLabel: l10n.ts('Sin planetas visibles'),
             items: _planetSelectionOptions
                 .map(
                   (planet) => _MultiSelectOption(
@@ -175,18 +179,18 @@ class _CalculationConfigurationPanel extends StatelessWidget {
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
             initialValue: nodeType,
-            decoration: const InputDecoration(
-              labelText: 'Tipo de nodo',
-              hintText: 'Selecciona el criterio de cálculo',
+            decoration: InputDecoration(
+              labelText: l10n.ts('Tipo de nodo'),
+              hintText: l10n.ts('Selecciona el criterio de cálculo'),
             ),
-            items: const [
+            items: [
               DropdownMenuItem(
                 value: 'true',
-                child: Text('Nodo verdadero'),
+                child: Text(l10n.ts('Nodo verdadero')),
               ),
               DropdownMenuItem(
                 value: 'mean',
-                child: Text('Nodo medio'),
+                child: Text(l10n.ts('Nodo medio')),
               ),
             ],
             onChanged: isLoading
@@ -200,18 +204,18 @@ class _CalculationConfigurationPanel extends StatelessWidget {
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
             initialValue: lilithType,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Lilith',
-              hintText: 'Selecciona el criterio de Lilith',
+              hintText: l10n.ts('Selecciona el criterio de Lilith'),
             ),
-            items: const [
+            items: [
               DropdownMenuItem(
                 value: 'mean',
-                child: Text('Lilith media'),
+                child: Text(l10n.ts('Lilith media')),
               ),
               DropdownMenuItem(
                 value: 'true',
-                child: Text('Lilith verdadera'),
+                child: Text(l10n.ts('Lilith verdadera')),
               ),
             ],
             onChanged: isLoading
@@ -225,18 +229,18 @@ class _CalculationConfigurationPanel extends StatelessWidget {
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
             initialValue: arabicPartsMode,
-            decoration: const InputDecoration(
-              labelText: 'Partes arábigas',
-              hintText: 'Selecciona la lógica de cálculo',
+            decoration: InputDecoration(
+              labelText: l10n.ts('Partes arábigas'),
+              hintText: l10n.ts('Selecciona la lógica de cálculo'),
             ),
-            items: const [
+            items: [
               DropdownMenuItem(
                 value: 'same',
-                child: Text('Día = Noche'),
+                child: Text(l10n.ts('Día = Noche')),
               ),
               DropdownMenuItem(
                 value: 'sect',
-                child: Text('Día ≠ Noche'),
+                child: Text(l10n.ts('Día ≠ Noche')),
               ),
             ],
             onChanged: isLoading
@@ -249,10 +253,11 @@ class _CalculationConfigurationPanel extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _MultiSelectMenuCard(
-            title: 'Nodos visibles',
-            subtitle:
-                'Elige si quieres mostrar Nodo Norte, Nodo Sur o ambos dentro de la carta.',
-            emptyLabel: 'Sin nodos activos',
+            title: l10n.ts('Nodos visibles'),
+            subtitle: l10n.ts(
+              'Elige si quieres mostrar Nodo Norte, Nodo Sur o ambos dentro de la carta.',
+            ),
+            emptyLabel: l10n.ts('Sin nodos activos'),
             items: nodePointOptions
                 .map(
                   (point) => _MultiSelectOption(
@@ -268,10 +273,11 @@ class _CalculationConfigurationPanel extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _MultiSelectMenuCard(
-            title: 'Puntos técnicos',
-            subtitle:
-                'Activa partes, puntos menores y auxiliares clásicos que quieras mostrar en la carta.',
-            emptyLabel: 'Sin puntos técnicos activos',
+            title: l10n.ts('Puntos técnicos'),
+            subtitle: l10n.ts(
+              'Activa partes, puntos menores y auxiliares clásicos que quieras mostrar en la carta.',
+            ),
+            emptyLabel: l10n.ts('Sin puntos técnicos activos'),
             items: coreTechnicalPoints
                 .map(
                   (point) => _MultiSelectOption(
@@ -287,10 +293,11 @@ class _CalculationConfigurationPanel extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _MultiSelectMenuCard(
-            title: 'Asteroides y centauros',
-            subtitle:
-                'Incluye cuerpos complementarios. Algunos requieren efemérides extra para aparecer en la carta.',
-            emptyLabel: 'Sin asteroides activos',
+            title: l10n.ts('Asteroides y centauros'),
+            subtitle: l10n.ts(
+              'Incluye cuerpos complementarios. Algunos requieren efemérides extra para aparecer en la carta.',
+            ),
+            emptyLabel: l10n.ts('Sin asteroides activos'),
             items: asteroidTechnicalPoints
                 .map(
                   (point) => _MultiSelectOption(
@@ -453,8 +460,10 @@ class _BigThreeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return _SectionCard(
-      title: 'Tu tríada central',
+      title: l10n.ts('Tu tríada central'),
       child: LayoutBuilder(
         builder: (context, constraints) {
           final isWide = constraints.maxWidth > 680;
@@ -465,7 +474,9 @@ class _BigThreeCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Sol, Luna y Ascendente resumen tu identidad, tu mundo emocional y la energía con la que entras en escena.',
+                l10n.ts(
+                  'Sol, Luna y Ascendente resumen tu identidad, tu mundo emocional y la energía con la que entras en escena.',
+                ),
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
               const SizedBox(height: 16),
@@ -678,30 +689,40 @@ class _TriadDetailsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return _SectionCard(
-      title: 'Detalles de la tríada',
+      title: l10n.ts('Detalles de la tríada'),
       child: Column(
         children: [
           _DetailBox(
             icon: '☀️',
             title: 'Sol',
             value:
-                '${result.bigThree.sun.sign} · ${result.bigThree.sun.degreeFormatted} · Casa ${result.bigThree.sun.house}',
-            description:
-                'Regente ${_rulerDescription(result.bigThree.sun.sign, result)}',
+                '${result.bigThree.sun.sign} · ${result.bigThree.sun.degreeFormatted} · ${l10n.ts('Casa {house}', {
+                  'house': '${result.bigThree.sun.house}'
+                })}',
+            description: l10n.ts(
+              'Regente {ruler}',
+              {'ruler': _rulerDescription(result.bigThree.sun.sign, result)},
+            ),
             trailing: _aspectDescription(result.aspects, 'Sol') ??
-                'Sin aspecto dominante visible',
+                l10n.ts('Sin aspecto dominante visible'),
           ),
           const SizedBox(height: 12),
           _DetailBox(
             icon: '🌙',
             title: 'Luna',
             value:
-                '${result.bigThree.moon.sign} · ${result.bigThree.moon.degreeFormatted} · Casa ${result.bigThree.moon.house}',
-            description:
-                'Regente ${_rulerDescription(result.bigThree.moon.sign, result)}',
+                '${result.bigThree.moon.sign} · ${result.bigThree.moon.degreeFormatted} · ${l10n.ts('Casa {house}', {
+                  'house': '${result.bigThree.moon.house}'
+                })}',
+            description: l10n.ts(
+              'Regente {ruler}',
+              {'ruler': _rulerDescription(result.bigThree.moon.sign, result)},
+            ),
             trailing: _aspectDescription(result.aspects, 'Luna') ??
-                'Sin aspecto dominante visible',
+                l10n.ts('Sin aspecto dominante visible'),
           ),
           const SizedBox(height: 12),
           _DetailBox(
@@ -709,10 +730,17 @@ class _TriadDetailsCard extends StatelessWidget {
             title: 'Ascendente',
             value:
                 '${result.bigThree.ascendant.sign} · ${result.bigThree.ascendant.degreeFormatted}',
-            description:
-                'Regente ${_rulerDescription(result.bigThree.ascendant.sign, result)}',
+            description: l10n.ts(
+              'Regente {ruler}',
+              {
+                'ruler':
+                    _rulerDescription(result.bigThree.ascendant.sign, result),
+              },
+            ),
             trailing: _aspectDescription(result.aspects, 'Ascendente') ??
-                'Define la forma en que entras en escena y das tu primera impresión.',
+                l10n.ts(
+                  'Define la forma en que entras en escena y das tu primera impresión.',
+                ),
           ),
         ],
       ),
@@ -729,33 +757,36 @@ class _RulershipsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final chartRulerPlacement =
         _findPlanet(result.planets, result.summary.chartRuler);
     final ascRuler = result.bigThree.ascendant.ruler;
     final ascRulerPlacement = _findPlanet(result.planets, ascRuler);
 
     return _SectionCard(
-      title: 'Regencias',
+      title: l10n.ts('Regencias'),
       child: Column(
         children: [
           _InsightPanel(
             icon: '🪐',
-            title: 'Regente de carta',
+            title: l10n.ts('Regente de carta'),
             value: chartRulerPlacement == null
                 ? result.summary.chartRuler
                 : '${result.summary.chartRuler} en ${chartRulerPlacement.sign}, casa ${chartRulerPlacement.house}',
-            description:
-                'Marca el tono general de la carta y el área donde tu energía central busca expresarse con más fuerza.',
+            description: l10n.ts(
+              'Marca el tono general de la carta y el área donde tu energía central busca expresarse con más fuerza.',
+            ),
           ),
           const SizedBox(height: 12),
           _InsightPanel(
             icon: '⬆️',
-            title: 'Regente del Ascendente',
+            title: l10n.ts('Regente del Ascendente'),
             value: ascRulerPlacement == null
                 ? ascRuler
                 : '$ascRuler en ${ascRulerPlacement.sign}, casa ${ascRulerPlacement.house}',
-            description:
-                'Muestra cómo arrancas procesos, cómo te proyectas y en qué escenario se mueve tu impulso personal.',
+            description: l10n.ts(
+              'Muestra cómo arrancas procesos, cómo te proyectas y en qué escenario se mueve tu impulso personal.',
+            ),
           ),
         ],
       ),
@@ -772,8 +803,10 @@ class _DominantsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return _SectionCard(
-      title: 'Dominantes de la carta',
+      title: l10n.ts('Dominantes de la carta'),
       child: Column(
         children: [
           Wrap(
@@ -781,11 +814,11 @@ class _DominantsCard extends StatelessWidget {
             runSpacing: 10,
             children: [
               _PillStat(
-                title: 'Elemento dominante',
+                title: l10n.ts('Elemento dominante'),
                 value: result.summary.dominantElement,
               ),
               _PillStat(
-                title: 'Cualidad dominante',
+                title: l10n.ts('Cualidad dominante'),
                 value: result.summary.dominantQuality,
               ),
             ],
@@ -793,14 +826,14 @@ class _DominantsCard extends StatelessWidget {
           const SizedBox(height: 16),
           _InsightPanel(
             icon: '🔥',
-            title: 'Elemento dominante',
+            title: l10n.ts('Elemento dominante'),
             value: result.summary.dominantElement,
             description: _elementMeaning(result.summary.dominantElement),
           ),
           const SizedBox(height: 12),
           _InsightPanel(
             icon: '🧭',
-            title: 'Cualidad dominante',
+            title: l10n.ts('Cualidad dominante'),
             value: result.summary.dominantQuality,
             description: _qualityMeaning(result.summary.dominantQuality),
           ),
@@ -819,16 +852,17 @@ class _MidheavenCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final mcRuler = result.angles.midheaven.ruler;
     final mcRulerPlacement = _findPlanet(result.planets, mcRuler);
 
     return _SectionCard(
-      title: 'MC y proyección',
+      title: l10n.ts('MC y proyección'),
       child: Column(
         children: [
           _InsightPanel(
             icon: '🏛️',
-            title: 'Medio Cielo',
+            title: l10n.ts('Medio Cielo'),
             value:
                 '${result.angles.midheaven.sign} · ${result.angles.midheaven.degreeFormatted} · Casa ${result.angles.midheaven.house}',
             description: _mcMeaning(result.angles.midheaven.sign),
@@ -836,12 +870,13 @@ class _MidheavenCard extends StatelessWidget {
           const SizedBox(height: 12),
           _InsightPanel(
             icon: '🎯',
-            title: 'Regente del MC',
+            title: l10n.ts('Regente del MC'),
             value: mcRulerPlacement == null
                 ? mcRuler
                 : '$mcRuler en ${mcRulerPlacement.sign}, casa ${mcRulerPlacement.house}',
-            description:
-                'Ayuda a leer hacia dónde se ordena tu vocación, tu imagen pública y tu forma de consolidar metas.',
+            description: l10n.ts(
+              'Ayuda a leer hacia dónde se ordena tu vocación, tu imagen pública y tu forma de consolidar metas.',
+            ),
           ),
         ],
       ),
@@ -862,8 +897,10 @@ class _TechnicalPointsCard extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
+    final l10n = context.l10n;
+
     return _SectionCard(
-      title: 'Puntos técnicos',
+      title: l10n.ts('Puntos técnicos'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -872,13 +909,13 @@ class _TechnicalPointsCard extends StatelessWidget {
             runSpacing: 8,
             children: [
               _PillStat(
-                title: 'Nodo',
+                title: l10n.ts('Nodo'),
                 value: result.meta.nodeType == 'mean'
-                    ? 'Nodo medio'
-                    : 'Nodo verdadero',
+                    ? l10n.ts('Nodo medio')
+                    : l10n.ts('Nodo verdadero'),
               ),
               _PillStat(
-                title: 'Efemerides',
+                title: l10n.ts('Efemerides'),
                 value: result.meta.ephemerisSource == 'swisseph'
                     ? 'Swiss Ephemeris'
                     : result.meta.ephemerisSource == 'moshier'

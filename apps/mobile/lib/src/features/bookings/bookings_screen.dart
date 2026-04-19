@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/i18n/app_i18n.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/mystic_ui.dart';
@@ -71,18 +72,24 @@ class _BookingsScreenState extends State<BookingsScreen> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Cancelar reserva'),
+          title: Text(context.l10n.ts('Cancelar reserva')),
           content: Text(
-            'Se cancelará ${booking.serviceName} con ${booking.specialistName}. Esta acción no se puede deshacer desde la app.',
+            context.l10n.ts(
+              'Se cancelará {service} con {specialist}. Esta acción no se puede deshacer desde la app.',
+              {
+                'service': booking.serviceName,
+                'specialist': booking.specialistName,
+              },
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Volver'),
+              child: Text(context.l10n.ts('Volver')),
             ),
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('Cancelar reserva'),
+              child: Text(context.l10n.ts('Cancelar reserva')),
             ),
           ],
         );
@@ -107,7 +114,10 @@ class _BookingsScreenState extends State<BookingsScreen> {
     });
 
     _showSnackBar(
-      errorMessage ?? 'La reserva fue cancelada y ya no aparece como activa.',
+      errorMessage ??
+          context.l10n.ts(
+            'La reserva fue cancelada y ya no aparece como activa.',
+          ),
     );
   }
 
@@ -117,7 +127,10 @@ class _BookingsScreenState extends State<BookingsScreen> {
         .firstOrNull;
     if (service == null) {
       _showSnackBar(
-          'No encontramos el servicio para reprogramar esta reserva.');
+        context.l10n.ts(
+          'No encontramos el servicio para reprogramar esta reserva.',
+        ),
+      );
       return;
     }
 
@@ -149,7 +162,9 @@ class _BookingsScreenState extends State<BookingsScreen> {
           });
 
           if (errorMessage == null) {
-            _showSnackBar('La cita fue reprogramada correctamente.');
+            _showSnackBar(
+              context.l10n.ts('La cita fue reprogramada correctamente.'),
+            );
           }
           return errorMessage;
         },
@@ -182,7 +197,11 @@ class _BookingsScreenState extends State<BookingsScreen> {
     });
 
     _showSnackBar(
-      errorMessage ?? 'Cita actualizada a ${_statusLabel(status)}.',
+      errorMessage ??
+          context.l10n.ts(
+            'Cita actualizada a {status}.',
+            {'status': _statusLabel(context, status)},
+          ),
     );
   }
 
@@ -203,15 +222,24 @@ class _BookingsScreenState extends State<BookingsScreen> {
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 8),
-              Text('${booking.specialistName} · ${_modeLabel(booking.mode)}'),
+              Text(
+                '${booking.specialistName} · ${_modeLabel(context, booking.mode)}',
+              ),
               const SizedBox(height: 6),
               Text(formatSchedule(booking.scheduledAt)),
               const SizedBox(height: 6),
-              Text('Estado: ${_statusLabel(booking.status)}'),
+              Text(
+                context.l10n.ts(
+                  'Estado: {status}',
+                  {'status': _statusLabel(context, booking.status)},
+                ),
+              ),
               const SizedBox(height: 12),
               Text(
                 booking.notes.trim().isEmpty
-                    ? 'Sin notas añadidas para esta consulta.'
+                    ? context.l10n.ts(
+                        'Sin notas añadidas para esta consulta.',
+                      )
                     : booking.notes,
               ),
             ],
@@ -232,6 +260,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
     required int pendingPaymentCount,
     required int cancelledCount,
   }) {
+    final l10n = context.l10n;
     final activeBookings = widget.data.bookings
         .where((booking) => booking.status != 'cancelled')
         .toList(growable: false);
@@ -255,24 +284,33 @@ class _BookingsScreenState extends State<BookingsScreen> {
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
             children: [
               MysticBannerCard(
-                eyebrow: 'Agenda especialista',
-                title: 'Citas recibidas',
-                subtitle:
-                    'Gestiona pagos, confirmaciones y cierre de sesiones sin crear reservas como cliente.',
+                eyebrow: l10n.ts('Agenda especialista'),
+                title: l10n.ts('Citas recibidas'),
+                subtitle: l10n.ts(
+                  'Gestiona pagos, confirmaciones y cierre de sesiones sin crear reservas como cliente.',
+                ),
                 glyphKind: MysticGlyphKind.agenda,
                 gradient: AppPalette.darkBrandGradient,
                 tags: [
-                  '${widget.data.bookings.length} reservas',
-                  '$confirmedCount confirmadas',
-                  '$pendingPaymentCount pendientes',
-                  if (cancelledCount > 0) '$cancelledCount canceladas',
+                  l10n.ts(
+                    '{count} reservas',
+                    {'count': '${widget.data.bookings.length}'},
+                  ),
+                  l10n.ts('{count} confirmadas', {'count': '$confirmedCount'}),
+                  l10n.ts('{count} pendientes', {
+                    'count': '$pendingPaymentCount',
+                  }),
+                  if (cancelledCount > 0)
+                    l10n.ts('{count} canceladas', {
+                      'count': '$cancelledCount',
+                    }),
                 ],
-                primaryLabel: 'Chat comunidad',
+                primaryLabel: l10n.ts('Chat comunidad'),
                 onPrimaryTap: _openCommunityChat,
               ),
               const SizedBox(height: 20),
               Text(
-                'Operación de citas',
+                l10n.ts('Operación de citas'),
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       color: AppPalette.butterflyInk,
                       fontWeight: FontWeight.w900,
@@ -280,10 +318,11 @@ class _BookingsScreenState extends State<BookingsScreen> {
               ),
               const SizedBox(height: 12),
               if (activeBookings.isEmpty)
-                const MysticMiniBanner(
-                  title: 'Sin citas activas',
-                  subtitle:
-                      'Cuando un cliente reserve una consulta, aparecerá aquí para cambiar estado y revisar notas.',
+                MysticMiniBanner(
+                  title: l10n.ts('Sin citas activas'),
+                  subtitle: l10n.ts(
+                    'Cuando un cliente reserve una consulta, aparecerá aquí para cambiar estado y revisar notas.',
+                  ),
                   glyphKind: MysticGlyphKind.agenda,
                   accent: AppPalette.orchid,
                 )
@@ -312,6 +351,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
     required int pendingPaymentCount,
     required int cancelledCount,
   }) {
+    final l10n = context.l10n;
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -331,27 +371,37 @@ class _BookingsScreenState extends State<BookingsScreen> {
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
             children: [
               MysticBannerCard(
-                eyebrow: 'Agenda global',
-                title: 'Vista usuario madre',
-                subtitle:
-                    'Lectura transversal de las citas de la plataforma sin mezclarlas con el rol del cliente o del especialista.',
+                eyebrow: l10n.ts('Agenda global'),
+                title: l10n.ts('Vista usuario madre'),
+                subtitle: l10n.ts(
+                  'Lectura transversal de las citas de la plataforma sin mezclarlas con el rol del cliente o del especialista.',
+                ),
                 glyphKind: MysticGlyphKind.agenda,
                 gradient: AppPalette.darkBrandGradient,
                 tags: [
-                  '${widget.data.bookings.length} visibles',
-                  '$confirmedCount confirmadas',
-                  '$pendingPaymentCount pendientes',
-                  if (cancelledCount > 0) '$cancelledCount canceladas',
+                  l10n.ts(
+                    '{count} visibles',
+                    {'count': '${widget.data.bookings.length}'},
+                  ),
+                  l10n.ts('{count} confirmadas', {'count': '$confirmedCount'}),
+                  l10n.ts('{count} pendientes', {
+                    'count': '$pendingPaymentCount',
+                  }),
+                  if (cancelledCount > 0)
+                    l10n.ts('{count} canceladas', {
+                      'count': '$cancelledCount',
+                    }),
                 ],
-                primaryLabel: 'Chat comunidad',
+                primaryLabel: l10n.ts('Chat comunidad'),
                 onPrimaryTap: _openCommunityChat,
               ),
               const SizedBox(height: 20),
               if (widget.data.bookings.isEmpty)
-                const MysticMiniBanner(
-                  title: 'Sin reservas globales',
-                  subtitle:
-                      'Cuando la API devuelva reservas, aquí aparecerán de forma consolidada para supervisión.',
+                MysticMiniBanner(
+                  title: l10n.ts('Sin reservas globales'),
+                  subtitle: l10n.ts(
+                    'Cuando la API devuelva reservas, aquí aparecerán de forma consolidada para supervisión.',
+                  ),
                   glyphKind: MysticGlyphKind.agenda,
                   accent: AppPalette.orchid,
                 )
@@ -363,7 +413,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                       title:
                           '${booking.specialistName} · ${booking.serviceName}',
                       subtitle:
-                          '${formatSchedule(booking.scheduledAt)} · ${formatMoney(booking.price)}\n${_modeLabel(booking.mode)} · ${_statusLabel(booking.status)}',
+                          '${formatSchedule(booking.scheduledAt)} · ${formatMoney(booking.price)}\n${_modeLabel(context, booking.mode)} · ${_statusLabel(context, booking.status)}',
                       glyphKind: booking.mode == 'video'
                           ? MysticGlyphKind.video
                           : booking.mode == 'audio'
@@ -383,6 +433,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final tarotSpecialists = widget.data.specialists.where((specialist) {
       return specialist.specialties.any(
         (item) => item.toLowerCase().contains('tarot'),
@@ -448,12 +499,12 @@ class _BookingsScreenState extends State<BookingsScreen> {
                     ),
                   ),
                   icon: const Icon(Icons.add_circle_outline),
-                  label: const Text('Agendar nueva consulta'),
+                  label: Text(l10n.ts('Agendar nueva consulta')),
                 ),
               ),
               const SizedBox(height: 16),
               Text(
-                'Atajos de citas',
+                l10n.ts('Atajos de citas'),
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w800,
                     ),
@@ -465,9 +516,10 @@ class _BookingsScreenState extends State<BookingsScreen> {
                   children: [
                     MysticMenuTile(
                       glyphKind: MysticGlyphKind.chat,
-                      label: 'Chat general',
-                      caption:
-                          'Espacio abierto para que toda la gente comente.',
+                      label: l10n.ts('Chat general'),
+                      caption: l10n.ts(
+                        'Espacio abierto para que toda la gente comente.',
+                      ),
                       accent: const Color(0xFF9A5A33),
                       onTap: _openCommunityChat,
                     ),
@@ -477,7 +529,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
               if (tarotSpecialists.isNotEmpty) ...[
                 const SizedBox(height: 20),
                 Text(
-                  'Especialistas sugeridos',
+                  l10n.ts('Especialistas sugeridos'),
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w800,
                       ),
@@ -500,9 +552,10 @@ class _BookingsScreenState extends State<BookingsScreen> {
               const SizedBox(height: 20),
               if (widget.data.bookings.isEmpty)
                 MysticMiniBanner(
-                  title: 'Aún no tienes citas agendadas',
-                  subtitle:
-                      'Crea tu primera consulta y elige el día y la hora que mejor te funcione.',
+                  title: l10n.ts('Aún no tienes citas agendadas'),
+                  subtitle: l10n.ts(
+                    'Crea tu primera consulta y elige el día y la hora que mejor te funcione.',
+                  ),
                   glyphKind: MysticGlyphKind.agenda,
                   accent: AppPalette.orchid,
                   onTap: () => widget.onCreateBooking(),
@@ -517,7 +570,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                           title:
                               '${booking.specialistName} · ${booking.serviceName}',
                           subtitle:
-                              '${formatSchedule(booking.scheduledAt)} · ${formatMoney(booking.price)}\n${_modeLabel(booking.mode)}',
+                              '${formatSchedule(booking.scheduledAt)} · ${formatMoney(booking.price)}\n${_modeLabel(context, booking.mode)}',
                           glyphKind: booking.mode == 'video'
                               ? MysticGlyphKind.video
                               : booking.mode == 'audio'
@@ -547,7 +600,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                                       : const Icon(
                                           Icons.calendar_month_outlined,
                                         ),
-                                  label: const Text('Reprogramar'),
+                                  label: Text(l10n.ts('Reprogramar')),
                                 ),
                               ),
                               const SizedBox(width: 10),
@@ -557,7 +610,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                                       ? null
                                       : () => _handleCancelBooking(booking),
                                   icon: const Icon(Icons.close_rounded),
-                                  label: const Text('Cancelar'),
+                                  label: Text(l10n.ts('Cancelar')),
                                 ),
                               ),
                             ],
@@ -593,7 +646,7 @@ class _BookingStatusPill extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
-        _statusLabel(booking.status),
+        _statusLabel(context, booking.status),
         style: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w800,
@@ -670,7 +723,7 @@ class _SpecialistAgendaBookingCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${_modeLabel(booking.mode)} · ${booking.notes.trim().isEmpty ? 'Sin notas' : booking.notes.trim()}',
+                      '${_modeLabel(context, booking.mode)} · ${booking.notes.trim().isEmpty ? context.l10n.ts('Sin notas') : booking.notes.trim()}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -688,24 +741,24 @@ class _SpecialistAgendaBookingCard extends StatelessWidget {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : PopupMenuButton<String>(
-                      tooltip: 'Cambiar estado',
+                      tooltip: context.l10n.ts('Cambiar estado'),
                       onSelected: onStatusSelected,
-                      itemBuilder: (context) => const [
+                      itemBuilder: (context) => [
                         PopupMenuItem(
                           value: 'pending_payment',
-                          child: Text('Pendiente de pago'),
+                          child: Text(context.l10n.ts('Pendiente de pago')),
                         ),
                         PopupMenuItem(
                           value: 'confirmed',
-                          child: Text('Confirmada'),
+                          child: Text(context.l10n.ts('Confirmada')),
                         ),
                         PopupMenuItem(
                           value: 'completed',
-                          child: Text('Completada'),
+                          child: Text(context.l10n.ts('Completada')),
                         ),
                         PopupMenuItem(
                           value: 'cancelled',
-                          child: Text('Cancelada'),
+                          child: Text(context.l10n.ts('Cancelada')),
                         ),
                       ],
                       child: _BookingStatusPill(booking: booking),
@@ -838,7 +891,9 @@ class _RescheduleBookingSheetState extends State<_RescheduleBookingSheet> {
         _availabilitySlots = availableSlots;
         _selectedSlotId = availableSlots.firstOrNull?.id;
         _availabilityMessage = availableSlots.isEmpty
-            ? 'No hay horarios disponibles para reprogramar en ese día.'
+            ? context.l10n.ts(
+                'No hay horarios disponibles para reprogramar en ese día.',
+              )
             : null;
         _isLoadingAvailability = false;
       });
@@ -864,7 +919,9 @@ class _RescheduleBookingSheetState extends State<_RescheduleBookingSheet> {
         scheduledAt.isBefore(DateTime.now())) {
       setState(() {
         _errorMessage =
-            'Elige un horario disponible y futuro para reprogramar la cita.';
+            context.l10n.ts(
+              'Elige un horario disponible y futuro para reprogramar la cita.',
+            );
       });
       return;
     }
@@ -899,6 +956,7 @@ class _RescheduleBookingSheetState extends State<_RescheduleBookingSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Padding(
       padding: EdgeInsets.fromLTRB(
         20,
@@ -910,7 +968,7 @@ class _RescheduleBookingSheetState extends State<_RescheduleBookingSheet> {
         shrinkWrap: true,
         children: [
           Text(
-            'Reprogramar cita',
+            l10n.ts('Reprogramar cita'),
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
@@ -920,12 +978,12 @@ class _RescheduleBookingSheetState extends State<_RescheduleBookingSheet> {
           const SizedBox(height: 18),
           DropdownButtonFormField<String>(
             initialValue: _selectedMode,
-            decoration: const InputDecoration(labelText: 'Modalidad'),
+            decoration: InputDecoration(labelText: l10n.ts('Modalidad')),
             items: widget.service.deliveryModes
                 .map(
                   (mode) => DropdownMenuItem<String>(
                     value: mode,
-                    child: Text(_modeLabel(mode)),
+                    child: Text(_modeLabel(context, mode)),
                   ),
                 )
                 .toList(),
@@ -959,12 +1017,15 @@ class _RescheduleBookingSheetState extends State<_RescheduleBookingSheet> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Horarios disponibles',
+                    l10n.ts('Horarios disponibles'),
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Selecciona un nuevo horario para ${widget.service.durationMinutes} minutos.',
+                    l10n.ts(
+                      'Selecciona un nuevo horario para {minutes} minutos.',
+                      {'minutes': '${widget.service.durationMinutes}'},
+                    ),
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 14),
@@ -978,7 +1039,11 @@ class _RescheduleBookingSheetState extends State<_RescheduleBookingSheet> {
                   else if (_availabilityMessage != null)
                     Text(_availabilityMessage!)
                   else if (_availabilitySlots.isEmpty)
-                    const Text('No hay horarios disponibles para esta selección.')
+                    Text(
+                      l10n.ts(
+                        'No hay horarios disponibles para esta selección.',
+                      ),
+                    )
                   else
                     Wrap(
                       spacing: 10,
@@ -1009,9 +1074,11 @@ class _RescheduleBookingSheetState extends State<_RescheduleBookingSheet> {
             controller: _notesController,
             minLines: 3,
             maxLines: 5,
-            decoration: const InputDecoration(
-              labelText: 'Notas actualizadas',
-              hintText: 'Aclara el enfoque o el contexto de esta sesión',
+            decoration: InputDecoration(
+              labelText: l10n.ts('Notas actualizadas'),
+              hintText: l10n.ts(
+                'Aclara el enfoque o el contexto de esta sesión',
+              ),
             ),
           ),
           if (_errorMessage != null) ...[
@@ -1034,7 +1101,7 @@ class _RescheduleBookingSheetState extends State<_RescheduleBookingSheet> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.check_circle_outline),
-            label: const Text('Guardar cambios'),
+            label: Text(l10n.ts('Guardar cambios')),
           ),
         ],
       ),
@@ -1069,29 +1136,29 @@ Color _statusAccent(String status) {
   }
 }
 
-String _statusLabel(String status) {
+String _statusLabel(BuildContext context, String status) {
   switch (status) {
     case 'confirmed':
-      return 'Confirmada';
+      return context.l10n.ts('Confirmada');
     case 'pending_payment':
-      return 'Pend. pago';
+      return context.l10n.ts('Pend. pago');
     case 'completed':
-      return 'Completada';
+      return context.l10n.ts('Completada');
     case 'cancelled':
-      return 'Cancelada';
+      return context.l10n.ts('Cancelada');
     default:
       return status;
   }
 }
 
-String _modeLabel(String mode) {
+String _modeLabel(BuildContext context, String mode) {
   switch (mode) {
     case 'audio':
-      return 'Audio';
+      return context.l10n.ts('Audio');
     case 'video':
-      return 'Video';
+      return context.l10n.ts('Video');
     default:
-      return 'Chat';
+      return context.l10n.ts('Chat');
   }
 }
 

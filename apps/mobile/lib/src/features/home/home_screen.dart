@@ -249,7 +249,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _openTodayTransitHub() async {
-    final items = _buildTodayTransitItems(_astroOverview);
+    final items = _buildTodayTransitItems(_astroOverview, context.l10n);
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => _TodayTransitOverviewScreen(
@@ -641,20 +641,26 @@ class _TodayTransitPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     if (isLoading) {
-      return const _TransitStateCard(
-        title: 'Leyendo el cielo de hoy',
-        subtitle: 'Estoy calculando los tránsitos y la ventana activa del día.',
+      return _TransitStateCard(
+        title: l10n.ts('Leyendo el cielo de hoy'),
+        subtitle: l10n.ts(
+          'Estoy calculando los tránsitos y la ventana activa del día.',
+        ),
       );
     }
 
     if (overview == null) {
       return _TransitStateCard(
-        title: 'Faltan datos para mostrar tránsitos',
+        title: l10n.ts('Faltan datos para mostrar tránsitos'),
         subtitle: errorMessage?.trim().isNotEmpty == true
             ? errorMessage!
-            : 'Completa tu carta astral para que Inicio muestre el movimiento real del día.',
-        actionLabel: 'Abrir carta astral',
+            : l10n.ts(
+                'Completa tu carta astral para que Inicio muestre el movimiento real del día.',
+              ),
+        actionLabel: l10n.ts('Abrir carta astral'),
         onAction: onOpenAstralChart,
       );
     }
@@ -683,7 +689,7 @@ class _TodayTransitPanel extends StatelessWidget {
               borderRadius: BorderRadius.circular(999),
             ),
             child: Text(
-              'Actualizado con tu carta y el cielo del momento',
+              l10n.ts('Actualizado con tu carta y el cielo del momento'),
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: const Color(0xFF184A56),
                     fontWeight: FontWeight.w800,
@@ -706,7 +712,7 @@ class _TodayTransitPanel extends StatelessWidget {
             child: TextButton.icon(
               onPressed: () => onOpenAstralChart(),
               icon: const Icon(Icons.auto_awesome_outlined),
-              label: const Text('Ver detalle astral'),
+              label: Text(l10n.ts('Ver detalle astral')),
             ),
           ),
         ],
@@ -1017,7 +1023,7 @@ class _TransitDetailSheet extends StatelessWidget {
           FilledButton.icon(
             onPressed: onOpenAstralChart,
             icon: const Icon(Icons.auto_awesome_outlined),
-            label: const Text('Ver carta astral completa'),
+            label: Text(context.l10n.ts('Ver carta astral completa')),
           ),
         ],
       ),
@@ -1042,16 +1048,20 @@ class _TodayTransitOverviewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Scaffold(
       backgroundColor: const Color(0xFFFFFBF7),
       appBar: AppBar(
-        title: const Text('Tránsitos de hoy'),
+        title: Text(l10n.ts('Tránsitos de hoy')),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
         children: [
           Text(
-            'Aquí vive la lectura completa del movimiento activo del día sobre tu carta natal y tu cielo actual.',
+            l10n.ts(
+              'Aquí vive la lectura completa del movimiento activo del día sobre tu carta natal y tu cielo actual.',
+            ),
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color: const Color(0xFF5E676E),
                   height: 1.45,
@@ -1120,14 +1130,17 @@ String _buildTriadSummary(AstroOverviewData overview) {
   return 'Sol en ${bigThree.sun.sign} · Luna en ${bigThree.moon.sign} · Ascendente en ${bigThree.ascendant.sign}.';
 }
 
-List<_HomeTransitItem> _buildTodayTransitItems(AstroOverviewData? overview) {
+List<_HomeTransitItem> _buildTodayTransitItems(
+  AstroOverviewData? overview,
+  AppLocalizations l10n,
+) {
   if (overview == null) {
     return const <_HomeTransitItem>[];
   }
 
   final items = <_HomeTransitItem>[
     _HomeTransitItem(
-      title: 'Pulso principal',
+      title: l10n.ts('Pulso principal'),
       message: _buildTransitSummary(overview),
       detail: _buildTransitMeta(overview),
       summary: _buildTransitPulseSummary(overview),
@@ -1165,7 +1178,7 @@ List<_HomeTransitItem> _buildTodayTransitItems(AstroOverviewData? overview) {
   if (phase != null) {
     items.add(
       _HomeTransitItem(
-        title: 'Fase lunar cercana',
+        title: l10n.ts('Fase lunar cercana'),
         message: phase.label,
         detail: formatSchedule(phase.startsAt),
         summary: _buildMoonPhaseSummary(phase),
@@ -1572,6 +1585,8 @@ class _DiscoverDaySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
       decoration: BoxDecoration(
@@ -1645,7 +1660,7 @@ class _DiscoverDaySection extends StatelessWidget {
                             ),
                           ),
                           child: Text(
-                            'Desliza entre tus accesos clave',
+                            l10n.ts('Desliza entre tus accesos clave'),
                             style: Theme.of(context)
                                 .textTheme
                                 .labelMedium
@@ -1690,7 +1705,7 @@ class _DiscoverDaySection extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(right: 14),
                       child: _ModulePanel(
-                        eyebrow: 'Mapa natal',
+                        eyebrow: l10n.ts('Mapa natal'),
                         title: astralTitle,
                         caption: astralCaption,
                         glyphKind: MysticGlyphKind.astral,
@@ -1707,7 +1722,7 @@ class _DiscoverDaySection extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(right: 14),
                       child: _ModulePanel(
-                        eyebrow: 'Código personal',
+                        eyebrow: l10n.ts('Código personal'),
                         title: numerologyTitle,
                         caption: numerologyCaption,
                         glyphKind: MysticGlyphKind.numerology,
@@ -1722,8 +1737,8 @@ class _DiscoverDaySection extends StatelessWidget {
                       ),
                     ),
                     _ModulePanel(
-                      eyebrow: 'Cielo activo',
-                      title: 'Tránsitos de hoy',
+                      eyebrow: l10n.ts('Cielo activo'),
+                      title: l10n.ts('Tránsitos de hoy'),
                       caption: transitCaption,
                       glyphKind: MysticGlyphKind.astral,
                       motionVariant: _ModuleGlyphMotionVariant.transit,
@@ -1743,7 +1758,9 @@ class _DiscoverDaySection extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      'Muévete de un lado a otro para cambiar de módulo.',
+                      l10n.ts(
+                        'Muévete de un lado a otro para cambiar de módulo.',
+                      ),
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
                             color: AppPalette.mutedLavender,
                             fontWeight: FontWeight.w600,
@@ -1910,9 +1927,9 @@ class _ModulePanel extends StatelessWidget {
                           color: Colors.black.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(999),
                         ),
-                        child: const Text(
-                          'Toca para abrir',
-                          style: TextStyle(
+                        child: Text(
+                          context.l10n.ts('Toca para abrir'),
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 12,
                             fontWeight: FontWeight.w700,

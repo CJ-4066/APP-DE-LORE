@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/i18n/app_i18n.dart';
 import '../../core/utils/formatters.dart';
 import '../../models/app_models.dart';
 import 'profile_avatar.dart';
@@ -17,6 +18,7 @@ class SubscriptionOverviewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final currentPlan = data.plans.firstWhere(
       (plan) => plan.id == data.subscription.planId,
       orElse: () => data.plans.first,
@@ -30,7 +32,7 @@ class SubscriptionOverviewScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Suscripción'),
+        title: Text(l10n.ts('Suscripción')),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
@@ -53,7 +55,9 @@ class SubscriptionOverviewScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  hasPremiumNow ? 'Centro de suscripción' : 'Centro Premium',
+                  hasPremiumNow
+                      ? l10n.ts('Centro de suscripción')
+                      : l10n.ts('Centro Premium'),
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
@@ -62,8 +66,12 @@ class SubscriptionOverviewScreen extends StatelessWidget {
                 const SizedBox(height: 10),
                 Text(
                   hasPremiumNow
-                      ? 'Tu plan está activo. Desde aquí puedes revisar beneficios, comparar planes y saltar a la gestión de tu plataforma.'
-                      : 'Aquí comparas planes, entiendes qué desbloquea Premium y saltas al centro de compra o gestión de tu plataforma.',
+                      ? l10n.ts(
+                          'Tu plan está activo. Desde aquí puedes revisar beneficios, comparar planes y saltar a la gestión de tu plataforma.',
+                        )
+                      : l10n.ts(
+                          'Aquí comparas planes, entiendes qué desbloquea Premium y saltas al centro de compra o gestión de tu plataforma.',
+                        ),
                   style: const TextStyle(
                     color: Colors.white70,
                     height: 1.45,
@@ -74,15 +82,20 @@ class SubscriptionOverviewScreen extends StatelessWidget {
                   spacing: 10,
                   runSpacing: 10,
                   children: [
-                    _HeroTag(label: 'Plan ${data.subscription.planName}'),
+                    _HeroTag(
+                      label: l10n.ts(
+                        'Plan {plan}',
+                        {'plan': data.subscription.planName},
+                      ),
+                    ),
                     _HeroTag(
                       label: hasPremiumNow
-                          ? 'Premium activo'
-                          : 'Upgrade disponible',
+                          ? l10n.ts('Premium activo')
+                          : l10n.ts('Upgrade disponible'),
                     ),
                     _HeroTag(
                       label: premiumPlan.priceMonthly == 0
-                          ? 'Gratis'
+                          ? l10n.ts('Gratis')
                           : '${premiumPlan.currency} ${premiumPlan.priceMonthly.toStringAsFixed(2)}/mes',
                     ),
                   ],
@@ -106,23 +119,24 @@ class SubscriptionOverviewScreen extends StatelessWidget {
                       icon: const Icon(Icons.workspace_premium_outlined),
                       label: Text(
                         hasPremiumNow
-                            ? 'Gestionar en plataforma'
-                            : 'Ir a Premium',
+                            ? l10n.ts('Gestionar en plataforma')
+                            : l10n.ts('Ir a Premium'),
                       ),
                     ),
                     OutlinedButton.icon(
                       onPressed: () => _shareText(
                         context,
                         _subscriptionShareText(data, currentPlan),
-                        successMessage:
-                            'Resumen de planes listo para compartir.',
+                        successMessage: l10n.ts(
+                          'Resumen de planes listo para compartir.',
+                        ),
                       ),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.white,
                         side: const BorderSide(color: Colors.white38),
                       ),
                       icon: const Icon(Icons.share_outlined),
-                      label: const Text('Compartir'),
+                      label: Text(l10n.ts('Compartir')),
                     ),
                   ],
                 ),
@@ -131,7 +145,7 @@ class SubscriptionOverviewScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           _InfoSection(
-            title: 'Estado actual',
+            title: l10n.ts('Estado actual'),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -142,13 +156,27 @@ class SubscriptionOverviewScreen extends StatelessWidget {
                       ),
                 ),
                 const SizedBox(height: 8),
-                Text('Plataforma: ${data.subscription.platform}'),
+                Text(
+                  l10n.ts(
+                    'Plataforma: {platform}',
+                    {'platform': data.subscription.platform},
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text('Facturación: ${data.subscription.billingProvider}'),
+                Text(
+                  l10n.ts(
+                    'Facturación: {provider}',
+                    {'provider': data.subscription.billingProvider},
+                  ),
+                ),
                 if (data.subscription.renewsAt != null) ...[
                   const SizedBox(height: 4),
                   Text(
-                      'Renueva: ${formatSchedule(data.subscription.renewsAt!)}'),
+                    l10n.ts(
+                      'Renueva: {date}',
+                      {'date': formatSchedule(data.subscription.renewsAt!)},
+                    ),
+                  ),
                 ],
                 const SizedBox(height: 12),
                 Wrap(
@@ -172,18 +200,21 @@ class SubscriptionOverviewScreen extends StatelessWidget {
                       ),
                       icon: const Icon(Icons.workspace_premium_outlined),
                       label: Text(
-                        hasPremiumNow ? 'Gestionar renovación' : 'Ver upgrade',
+                        hasPremiumNow
+                            ? l10n.ts('Gestionar renovación')
+                            : l10n.ts('Ver upgrade'),
                       ),
                     ),
                     OutlinedButton.icon(
                       onPressed: () => _shareText(
                         context,
                         _subscriptionShareText(data, currentPlan),
-                        successMessage:
-                            'Resumen de planes listo para compartir.',
+                        successMessage: l10n.ts(
+                          'Resumen de planes listo para compartir.',
+                        ),
                       ),
                       icon: const Icon(Icons.share_outlined),
-                      label: const Text('Compartir planes'),
+                      label: Text(l10n.ts('Compartir planes')),
                     ),
                   ],
                 ),
@@ -192,7 +223,7 @@ class SubscriptionOverviewScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           _InfoSection(
-            title: 'Planes disponibles',
+            title: l10n.ts('Planes disponibles'),
             child: Column(
               children: data.plans
                   .map(
@@ -202,10 +233,10 @@ class SubscriptionOverviewScreen extends StatelessWidget {
                         plan: plan,
                         isCurrent: plan.id == currentPlan.id,
                         actionLabel: plan.id == currentPlan.id
-                            ? 'Gestionar'
+                            ? l10n.ts('Gestionar')
                             : plan.id == 'premium'
-                                ? 'Elegir Premium'
-                                : 'Ver alternativa',
+                                ? l10n.ts('Elegir Premium')
+                                : l10n.ts('Ver alternativa'),
                         onAction: () => _handlePlanAction(
                           context,
                           data.subscription,
@@ -220,13 +251,23 @@ class SubscriptionOverviewScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           _InfoSection(
-            title: 'Pagos y métodos',
+            title: l10n.ts('Pagos y métodos'),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Consultas: ${data.payments.consultationProvider}'),
+                Text(
+                  l10n.ts(
+                    'Consultas: {provider}',
+                    {'provider': data.payments.consultationProvider},
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text('Premium: ${data.payments.premiumProvider}'),
+                Text(
+                  l10n.ts(
+                    'Premium: {provider}',
+                    {'provider': data.payments.premiumProvider},
+                  ),
+                ),
                 const SizedBox(height: 12),
                 ...data.payments.supportedMethods.map(
                   (item) => Padding(
@@ -262,11 +303,12 @@ class PrivacyDataScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final natal = user.natalChart;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Privacidad y datos'),
+        title: Text(l10n.ts('Privacidad y datos')),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
@@ -278,107 +320,192 @@ class PrivacyDataScreen extends StatelessWidget {
               FilledButton.icon(
                 onPressed: onEditProfile,
                 icon: const Icon(Icons.edit_outlined),
-                label: const Text('Editar perfil'),
+                label: Text(l10n.ts('Editar perfil')),
               ),
               OutlinedButton.icon(
                 onPressed: () => _shareText(
                   context,
                   _privacyShareText(user),
-                  successMessage: 'Resumen de privacidad listo para compartir.',
+                  successMessage: l10n.ts(
+                    'Resumen de privacidad listo para compartir.',
+                  ),
                 ),
                 icon: const Icon(Icons.ios_share_outlined),
-                label: const Text('Exportar resumen'),
+                label: Text(l10n.ts('Exportar resumen')),
               ),
               OutlinedButton.icon(
                 onPressed: () => _copyText(
                   context,
                   _privacyShareText(user),
-                  successMessage: 'Resumen copiado al portapapeles.',
+                  successMessage: l10n.ts('Resumen copiado al portapapeles.'),
                 ),
                 icon: const Icon(Icons.copy_outlined),
-                label: const Text('Copiar'),
+                label: Text(l10n.ts('Copiar')),
               ),
               OutlinedButton.icon(
                 onPressed: () => _openPrivacyEmail(context, user),
                 icon: const Icon(Icons.mail_outline),
-                label: const Text('Solicitar revisión'),
+                label: Text(l10n.ts('Solicitar revisión')),
               ),
             ],
           ),
           const SizedBox(height: 16),
           _InfoSection(
-            title: 'Datos visibles en tu cuenta',
+            title: l10n.ts('Datos visibles en tu cuenta'),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Nombre: ${displayUserName(user)}'),
+                Text(
+                  l10n.ts(
+                    'Nombre: {name}',
+                    {'name': displayUserName(user)},
+                  ),
+                ),
                 if (user.nickname.trim().isNotEmpty) ...[
                   const SizedBox(height: 4),
-                  Text('Apodo: @${user.nickname.trim()}'),
+                  Text(
+                    l10n.ts(
+                      'Apodo: @{nickname}',
+                      {'nickname': user.nickname.trim()},
+                    ),
+                  ),
                 ],
                 const SizedBox(height: 4),
                 Text(
-                    'Email: ${user.email.isEmpty ? 'No registrado' : user.email}'),
+                  l10n.ts(
+                    'Email: {email}',
+                    {
+                      'email': user.email.isEmpty
+                          ? l10n.ts('No registrado')
+                          : user.email,
+                    },
+                  ),
+                ),
                 const SizedBox(height: 4),
                 Text(
-                    'Ubicación: ${user.location.isEmpty ? 'No registrada' : user.location}'),
+                  l10n.ts(
+                    'Ubicación: {location}',
+                    {
+                      'location': user.location.isEmpty
+                          ? l10n.ts('No registrada')
+                          : user.location,
+                    },
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text('Zona horaria: ${user.timezone}'),
+                Text(
+                  l10n.ts(
+                    'Zona horaria: {timezone}',
+                    {'timezone': user.timezone},
+                  ),
+                ),
               ],
             ),
           ),
           const SizedBox(height: 16),
           _InfoSection(
-            title: 'Datos natales guardados',
+            title: l10n.ts('Datos natales guardados'),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Fecha: ${natal.birthDate}'),
+                Text(l10n.ts('Fecha: {date}', {'date': natal.birthDate})),
                 const SizedBox(height: 4),
                 Text(
-                  'Hora: ${natal.birthTimeUnknown ? 'Desconocida' : natal.birthTime}',
+                  l10n.ts(
+                    'Hora: {time}',
+                    {
+                      'time': natal.birthTimeUnknown
+                          ? l10n.ts('Desconocida')
+                          : natal.birthTime,
+                    },
+                  ),
                 ),
                 const SizedBox(height: 4),
-                Text('Lugar: ${natal.city}, ${natal.state}, ${natal.country}'),
+                Text(
+                  l10n.ts(
+                    'Lugar: {place}',
+                    {
+                      'place':
+                          '${natal.city}, ${natal.state}, ${natal.country}',
+                    },
+                  ),
+                ),
                 if (natal.timeZoneId.isNotEmpty) ...[
                   const SizedBox(height: 4),
-                  Text('Zona IANA: ${natal.timeZoneId}'),
+                  Text(
+                    l10n.ts(
+                      'Zona IANA: {zone}',
+                      {'zone': natal.timeZoneId},
+                    ),
+                  ),
                 ],
                 if (natal.utcOffset.isNotEmpty) ...[
                   const SizedBox(height: 4),
-                  Text('UTC: ${natal.utcOffset}'),
+                  Text(l10n.ts('UTC: {offset}', {'offset': natal.utcOffset})),
                 ],
                 if (natal.latitude != null && natal.longitude != null) ...[
                   const SizedBox(height: 4),
-                  Text('Coordenadas: ${natal.latitude}, ${natal.longitude}'),
+                  Text(
+                    l10n.ts(
+                      'Coordenadas: {lat}, {lng}',
+                      {
+                        'lat': '${natal.latitude}',
+                        'lng': '${natal.longitude}',
+                      },
+                    ),
+                  ),
                 ],
               ],
             ),
           ),
           const SizedBox(height: 16),
           _InfoSection(
-            title: 'Preferencias guardadas',
+            title: l10n.ts('Preferencias guardadas'),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Áreas de foco: ${user.preferences.focusAreas.isEmpty ? 'Ninguna' : user.preferences.focusAreas.join(', ')}',
+                  l10n.ts(
+                    'Áreas de foco: {areas}',
+                    {
+                      'areas': user.preferences.focusAreas.isEmpty
+                          ? l10n.ts('Ninguna')
+                          : user.preferences.focusAreas.join(', '),
+                    },
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Modos preferidos: ${user.preferences.preferredSessionModes.isEmpty ? 'Ninguno' : user.preferences.preferredSessionModes.join(', ')}',
+                  l10n.ts(
+                    'Modos preferidos: {modes}',
+                    {
+                      'modes': user.preferences.preferredSessionModes.isEmpty
+                          ? l10n.ts('Ninguno')
+                          : user.preferences.preferredSessionModes.join(', '),
+                    },
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                    'Push activadas: ${user.preferences.receivesPush ? 'Sí' : 'No'}'),
+                  l10n.ts(
+                    'Push activadas: {value}',
+                    {
+                      'value': user.preferences.receivesPush
+                          ? l10n.ts('Sí')
+                          : l10n.ts('No'),
+                    },
+                  ),
+                ),
               ],
             ),
           ),
           const SizedBox(height: 16),
           _InfoSection(
-            title: 'Estado actual',
+            title: l10n.ts('Estado actual'),
             child: Text(
-              'Desde aquí ya puedes revisar qué datos están visibles, copiar o exportar un resumen y enviar una solicitud de revisión si necesitas ajustar algo.',
+              l10n.ts(
+                'Desde aquí ya puedes revisar qué datos están visibles, copiar o exportar un resumen y enviar una solicitud de revisión si necesitas ajustar algo.',
+              ),
             ),
           ),
         ],
@@ -397,9 +524,11 @@ class SupportScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Soporte'),
+        title: Text(l10n.ts('Soporte')),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
@@ -411,75 +540,120 @@ class SupportScreen extends StatelessWidget {
               FilledButton.icon(
                 onPressed: () => _openSupportEmail(context, data),
                 icon: const Icon(Icons.mail_outline),
-                label: const Text('Escribir a soporte'),
+                label: Text(l10n.ts('Escribir a soporte')),
               ),
               OutlinedButton.icon(
                 onPressed: () => _shareText(
                   context,
                   _supportShareText(data),
-                  successMessage: 'Diagnóstico listo para compartir.',
+                  successMessage: l10n.ts('Diagnóstico listo para compartir.'),
                 ),
                 icon: const Icon(Icons.share_outlined),
-                label: const Text('Compartir diagnóstico'),
+                label: Text(l10n.ts('Compartir diagnóstico')),
               ),
               OutlinedButton.icon(
                 onPressed: () => _copyText(
                   context,
                   _supportShareText(data),
-                  successMessage: 'Diagnóstico copiado al portapapeles.',
+                  successMessage:
+                      l10n.ts('Diagnóstico copiado al portapapeles.'),
                 ),
                 icon: const Icon(Icons.copy_outlined),
-                label: const Text('Copiar'),
+                label: Text(l10n.ts('Copiar')),
               ),
             ],
           ),
           const SizedBox(height: 16),
           _InfoSection(
-            title: 'Canales disponibles',
+            title: l10n.ts('Canales disponibles'),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('• Correo directo a soporte desde esta pantalla'),
-                const SizedBox(height: 6),
-                const Text(
-                    '• Copia y comparte un diagnóstico resumido de tu cuenta'),
+                Text(
+                  l10n.ts('• Correo directo a soporte desde esta pantalla'),
+                ),
                 const SizedBox(height: 6),
                 Text(
-                  '• Estado operativo: ${data.admin.openIncidents} incidencias abiertas en este momento',
+                  l10n.ts(
+                    '• Copia y comparte un diagnóstico resumido de tu cuenta',
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  l10n.ts(
+                    '• Estado operativo: {count} incidencias abiertas en este momento',
+                    {'count': '${data.admin.openIncidents}'},
+                  ),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 16),
           _InfoSection(
-            title: 'Estado operativo',
+            title: l10n.ts('Estado operativo'),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Usuarios activos: ${data.admin.activeUsers}'),
+                Text(
+                  l10n.ts(
+                    'Usuarios activos: {count}',
+                    {'count': '${data.admin.activeUsers}'},
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text('Suscriptores premium: ${data.admin.premiumSubscribers}'),
+                Text(
+                  l10n.ts(
+                    'Suscriptores premium: {count}',
+                    {'count': '${data.admin.premiumSubscribers}'},
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text('Reservas del mes: ${data.admin.monthlyBookings}'),
+                Text(
+                  l10n.ts(
+                    'Reservas del mes: {count}',
+                    {'count': '${data.admin.monthlyBookings}'},
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text('Especialistas activos: ${data.admin.activeSpecialists}'),
+                Text(
+                  l10n.ts(
+                    'Especialistas activos: {count}',
+                    {'count': '${data.admin.activeSpecialists}'},
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text('Incidencias abiertas: ${data.admin.openIncidents}'),
+                Text(
+                  l10n.ts(
+                    'Incidencias abiertas: {count}',
+                    {'count': '${data.admin.openIncidents}'},
+                  ),
+                ),
               ],
             ),
           ),
           const SizedBox(height: 16),
-          const _InfoSection(
-            title: 'Qué puedes gestionar desde aquí',
+          _InfoSection(
+            title: l10n.ts('Qué puedes gestionar desde aquí'),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('• Reportar problemas de navegación, pagos o acceso'),
-                SizedBox(height: 6),
                 Text(
-                    '• Compartir contexto técnico mínimo para acelerar la respuesta'),
-                SizedBox(height: 6),
-                Text('• Escalar temas de privacidad, suscripción o reservas'),
+                  l10n.ts(
+                    '• Reportar problemas de navegación, pagos o acceso',
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  l10n.ts(
+                    '• Compartir contexto técnico mínimo para acelerar la respuesta',
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  l10n.ts(
+                    '• Escalar temas de privacidad, suscripción o reservas',
+                  ),
+                ),
               ],
             ),
           ),
@@ -536,6 +710,8 @@ class _PlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -566,9 +742,9 @@ class _PlanCard extends StatelessWidget {
                     color: const Color(0xFFB96C3D),
                     borderRadius: BorderRadius.circular(999),
                   ),
-                  child: const Text(
-                    'Actual',
-                    style: TextStyle(
+                  child: Text(
+                    l10n.ts('Actual'),
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 11,
                       fontWeight: FontWeight.w800,
@@ -580,7 +756,7 @@ class _PlanCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             plan.priceMonthly == 0
-                ? 'Gratis'
+                ? l10n.ts('Gratis')
                 : '${plan.currency} ${plan.priceMonthly.toStringAsFixed(2)} / mes',
           ),
           const SizedBox(height: 12),
@@ -644,7 +820,9 @@ Future<void> _handlePlanAction(
 
   _showSnackBar(
     context,
-    'Ese plan no requiere gestión extra desde la app en este momento.',
+    context.l10n.ts(
+      'Ese plan no requiere gestión extra desde la app en este momento.',
+    ),
   );
 }
 
@@ -656,14 +834,19 @@ Future<void> _openSubscriptionManagement(
   if (uri == null) {
     _showSnackBar(
       context,
-      'No encontramos un centro de gestión para esta plataforma.',
+      context.l10n.ts(
+        'No encontramos un centro de gestión para esta plataforma.',
+      ),
     );
     return;
   }
 
   final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
   if (!opened && context.mounted) {
-    _showSnackBar(context, 'No se pudo abrir la gestión de suscripción.');
+    _showSnackBar(
+      context,
+      context.l10n.ts('No se pudo abrir la gestión de suscripción.'),
+    );
   }
 }
 
@@ -679,7 +862,10 @@ Future<void> _openPrivacyEmail(BuildContext context, UserProfile user) async {
 
   final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
   if (!opened && context.mounted) {
-    _showSnackBar(context, 'No se pudo abrir el correo de privacidad.');
+    _showSnackBar(
+      context,
+      context.l10n.ts('No se pudo abrir el correo de privacidad.'),
+    );
   }
 }
 
@@ -695,7 +881,10 @@ Future<void> _openSupportEmail(BuildContext context, AppBootstrap data) async {
 
   final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
   if (!opened && context.mounted) {
-    _showSnackBar(context, 'No se pudo abrir el correo de soporte.');
+    _showSnackBar(
+      context,
+      context.l10n.ts('No se pudo abrir el correo de soporte.'),
+    );
   }
 }
 

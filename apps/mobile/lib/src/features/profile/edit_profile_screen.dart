@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../core/data/birth_place_catalog.dart';
+import '../../core/i18n/app_i18n.dart';
 import '../../models/app_models.dart';
 import '../../models/profile_models.dart';
 import 'birth_place_selector.dart';
@@ -138,8 +139,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       });
     } catch (error) {
       setState(() {
-        _errorMessage =
-            'No se pudo seleccionar la foto. Revisa permisos de galería.';
+        _errorMessage = context.l10n.ts(
+          'No se pudo seleccionar la foto. Revisa permisos de galería.',
+        );
       });
     } finally {
       if (mounted) {
@@ -172,8 +174,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         birthDate.isEmpty ||
         birthTime.isEmpty) {
       setState(() {
-        _errorMessage =
-            'Completa nombre, apellido, ciudad, país, fecha y hora de nacimiento.';
+        _errorMessage = context.l10n.ts(
+          'Completa nombre, apellido, ciudad, país, fecha y hora de nacimiento.',
+        );
       });
       return;
     }
@@ -181,7 +184,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     if (utcOffset.isNotEmpty &&
         !RegExp(r'^[+-]\d{2}:\d{2}$').hasMatch(utcOffset)) {
       setState(() {
-        _errorMessage = 'El UTC offset debe tener formato +/-HH:MM.';
+        _errorMessage =
+            context.l10n.ts('El UTC offset debe tener formato +/-HH:MM.');
       });
       return;
     }
@@ -193,14 +197,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     if (latitudeText.isNotEmpty && latitude == null) {
       setState(() {
-        _errorMessage = 'La latitud debe ser numérica.';
+        _errorMessage = context.l10n.ts('La latitud debe ser numérica.');
       });
       return;
     }
 
     if (longitudeText.isNotEmpty && longitude == null) {
       setState(() {
-        _errorMessage = 'La longitud debe ser numérica.';
+        _errorMessage = context.l10n.ts('La longitud debe ser numérica.');
       });
       return;
     }
@@ -288,9 +292,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Editar perfil'),
+        title: Text(l10n.ts('Editar perfil')),
       ),
       body: SafeArea(
         child: ListView(
@@ -321,7 +327,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 child:
                                     CircularProgressIndicator(strokeWidth: 2),
                               )
-                            : const Text('Elegir foto'),
+                            : Text(l10n.ts('Elegir foto')),
                       ),
                       TextButton(
                         onPressed: (_avatarUrl ?? '').isEmpty || _isSaving
@@ -331,7 +337,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   _avatarUrl = '';
                                 });
                               },
-                        child: const Text('Quitar foto'),
+                        child: Text(l10n.ts('Quitar foto')),
                       ),
                     ],
                   ),
@@ -339,62 +345,66 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            _SectionTitle(label: 'Identidad'),
+            _SectionTitle(label: l10n.ts('Identidad')),
             const SizedBox(height: 12),
             TextField(
               controller: _nicknameController,
-              decoration: const InputDecoration(
-                labelText: 'Apodo',
-                hintText: 'Cómo quieres que te veamos dentro de la app',
+              decoration: InputDecoration(
+                labelText: l10n.ts('Apodo'),
+                hintText: l10n.ts(
+                  'Cómo quieres que te veamos dentro de la app',
+                ),
               ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _firstNameController,
-              decoration: const InputDecoration(labelText: 'Nombre'),
+              decoration: InputDecoration(labelText: l10n.ts('Nombre')),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _lastNameController,
-              decoration: const InputDecoration(labelText: 'Apellido'),
+              decoration: InputDecoration(labelText: l10n.ts('Apellido')),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(labelText: 'Correo'),
+              decoration: InputDecoration(labelText: l10n.ts('Correo')),
             ),
             const SizedBox(height: 24),
-            _SectionTitle(label: 'Datos astrológicos'),
+            _SectionTitle(label: l10n.ts('Datos astrológicos')),
             const SizedBox(height: 12),
             TextField(
               controller: _locationController,
-              decoration: const InputDecoration(
-                labelText: 'Ubicación actual',
+              decoration: InputDecoration(
+                labelText: l10n.ts('Ubicación actual'),
                 hintText: 'Lima, Perú',
               ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _zodiacSignController,
-              decoration: const InputDecoration(
-                labelText: 'Signo zodiacal',
-                hintText: 'Se completa automáticamente si no lo editas',
+              decoration: InputDecoration(
+                labelText: l10n.ts('Signo zodiacal'),
+                hintText: l10n.ts(
+                  'Se completa automáticamente si no lo editas',
+                ),
               ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _birthDateController,
-              decoration: const InputDecoration(
-                labelText: 'Fecha de nacimiento',
+              decoration: InputDecoration(
+                labelText: l10n.ts('Fecha de nacimiento'),
                 hintText: '2000-11-28',
               ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _birthTimeController,
-              decoration: const InputDecoration(
-                labelText: 'Hora de nacimiento',
+              decoration: InputDecoration(
+                labelText: l10n.ts('Hora de nacimiento'),
                 hintText: '01:40',
               ),
             ),
@@ -426,14 +436,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 children: [
                   Text(
                     _cityController.text.isEmpty
-                        ? 'Aún no seleccionaste un lugar natal'
+                        ? l10n.ts('Aún no seleccionaste un lugar natal')
                         : '${_cityController.text}, ${_countryController.text}',
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 6),
                   Text(
                     _utcOffsetController.text.isEmpty
-                        ? 'Selecciona una ciudad del listado para completar UTC y coordenadas.'
+                        ? l10n.ts(
+                            'Selecciona una ciudad del listado para completar UTC y coordenadas.',
+                          )
                         : 'UTC ${_utcOffsetController.text} · Lat ${_latitudeController.text} · Lon ${_longitudeController.text}',
                   ),
                 ],
@@ -465,7 +477,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Guardar cambios'),
+                  : Text(l10n.ts('Guardar cambios')),
             ),
           ],
         ),

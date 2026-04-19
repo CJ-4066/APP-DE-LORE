@@ -130,10 +130,11 @@ class ProfileScreen extends StatelessWidget {
                                         color: AppPalette.orchid.withValues(
                                           alpha: 0.15,
                                         ),
-                                        borderRadius: BorderRadius.circular(999),
+                                        borderRadius:
+                                            BorderRadius.circular(999),
                                       ),
                                       child: Text(
-                                        'Usuario madre',
+                                        l10n.ts('Usuario madre'),
                                         style: Theme.of(context)
                                             .textTheme
                                             .labelMedium
@@ -448,9 +449,15 @@ class ProfileScreen extends StatelessWidget {
                   ],
                   ListTile(
                     leading: const Icon(Icons.military_tech_outlined),
-                    title: const Text('Insignias'),
+                    title: Text(l10n.ts('Insignias')),
                     subtitle: Text(
-                      '${badgeCenter.currentRank.title} · ${badgeCenter.unlockedCount} activas',
+                      l10n.ts(
+                        '{rank} · {count} activas',
+                        {
+                          'rank': l10n.ts(badgeCenter.currentRank.title),
+                          'count': '${badgeCenter.unlockedCount}',
+                        },
+                      ),
                     ),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () async {
@@ -461,7 +468,10 @@ class ProfileScreen extends StatelessWidget {
                       );
                     },
                   ),
-                  if (canOpenSupport || !isGuestMode || canManageSubscription || canOpenPrivacy)
+                  if (canOpenSupport ||
+                      !isGuestMode ||
+                      canManageSubscription ||
+                      canOpenPrivacy)
                     const Divider(height: 1),
                   if (canOpenSupport)
                     ListTile(
@@ -486,7 +496,7 @@ class ProfileScreen extends StatelessWidget {
                     if (canOpenSupport) const Divider(height: 1),
                     ListTile(
                       leading: const Icon(Icons.logout),
-                      title: const Text('Cerrar sesión'),
+                      title: Text(l10n.ts('Cerrar sesión')),
                       textColor: AppPalette.berry,
                       iconColor: AppPalette.berry,
                       onTap: () async {
@@ -494,22 +504,24 @@ class ProfileScreen extends StatelessWidget {
                               context: context,
                               builder: (dialogContext) {
                                 return AlertDialog(
-                                  title: const Text('Cerrar sesión'),
-                                  content: const Text(
-                                    'Se cerrará tu sesión en este dispositivo.',
+                                  title: Text(l10n.ts('Cerrar sesión')),
+                                  content: Text(
+                                    l10n.ts(
+                                      'Se cerrará tu sesión en este dispositivo.',
+                                    ),
                                   ),
                                   actions: [
                                     TextButton(
                                       onPressed: () {
                                         Navigator.of(dialogContext).pop(false);
                                       },
-                                      child: const Text('Cancelar'),
+                                      child: Text(l10n.ts('Cancelar')),
                                     ),
                                     FilledButton(
                                       onPressed: () {
                                         Navigator.of(dialogContext).pop(true);
                                       },
-                                      child: const Text('Cerrar sesión'),
+                                      child: Text(l10n.ts('Cerrar sesión')),
                                     ),
                                   ],
                                 );
@@ -553,9 +565,11 @@ class _SpecialistModeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final isSpecialist = user.accountType == 'specialist';
     final hasRequiredProfileData = _hasRequiredSpecialistProfileData(user);
-    final buttonLabel = isSpecialist ? 'Usuario' : 'Especialista';
+    final buttonLabel =
+        isSpecialist ? l10n.ts('Usuario') : l10n.ts('Especialista');
 
     return Container(
       decoration: BoxDecoration(
@@ -606,8 +620,8 @@ class _SpecialistModeCard extends StatelessWidget {
                   children: [
                     Text(
                       isSpecialist
-                          ? 'Vista especialista activa'
-                          : 'Administrar como especialista',
+                          ? l10n.ts('Vista especialista activa')
+                          : l10n.ts('Administrar como especialista'),
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.w900,
@@ -616,8 +630,12 @@ class _SpecialistModeCard extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       isSpecialist
-                          ? 'Tu cuenta ya puede gestionar cursos, productos, citas, precios y comunidad desde el panel operativo.'
-                          : 'Usa los mismos datos de tu perfil para habilitar gestión de cursos, productos, citas, precios y comunidad.',
+                          ? l10n.ts(
+                              'Tu cuenta ya puede gestionar cursos, productos, citas, precios y comunidad desde el panel operativo.',
+                            )
+                          : l10n.ts(
+                              'Usa los mismos datos de tu perfil para habilitar gestión de cursos, productos, citas, precios y comunidad.',
+                            ),
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: Colors.white.withValues(alpha: 0.82),
                             height: 1.4,
@@ -632,19 +650,23 @@ class _SpecialistModeCard extends StatelessWidget {
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: const [
-              _SpecialistModePill(label: 'Cursos/PDF'),
-              _SpecialistModePill(label: 'Productos'),
-              _SpecialistModePill(label: 'Citas'),
-              _SpecialistModePill(label: 'Comunidad'),
+            children: [
+              _SpecialistModePill(label: l10n.ts('Cursos/PDF')),
+              _SpecialistModePill(label: l10n.ts('Productos')),
+              _SpecialistModePill(label: l10n.ts('Citas')),
+              _SpecialistModePill(label: l10n.ts('Comunidad')),
             ],
           ),
           if (!hasRequiredProfileData && !isSpecialist) ...[
             const SizedBox(height: 12),
             Text(
               isGuestMode
-                  ? 'Para administrar primero necesitas registrarte con teléfono y completar tu perfil.'
-                  : 'Antes de administrar necesitamos nombre, nacimiento, ciudad, país, zona horaria y coordenadas.',
+                  ? l10n.ts(
+                      'Para administrar primero necesitas registrarte con teléfono y completar tu perfil.',
+                    )
+                  : l10n.ts(
+                      'Antes de administrar necesitamos nombre, nacimiento, ciudad, país, zona horaria y coordenadas.',
+                    ),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: AppPalette.moonIvory,
                     fontWeight: FontWeight.w700,
@@ -677,23 +699,27 @@ class _SpecialistModeCard extends StatelessWidget {
   }
 
   Future<void> _handleSpecialistModeTap(BuildContext context) async {
+    final l10n = context.l10n;
+
     if (isGuestMode) {
       final shouldRegister = await showDialog<bool>(
             context: context,
             builder: (dialogContext) {
               return AlertDialog(
-                title: const Text('Registro requerido'),
-                content: const Text(
-                  'Para administrar cursos, productos, citas y comunidad necesitas registrarte primero con tu teléfono.',
+                title: Text(l10n.ts('Registro requerido')),
+                content: Text(
+                  l10n.ts(
+                    'Para administrar cursos, productos, citas y comunidad necesitas registrarte primero con tu teléfono.',
+                  ),
                 ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(dialogContext).pop(false),
-                    child: const Text('Cancelar'),
+                    child: Text(l10n.ts('Cancelar')),
                   ),
                   FilledButton(
                     onPressed: () => Navigator.of(dialogContext).pop(true),
-                    child: const Text('Registrarme'),
+                    child: Text(l10n.ts('Registrarme')),
                   ),
                 ],
               );
@@ -712,18 +738,20 @@ class _SpecialistModeCard extends StatelessWidget {
             context: context,
             builder: (dialogContext) {
               return AlertDialog(
-                title: const Text('Completa tus datos'),
-                content: const Text(
-                  'Antes de activar la vista especialista necesitamos tus datos base completos. Así podrás administrar cursos, productos, citas, precios y comunidad con una cuenta identificada.',
+                title: Text(l10n.ts('Completa tus datos')),
+                content: Text(
+                  l10n.ts(
+                    'Antes de activar la vista especialista necesitamos tus datos base completos. Así podrás administrar cursos, productos, citas, precios y comunidad con una cuenta identificada.',
+                  ),
                 ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(dialogContext).pop(false),
-                    child: const Text('Luego'),
+                    child: Text(l10n.ts('Luego')),
                   ),
                   FilledButton(
                     onPressed: () => Navigator.of(dialogContext).pop(true),
-                    child: const Text('Completar perfil'),
+                    child: Text(l10n.ts('Completar perfil')),
                   ),
                 ],
               );
@@ -742,18 +770,20 @@ class _SpecialistModeCard extends StatelessWidget {
             context: context,
             builder: (dialogContext) {
               return AlertDialog(
-                title: const Text('Activar vista especialista'),
-                content: const Text(
-                  'Se usará este mismo perfil para habilitar el panel de administración de cursos, productos, citas, precios y comunidad.',
+                title: Text(l10n.ts('Activar vista especialista')),
+                content: Text(
+                  l10n.ts(
+                    'Se usará este mismo perfil para habilitar el panel de administración de cursos, productos, citas, precios y comunidad.',
+                  ),
                 ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(dialogContext).pop(false),
-                    child: const Text('Cancelar'),
+                    child: Text(l10n.ts('Cancelar')),
                   ),
                   FilledButton(
                     onPressed: () => Navigator.of(dialogContext).pop(true),
-                    child: const Text('Activar'),
+                    child: Text(l10n.ts('Activar')),
                   ),
                 ],
               );
@@ -774,29 +804,36 @@ class _SpecialistModeCard extends StatelessWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          error ?? 'Vista especialista lista para administrar tu operación.',
+          error ??
+              l10n.ts(
+                'Vista especialista lista para administrar tu operación.',
+              ),
         ),
       ),
     );
   }
 
   Future<void> _handleClientModeTap(BuildContext context) async {
+    final l10n = context.l10n;
+
     final confirmed = await showDialog<bool>(
           context: context,
           builder: (dialogContext) {
             return AlertDialog(
-              title: const Text('Volver a vista usuario'),
-              content: const Text(
-                'Tu perfil y tus datos se mantienen. Solo se ocultará el panel especialista y volverás a la navegación normal de usuario.',
+              title: Text(l10n.ts('Volver a vista usuario')),
+              content: Text(
+                l10n.ts(
+                  'Tu perfil y tus datos se mantienen. Solo se ocultará el panel especialista y volverás a la navegación normal de usuario.',
+                ),
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(dialogContext).pop(false),
-                  child: const Text('Cancelar'),
+                  child: Text(l10n.ts('Cancelar')),
                 ),
                 FilledButton(
                   onPressed: () => Navigator.of(dialogContext).pop(true),
-                  child: const Text('Volver'),
+                  child: Text(l10n.ts('Volver')),
                 ),
               ],
             );
@@ -816,7 +853,7 @@ class _SpecialistModeCard extends StatelessWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          error ?? 'Vista usuario activada.',
+          error ?? l10n.ts('Vista usuario activada.'),
         ),
       ),
     );

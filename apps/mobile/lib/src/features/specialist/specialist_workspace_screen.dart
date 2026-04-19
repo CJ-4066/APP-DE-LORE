@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/i18n/app_i18n.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/utils/formatters.dart';
 import '../../models/app_models.dart';
@@ -59,6 +60,7 @@ class _SpecialistWorkspaceScreenState extends State<SpecialistWorkspaceScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final paidServices = widget.data.services
         .where((service) => service.price.amount > 0)
         .toList(growable: false);
@@ -114,16 +116,18 @@ class _SpecialistWorkspaceScreenState extends State<SpecialistWorkspaceScreen> {
               ),
               const SizedBox(height: 24),
               _SectionTitle(
-                title: 'Citas operativas',
-                subtitle:
-                    'Mueve reservas por estado para mantener clara la atención del día.',
+                title: l10n.ts('Citas operativas'),
+                subtitle: l10n.ts(
+                  'Mueve reservas por estado para mantener clara la atención del día.',
+                ),
               ),
               const SizedBox(height: 12),
               if (activeBookings.isEmpty)
-                const _EmptyPanel(
-                  title: 'Sin citas activas',
-                  subtitle:
-                      'Cuando un cliente reserve una consulta, aparecerá aquí para gestionarla.',
+                _EmptyPanel(
+                  title: l10n.ts('Sin citas activas'),
+                  subtitle: l10n.ts(
+                    'Cuando un cliente reserve una consulta, aparecerá aquí para gestionarla.',
+                  ),
                 )
               else
                 ...activeBookings.map(
@@ -189,7 +193,10 @@ class _SpecialistWorkspaceScreenState extends State<SpecialistWorkspaceScreen> {
       return;
     }
 
-    _showSnackBar(error ?? '${service.name} actualizado.');
+    _showSnackBar(
+      error ??
+          context.l10n.ts('{name} actualizado.', {'name': service.name}),
+    );
   }
 
   Future<void> _updateBookingStatus(Booking booking, String status) async {
@@ -211,7 +218,12 @@ class _SpecialistWorkspaceScreenState extends State<SpecialistWorkspaceScreen> {
     });
 
     _showSnackBar(
-        error ?? 'Cita actualizada a ${_bookingStatusLabel(status)}.');
+      error ??
+          context.l10n.ts(
+            'Cita actualizada a {status}.',
+            {'status': _bookingStatusLabel(context, status)},
+          ),
+    );
   }
 
   void _showSnackBar(String message) {
@@ -236,6 +248,7 @@ class _SpecialistMetricGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = (constraints.maxWidth - 12) / 2;
@@ -247,28 +260,28 @@ class _SpecialistMetricGrid extends StatelessWidget {
               width: width,
               icon: Icons.payments_outlined,
               value: '$serviceCount',
-              label: 'Servicios',
+              label: l10n.ts('Servicios'),
               color: AppPalette.indigo,
             ),
             _MetricTile(
               width: width,
               icon: Icons.calendar_month_outlined,
               value: '$bookingCount',
-              label: 'Citas',
+              label: l10n.ts('Citas'),
               color: AppPalette.royalViolet,
             ),
             _MetricTile(
               width: width,
               icon: Icons.picture_as_pdf_outlined,
               value: '$courseCount',
-              label: 'Cursos',
+              label: l10n.ts('Cursos'),
               color: AppPalette.warning,
             ),
             _MetricTile(
               width: width,
               icon: Icons.shopping_bag_outlined,
               value: '$productCount',
-              label: 'Productos',
+              label: l10n.ts('Productos'),
               color: AppPalette.berry,
             ),
           ],
@@ -354,6 +367,7 @@ class _PricingCenterCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final lowestService = services.isEmpty
         ? null
         : services.reduce(
@@ -411,7 +425,7 @@ class _PricingCenterCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Servicios y precios',
+                      l10n.ts('Servicios y precios'),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.w900,
@@ -420,8 +434,17 @@ class _PricingCenterCard extends StatelessWidget {
                     const SizedBox(height: 5),
                     Text(
                       services.isEmpty
-                          ? 'Configura tus consultas antes de publicarlas.'
-                          : '${services.length} consultas · desde ${formatMoney(lowestService!.price)} · $averageDuration min promedio',
+                          ? l10n.ts(
+                              'Configura tus consultas antes de publicarlas.',
+                            )
+                          : l10n.ts(
+                              '{count} consultas · desde {price} · {minutes} min promedio',
+                              {
+                                'count': '${services.length}',
+                                'price': formatMoney(lowestService!.price),
+                                'minutes': '$averageDuration',
+                              },
+                            ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -475,11 +498,12 @@ class _ActionDeck extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Tienda, cursos y comunidad',
+          l10n.ts('Tienda, cursos y comunidad'),
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 color: AppPalette.butterflyInk,
                 fontWeight: FontWeight.w900,
@@ -488,34 +512,40 @@ class _ActionDeck extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         _SpotlightActionCard(
-          title: 'Tienda',
-          metric: '$productCount productos',
+          title: l10n.ts('Tienda'),
+          metric: l10n.ts('{count} productos', {'count': '$productCount'}),
           detail: activeOrderCount > 0
-              ? '$activeOrderCount órdenes por revisar'
-              : 'Catálogo, fotos y stock',
-          actionLabel: 'Administrar tienda',
+              ? l10n.ts(
+                  '{count} órdenes por revisar',
+                  {'count': '$activeOrderCount'},
+                )
+              : l10n.ts('Catálogo, fotos y stock'),
+          actionLabel: l10n.ts('Administrar tienda'),
           icon: Icons.storefront_rounded,
           gradient: _specialistCommerceGradient,
           onTap: onOpenShop,
         ),
         const SizedBox(height: 12),
         _SpotlightActionCard(
-          title: 'Cursos y PDFs',
-          metric: '$courseCount cursos activos',
+          title: l10n.ts('Cursos y PDFs'),
+          metric: l10n.ts('{count} cursos activos', {'count': '$courseCount'}),
           detail: featuredCourseCount > 0
-              ? '$featuredCourseCount destacados para alumnos'
-              : 'Biblioteca y materiales',
-          actionLabel: 'Gestionar contenido',
+              ? l10n.ts(
+                  '{count} destacados para alumnos',
+                  {'count': '$featuredCourseCount'},
+                )
+              : l10n.ts('Biblioteca y materiales'),
+          actionLabel: l10n.ts('Gestionar contenido'),
           icon: Icons.auto_stories_outlined,
           gradient: _specialistContentGradient,
           onTap: onOpenCourses,
         ),
         const SizedBox(height: 12),
         _SpotlightActionCard(
-          title: 'Comunidad',
-          metric: 'Chat general',
-          detail: 'Mensajes, acompañamiento y vínculo con clientes',
-          actionLabel: 'Abrir comunidad',
+          title: l10n.ts('Comunidad'),
+          metric: l10n.ts('Chat general'),
+          detail: l10n.ts('Mensajes, acompañamiento y vínculo con clientes'),
+          actionLabel: l10n.ts('Abrir comunidad'),
           icon: Icons.forum_outlined,
           gradient: _specialistCommunityGradient,
           onTap: () {
@@ -713,6 +743,7 @@ class _PricingCenterSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Padding(
       padding: EdgeInsets.fromLTRB(
         20,
@@ -724,7 +755,7 @@ class _PricingCenterSheet extends StatelessWidget {
         shrinkWrap: true,
         children: [
           Text(
-            'Servicios y precios',
+            l10n.ts('Servicios y precios'),
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   color: AppPalette.butterflyInk,
                   fontWeight: FontWeight.w900,
@@ -732,7 +763,9 @@ class _PricingCenterSheet extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Administra los valores de tus consultas desde este centro, separado del panel principal.',
+            l10n.ts(
+              'Administra los valores de tus consultas desde este centro, separado del panel principal.',
+            ),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppPalette.mutedLavender,
                   height: 1.4,
@@ -741,10 +774,11 @@ class _PricingCenterSheet extends StatelessWidget {
           ),
           const SizedBox(height: 18),
           if (services.isEmpty)
-            const _EmptyPanel(
-              title: 'Sin servicios pagados',
-              subtitle:
-                  'Cuando exista una consulta con precio, aparecerá aquí para editarla.',
+            _EmptyPanel(
+              title: l10n.ts('Sin servicios pagados'),
+              subtitle: l10n.ts(
+                'Cuando exista una consulta con precio, aparecerá aquí para editarla.',
+              ),
             )
           else
             ...services.map(
@@ -776,6 +810,7 @@ class _ServicePriceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -797,7 +832,14 @@ class _ServicePriceCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  '${service.category} · ${service.durationMinutes} min · ${service.deliveryModes.join(', ')}',
+                  l10n.ts(
+                    '{category} · {minutes} min · {modes}',
+                    {
+                      'category': service.category,
+                      'minutes': '${service.durationMinutes}',
+                      'modes': service.deliveryModes.join(', '),
+                    },
+                  ),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppPalette.mutedLavender,
                         fontWeight: FontWeight.w700,
@@ -825,7 +867,7 @@ class _ServicePriceCard extends StatelessWidget {
                         height: 16,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('Editar'),
+                    : Text(l10n.ts('Editar')),
               ),
             ],
           ),
@@ -903,22 +945,22 @@ class _SpecialistBookingCard extends StatelessWidget {
                 )
               : PopupMenuButton<String>(
                   onSelected: onStatusSelected,
-                  itemBuilder: (context) => const [
+                  itemBuilder: (context) => [
                     PopupMenuItem(
                       value: 'pending_payment',
-                      child: Text('Pendiente de pago'),
+                      child: Text(context.l10n.ts('Pendiente de pago')),
                     ),
                     PopupMenuItem(
                       value: 'confirmed',
-                      child: Text('Confirmada'),
+                      child: Text(context.l10n.ts('Confirmada')),
                     ),
                     PopupMenuItem(
                       value: 'completed',
-                      child: Text('Completada'),
+                      child: Text(context.l10n.ts('Completada')),
                     ),
                     PopupMenuItem(
                       value: 'cancelled',
-                      child: Text('Cancelada'),
+                      child: Text(context.l10n.ts('Cancelada')),
                     ),
                   ],
                   child: _StatusPill(status: booking.status),
@@ -965,6 +1007,7 @@ class _ServicePriceSheetState extends State<_ServicePriceSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Padding(
       padding: EdgeInsets.fromLTRB(
         20,
@@ -976,7 +1019,7 @@ class _ServicePriceSheetState extends State<_ServicePriceSheet> {
         shrinkWrap: true,
         children: [
           Text(
-            'Editar consulta',
+            l10n.ts('Editar consulta'),
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w900,
                 ),
@@ -987,8 +1030,8 @@ class _ServicePriceSheetState extends State<_ServicePriceSheet> {
           TextField(
             controller: _priceController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(
-              labelText: 'Precio USD',
+            decoration: InputDecoration(
+              labelText: l10n.ts('Precio USD'),
               hintText: '32.00',
             ),
           ),
@@ -996,8 +1039,8 @@ class _ServicePriceSheetState extends State<_ServicePriceSheet> {
           TextField(
             controller: _durationController,
             keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: 'Duración en minutos',
+            decoration: InputDecoration(
+              labelText: l10n.ts('Duración en minutos'),
               hintText: '45',
             ),
           ),
@@ -1015,7 +1058,7 @@ class _ServicePriceSheetState extends State<_ServicePriceSheet> {
           FilledButton.icon(
             onPressed: _submit,
             icon: const Icon(Icons.save_outlined),
-            label: const Text('Guardar cambios'),
+            label: Text(l10n.ts('Guardar cambios')),
           ),
         ],
       ),
@@ -1028,7 +1071,7 @@ class _ServicePriceSheetState extends State<_ServicePriceSheet> {
 
     if (price == null || price < 0 || duration == null || duration < 0) {
       setState(() {
-        _error = 'Ingresa precio y duración válidos.';
+        _error = context.l10n.ts('Ingresa precio y duración válidos.');
       });
       return;
     }
@@ -1051,6 +1094,7 @@ class _ContentQualityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
@@ -1072,7 +1116,7 @@ class _ContentQualityCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Calidad de contenido e imágenes',
+            l10n.ts('Calidad de contenido e imágenes'),
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.w900,
@@ -1080,7 +1124,9 @@ class _ContentQualityCard extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            'Usa imágenes verticales nítidas, luz suave y fondos limpios. Para PDFs y cursos, mantén portada, descripción y módulos revisados antes de publicar.',
+            l10n.ts(
+              'Usa imágenes verticales nítidas, luz suave y fondos limpios. Para PDFs y cursos, mantén portada, descripción y módulos revisados antes de publicar.',
+            ),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Colors.white.withValues(alpha: 0.78),
                   height: 1.45,
@@ -1096,7 +1142,7 @@ class _ContentQualityCard extends StatelessWidget {
               ),
             ),
             icon: const Icon(Icons.auto_stories_outlined),
-            label: const Text('Revisar cursos y PDFs'),
+            label: Text(l10n.ts('Revisar cursos y PDFs')),
           ),
         ],
       ),
@@ -1155,7 +1201,7 @@ class _StatusPill extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
-        _bookingStatusLabel(status),
+        _bookingStatusLabel(context, status),
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: accent,
               fontWeight: FontWeight.w900,
@@ -1215,16 +1261,16 @@ class _ServicePriceUpdate {
   final int durationMinutes;
 }
 
-String _bookingStatusLabel(String status) {
+String _bookingStatusLabel(BuildContext context, String status) {
   switch (status) {
     case 'pending_payment':
-      return 'Pendiente';
+      return context.l10n.ts('Pendiente');
     case 'confirmed':
-      return 'Confirmada';
+      return context.l10n.ts('Confirmada');
     case 'completed':
-      return 'Completada';
+      return context.l10n.ts('Completada');
     case 'cancelled':
-      return 'Cancelada';
+      return context.l10n.ts('Cancelada');
     default:
       return status;
   }

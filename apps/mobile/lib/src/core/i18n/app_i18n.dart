@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'app_i18n_literals.dart';
+
 class AppLanguageOption {
   const AppLanguageOption({
     required this.locale,
@@ -93,6 +95,27 @@ class AppLocalizations {
     final bundle =
         _localizedValues[locale.languageCode] ?? _localizedValues['es']!;
     var value = bundle[key] ?? _localizedValues['es']![key] ?? key;
+    for (final entry in params.entries) {
+      value = value.replaceAll('{${entry.key}}', entry.value);
+    }
+    return value;
+  }
+
+  String ts(String text, [Map<String, String> params = const {}]) {
+    if (locale.languageCode == 'es') {
+      var value = text;
+      for (final entry in params.entries) {
+        value = value.replaceAll('{${entry.key}}', entry.value);
+      }
+      return value;
+    }
+
+    final bundle = literalLocalizedValues[locale.languageCode];
+    final englishBundle = literalLocalizedValues['en'];
+    var value = bundle?[text] ??
+        englishBundle?[text] ??
+        literalEnglishFallbackValues[text] ??
+        text;
     for (final entry in params.entries) {
       value = value.replaceAll('{${entry.key}}', entry.value);
     }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/i18n/app_i18n.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/specialist_rating_badge.dart';
 import '../../models/app_models.dart';
@@ -56,9 +57,11 @@ class _ScheduleBookingScreenState extends State<ScheduleBookingScreen> {
     if (_consultationServices.isNotEmpty) {
       final preferredService = widget.initialServiceId;
       final hasPreferredService = preferredService != null &&
-          _consultationServices.any((service) => service.id == preferredService);
-      _selectedServiceId =
-          hasPreferredService ? preferredService : _consultationServices.first.id;
+          _consultationServices
+              .any((service) => service.id == preferredService);
+      _selectedServiceId = hasPreferredService
+          ? preferredService
+          : _consultationServices.first.id;
       _syncSelection();
       _ensureSelectedDate();
       Future<void>.microtask(_loadAvailabilityForSelection);
@@ -77,7 +80,9 @@ class _ScheduleBookingScreenState extends State<ScheduleBookingScreen> {
       return null;
     }
 
-    return _consultationServices.where((service) => service.id == id).firstOrNull;
+    return _consultationServices
+        .where((service) => service.id == id)
+        .firstOrNull;
   }
 
   SpecialistAvailabilitySlot? get _selectedSlot {
@@ -229,16 +234,16 @@ class _ScheduleBookingScreenState extends State<ScheduleBookingScreen> {
         return;
       }
 
-      final availableSlots = slots
-          .where((slot) => slot.isAvailable)
-          .toList()
+      final availableSlots = slots.where((slot) => slot.isAvailable).toList()
         ..sort((left, right) => left.startsAt.compareTo(right.startsAt));
 
       setState(() {
         _availabilitySlots = availableSlots;
         _selectedSlotId = availableSlots.firstOrNull?.id;
         _availabilityMessage = availableSlots.isEmpty
-            ? 'No encontramos horarios disponibles para ese día. Prueba con otra fecha o modalidad.'
+            ? context.l10n.ts(
+                'No encontramos horarios disponibles para ese día. Prueba con otra fecha o modalidad.',
+              )
             : null;
         _isLoadingAvailability = false;
       });
@@ -262,10 +267,14 @@ class _ScheduleBookingScreenState extends State<ScheduleBookingScreen> {
     final mode = _selectedMode;
     final slot = _selectedSlot;
 
-    if (serviceId == null || specialistId == null || mode == null || slot == null) {
+    if (serviceId == null ||
+        specialistId == null ||
+        mode == null ||
+        slot == null) {
       setState(() {
-        _errorMessage =
-            'Selecciona servicio, especialista, modalidad y un horario disponible para agendar la cita.';
+        _errorMessage = context.l10n.ts(
+          'Selecciona servicio, especialista, modalidad y un horario disponible para agendar la cita.',
+        );
       });
       return;
     }
@@ -273,7 +282,8 @@ class _ScheduleBookingScreenState extends State<ScheduleBookingScreen> {
     final scheduledAt = DateTime.tryParse(slot.startsAt);
     if (scheduledAt == null || scheduledAt.isBefore(DateTime.now())) {
       setState(() {
-        _errorMessage = 'El horario seleccionado ya no está disponible.';
+        _errorMessage =
+            context.l10n.ts('El horario seleccionado ya no está disponible.');
       });
       return;
     }
@@ -310,6 +320,7 @@ class _ScheduleBookingScreenState extends State<ScheduleBookingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final service = _selectedService;
     final specialists = _availableSpecialists;
     final modes = _availableModes;
@@ -320,7 +331,11 @@ class _ScheduleBookingScreenState extends State<ScheduleBookingScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isSpecialistView ? 'Registrar cita' : 'Agendar cita'),
+        title: Text(
+          _isSpecialistView
+              ? l10n.ts('Registrar cita')
+              : l10n.ts('Agendar cita'),
+        ),
       ),
       body: SafeArea(
         child: ListView(
@@ -328,22 +343,26 @@ class _ScheduleBookingScreenState extends State<ScheduleBookingScreen> {
           children: [
             Text(
               _isSpecialistView
-                  ? 'Agenda una sesión dentro de tu panel'
-                  : 'Reserva tu próxima consulta',
+                  ? l10n.ts('Agenda una sesión dentro de tu panel')
+                  : l10n.ts('Reserva tu próxima consulta'),
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 8),
             Text(
               _isSpecialistView
-                  ? 'Elige servicio, especialista, modalidad y un horario real disponible en la agenda.'
-                  : 'Selecciona servicio, especialista, modalidad y uno de los horarios disponibles. La reserva se agrega directo a tu agenda.',
+                  ? l10n.ts(
+                      'Elige servicio, especialista, modalidad y un horario real disponible en la agenda.',
+                    )
+                  : l10n.ts(
+                      'Selecciona servicio, especialista, modalidad y uno de los horarios disponibles. La reserva se agrega directo a tu agenda.',
+                    ),
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: 20),
             DropdownButtonFormField<String>(
               key: ValueKey('service-${_selectedServiceId ?? 'empty'}'),
               initialValue: _selectedServiceId,
-              decoration: const InputDecoration(labelText: 'Servicio'),
+              decoration: InputDecoration(labelText: l10n.ts('Servicio')),
               items: _consultationServices
                   .map(
                     (service) => DropdownMenuItem<String>(
@@ -394,7 +413,7 @@ class _ScheduleBookingScreenState extends State<ScheduleBookingScreen> {
             DropdownButtonFormField<String>(
               key: ValueKey('specialist-${_selectedSpecialistId ?? 'empty'}'),
               initialValue: _selectedSpecialistId,
-              decoration: const InputDecoration(labelText: 'Especialista'),
+              decoration: InputDecoration(labelText: l10n.ts('Especialista')),
               items: specialists
                   .map(
                     (specialist) => DropdownMenuItem<String>(
@@ -424,7 +443,12 @@ class _ScheduleBookingScreenState extends State<ScheduleBookingScreen> {
               SpecialistRatingBadge(rating: selectedSpecialist.rating),
               const SizedBox(height: 10),
               Text(
-                'Próxima disponibilidad sugerida: ${formatSchedule(selectedSpecialist.nextAvailableAt)}',
+                l10n.ts(
+                  'Próxima disponibilidad sugerida: {date}',
+                  {
+                    'date': formatSchedule(selectedSpecialist.nextAvailableAt),
+                  },
+                ),
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ],
@@ -432,12 +456,12 @@ class _ScheduleBookingScreenState extends State<ScheduleBookingScreen> {
             DropdownButtonFormField<String>(
               key: ValueKey('mode-${_selectedMode ?? 'empty'}'),
               initialValue: _selectedMode,
-              decoration: const InputDecoration(labelText: 'Modalidad'),
+              decoration: InputDecoration(labelText: l10n.ts('Modalidad')),
               items: modes
                   .map(
                     (mode) => DropdownMenuItem<String>(
                       value: mode,
-                      child: Text(_modeLabel(mode)),
+                      child: Text(_modeLabel(mode, l10n)),
                     ),
                   )
                   .toList(),
@@ -456,8 +480,8 @@ class _ScheduleBookingScreenState extends State<ScheduleBookingScreen> {
               icon: const Icon(Icons.calendar_month_outlined),
               label: Text(
                 _selectedDate == null
-                    ? 'Elegir día'
-                    : _formatDate(_selectedDate!),
+                    ? l10n.ts('Elegir día')
+                    : _formatDate(_selectedDate!, l10n),
               ),
             ),
             const SizedBox(height: 16),
@@ -482,9 +506,11 @@ class _ScheduleBookingScreenState extends State<ScheduleBookingScreen> {
               controller: _notesController,
               minLines: 3,
               maxLines: 5,
-              decoration: const InputDecoration(
-                labelText: 'Notas para la consulta',
-                hintText: 'Cuéntanos qué tema quieres trabajar en la sesión',
+              decoration: InputDecoration(
+                labelText: l10n.ts('Notas para la consulta'),
+                hintText: l10n.ts(
+                  'Cuéntanos qué tema quieres trabajar en la sesión',
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -495,23 +521,23 @@ class _ScheduleBookingScreenState extends State<ScheduleBookingScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Resumen de la cita',
+                      l10n.ts('Resumen de la cita'),
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 12),
                     Text(service == null
-                        ? 'Sin servicio seleccionado'
+                        ? l10n.ts('Sin servicio seleccionado')
                         : service.name),
                     const SizedBox(height: 4),
                     Text(selectedSpecialist?.name ??
-                        'Sin especialista seleccionado'),
+                        l10n.ts('Sin especialista seleccionado')),
                     const SizedBox(height: 4),
                     Text(_selectedMode == null
-                        ? 'Sin modalidad'
-                        : _modeLabel(_selectedMode!)),
+                        ? l10n.ts('Sin modalidad')
+                        : _modeLabel(_selectedMode!, l10n)),
                     const SizedBox(height: 4),
                     Text(selectedSlot == null
-                        ? 'Sin horario confirmado'
+                        ? l10n.ts('Sin horario confirmado')
                         : formatSchedule(selectedSlot.startsAt)),
                   ],
                 ),
@@ -546,7 +572,9 @@ class _ScheduleBookingScreenState extends State<ScheduleBookingScreen> {
                     )
                   : const Icon(Icons.calendar_month),
               label: Text(
-                _isSpecialistView ? 'Registrar cita' : 'Confirmar cita',
+                _isSpecialistView
+                    ? l10n.ts('Registrar cita')
+                    : l10n.ts('Confirmar cita'),
               ),
             ),
           ],
@@ -555,26 +583,26 @@ class _ScheduleBookingScreenState extends State<ScheduleBookingScreen> {
     );
   }
 
-  String _modeLabel(String mode) {
+  String _modeLabel(String mode, AppLocalizations l10n) {
     switch (mode) {
       case 'audio':
-        return 'Audio';
+        return l10n.ts('Audio');
       case 'video':
-        return 'Video';
+        return l10n.ts('Video');
       default:
-        return 'Chat';
+        return l10n.ts('Chat');
     }
   }
 
-  String _formatDate(DateTime date) {
-    const weekDays = [
-      'Lun',
-      'Mar',
-      'Mie',
-      'Jue',
-      'Vie',
-      'Sab',
-      'Dom',
+  String _formatDate(DateTime date, AppLocalizations l10n) {
+    final weekDays = [
+      l10n.ts('Lun'),
+      l10n.ts('Mar'),
+      l10n.ts('Mie'),
+      l10n.ts('Jue'),
+      l10n.ts('Vie'),
+      l10n.ts('Sab'),
+      l10n.ts('Dom'),
     ];
     final weekDay = weekDays[date.weekday - 1];
     return '$weekDay ${date.day}/${date.month}/${date.year}';
@@ -602,6 +630,7 @@ class _AvailabilitySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final serviceDuration = service?.durationMinutes;
 
     return Card(
@@ -611,16 +640,21 @@ class _AvailabilitySection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Horarios disponibles',
+              l10n.ts('Horarios disponibles'),
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 6),
             Text(
               selectedDate == null
-                  ? 'Elige un día para consultar la agenda disponible.'
+                  ? l10n.ts(
+                      'Elige un día para consultar la agenda disponible.',
+                    )
                   : serviceDuration == null
-                      ? 'Selecciona un servicio para ver horarios.'
-                      : 'Se muestran horarios reales para sesiones de $serviceDuration minutos.',
+                      ? l10n.ts('Selecciona un servicio para ver horarios.')
+                      : l10n.ts(
+                          'Se muestran horarios reales para sesiones de {minutes} minutos.',
+                          {'minutes': '$serviceDuration'},
+                        ),
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 14),
@@ -638,7 +672,9 @@ class _AvailabilitySection extends StatelessWidget {
               )
             else if (slots.isEmpty)
               Text(
-                'No hay horarios cargados todavía para esta selección.',
+                l10n.ts(
+                  'No hay horarios cargados todavía para esta selección.',
+                ),
                 style: Theme.of(context).textTheme.bodyMedium,
               )
             else

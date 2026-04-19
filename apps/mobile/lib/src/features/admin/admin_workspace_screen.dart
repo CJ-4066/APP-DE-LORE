@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/i18n/app_i18n.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/utils/formatters.dart';
 import '../../models/app_models.dart';
@@ -29,6 +30,7 @@ class AdminWorkspaceScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final userName = _displayUserName(data.user);
     final recentOrders = data.shop.orders.take(4).toList(growable: false);
 
@@ -48,37 +50,37 @@ class AdminWorkspaceScreen extends StatelessWidget {
             _AdminMetricGrid(
               cards: [
                 _AdminMetricCardData(
-                  label: 'Usuarios',
+                  label: l10n.ts('Usuarios'),
                   value: '${data.admin.activeUsers}',
                   icon: Icons.people_alt_outlined,
                   color: AppPalette.midnight,
                 ),
                 _AdminMetricCardData(
-                  label: 'Premium',
+                  label: l10n.ts('Premium'),
                   value: '${data.admin.premiumSubscribers}',
                   icon: Icons.workspace_premium_outlined,
                   color: AppPalette.flameGold,
                 ),
                 _AdminMetricCardData(
-                  label: 'Órdenes',
+                  label: l10n.ts('Órdenes'),
                   value: '${data.shop.orders.length}',
                   icon: Icons.receipt_long_rounded,
                   color: AppPalette.indigo,
                 ),
                 _AdminMetricCardData(
-                  label: 'Reservas',
+                  label: l10n.ts('Reservas'),
                   value: '${data.admin.monthlyBookings}',
                   icon: Icons.calendar_month_outlined,
                   color: AppPalette.royalViolet,
                 ),
                 _AdminMetricCardData(
-                  label: 'Especialistas',
+                  label: l10n.ts('Especialistas'),
                   value: '${data.admin.activeSpecialists}',
                   icon: Icons.auto_awesome_outlined,
                   color: AppPalette.orchid,
                 ),
                 _AdminMetricCardData(
-                  label: 'Incidencias',
+                  label: l10n.ts('Incidencias'),
                   value: '${data.admin.openIncidents}',
                   icon: Icons.warning_amber_rounded,
                   color: AppPalette.berry,
@@ -86,10 +88,11 @@ class AdminWorkspaceScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 22),
-            const _AdminSectionTitle(
-              title: 'Mandos rápidos',
-              subtitle:
-                  'Accesos directos al estado global de la operación, sin mezclar la vista madre con la vista especialista.',
+            _AdminSectionTitle(
+              title: l10n.ts('Mandos rápidos'),
+              subtitle: l10n.ts(
+                'Accesos directos al estado global de la operación, sin mezclar la vista madre con la vista especialista.',
+              ),
             ),
             const SizedBox(height: 12),
             _AdminQuickActions(
@@ -100,17 +103,20 @@ class AdminWorkspaceScreen extends StatelessWidget {
             ),
             const SizedBox(height: 22),
             _AdminSectionTitle(
-              title: 'Órdenes globales',
+              title: l10n.ts('Órdenes globales'),
               subtitle: recentOrders.isEmpty
-                  ? 'Todavía no hay órdenes sincronizadas en la API.'
-                  : 'Vista madre de las últimas órdenes con cambio rápido de estado.',
+                  ? l10n.ts('Todavía no hay órdenes sincronizadas en la API.')
+                  : l10n.ts(
+                      'Vista madre de las últimas órdenes con cambio rápido de estado.',
+                    ),
             ),
             const SizedBox(height: 12),
             if (recentOrders.isEmpty)
-              const _AdminEmptyState(
-                title: 'Sin órdenes recientes',
-                subtitle:
-                    'Cuando entren compras desde especialistas o clientes, aparecerán aquí.',
+              _AdminEmptyState(
+                title: l10n.ts('Sin órdenes recientes'),
+                subtitle: l10n.ts(
+                  'Cuando entren compras desde especialistas o clientes, aparecerán aquí.',
+                ),
               )
             else
               ...recentOrders.map(
@@ -123,10 +129,11 @@ class AdminWorkspaceScreen extends StatelessWidget {
                 ),
               ),
             const SizedBox(height: 22),
-            const _AdminSectionTitle(
-              title: 'Radar de especialistas',
-              subtitle:
-                  'Lectura rápida de quién sostiene la operación visible en esta sesión.',
+            _AdminSectionTitle(
+              title: l10n.ts('Radar de especialistas'),
+              subtitle: l10n.ts(
+                'Lectura rápida de quién sostiene la operación visible en esta sesión.',
+              ),
             ),
             const SizedBox(height: 12),
             ...data.specialists.take(4).map(
@@ -162,6 +169,7 @@ class _AdminHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(30),
@@ -192,8 +200,8 @@ class _AdminHero extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.14),
               borderRadius: BorderRadius.circular(999),
             ),
-            child: const Text(
-              'Usuario madre',
+            child: Text(
+              l10n.ts('Usuario madre'),
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w900,
@@ -203,7 +211,7 @@ class _AdminHero extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Panel central de $userName',
+            l10n.ts('Panel central de {name}', {'name': userName}),
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.w900,
@@ -212,8 +220,12 @@ class _AdminHero extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             specialistAccess
-                ? 'Aquí ves la operación completa de la app y además conservas tus herramientas de especialista.'
-                : 'Aquí ves la operación completa de la app sin mezclarla con el trabajo operativo de un especialista.',
+                ? l10n.ts(
+                    'Aquí ves la operación completa de la app y además conservas tus herramientas de especialista.',
+                  )
+                : l10n.ts(
+                    'Aquí ves la operación completa de la app sin mezclarla con el trabajo operativo de un especialista.',
+                  ),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Colors.white.withValues(alpha: 0.82),
                   height: 1.4,
@@ -225,13 +237,22 @@ class _AdminHero extends StatelessWidget {
             runSpacing: 10,
             children: [
               _HeroPill(
-                label: '${summary.monthlyBookings} reservas este mes',
+                label: l10n.ts(
+                  '{count} reservas este mes',
+                  {'count': '${summary.monthlyBookings}'},
+                ),
               ),
               _HeroPill(
-                label: '$orderCount órdenes visibles',
+                label: l10n.ts(
+                  '{count} órdenes visibles',
+                  {'count': '$orderCount'},
+                ),
               ),
               _HeroPill(
-                label: '${summary.activeSpecialists} especialistas activos',
+                label: l10n.ts(
+                  '{count} especialistas activos',
+                  {'count': '${summary.activeSpecialists}'},
+                ),
               ),
             ],
           ),
@@ -363,34 +384,35 @@ class _AdminQuickActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Wrap(
       spacing: 12,
       runSpacing: 12,
       children: [
         _QuickActionCard(
-          title: 'Shop global',
-          subtitle: 'Catálogo y órdenes por tienda',
+          title: l10n.ts('Shop global'),
+          subtitle: l10n.ts('Catálogo y órdenes por tienda'),
           icon: Icons.shopping_bag_outlined,
           color: AppPalette.indigo,
           onTap: onOpenShop,
         ),
         _QuickActionCard(
-          title: 'Biblioteca',
-          subtitle: 'Cursos y piezas formativas',
+          title: l10n.ts('Biblioteca'),
+          subtitle: l10n.ts('Cursos y piezas formativas'),
           icon: Icons.auto_stories_outlined,
           color: AppPalette.orchid,
           onTap: onOpenCourses,
         ),
         _QuickActionCard(
-          title: 'Agenda',
-          subtitle: 'Reserva, seguimiento y estado',
+          title: l10n.ts('Agenda'),
+          subtitle: l10n.ts('Reserva, seguimiento y estado'),
           icon: Icons.calendar_month_outlined,
           color: AppPalette.royalViolet,
           onTap: onOpenBookings,
         ),
         _QuickActionCard(
-          title: 'Perfil',
-          subtitle: 'Cuenta, idioma e insignias',
+          title: l10n.ts('Perfil'),
+          subtitle: l10n.ts('Cuenta, idioma e insignias'),
           icon: Icons.person_outline,
           color: AppPalette.flameGold,
           onTap: onOpenProfile,
@@ -522,7 +544,8 @@ class _AdminOrderCardState extends State<_AdminOrderCard> {
 
   @override
   Widget build(BuildContext context) {
-    final status = _shopOrderStatus(widget.order.status);
+    final l10n = context.l10n;
+    final status = _shopOrderStatus(context, widget.order.status);
 
     return Container(
       decoration: BoxDecoration(
@@ -564,7 +587,13 @@ class _AdminOrderCardState extends State<_AdminOrderCard> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${widget.order.itemCount} artículos · ${formatSchedule(widget.order.createdAt)}',
+                  l10n.ts(
+                    '{count} artículos · {date}',
+                    {
+                      'count': '${widget.order.itemCount}',
+                      'date': formatSchedule(widget.order.createdAt),
+                    },
+                  ),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppPalette.mutedLavender,
                         fontWeight: FontWeight.w700,
@@ -575,11 +604,23 @@ class _AdminOrderCardState extends State<_AdminOrderCard> {
           ),
           PopupMenuButton<String>(
             onSelected: _isUpdating ? null : _updateStatus,
-            itemBuilder: (context) => const [
-              PopupMenuItem(value: 'pending', child: Text('Pendiente')),
-              PopupMenuItem(value: 'confirmed', child: Text('Confirmada')),
-              PopupMenuItem(value: 'preparing', child: Text('Preparando')),
-              PopupMenuItem(value: 'shipped', child: Text('Enviada')),
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'pending',
+                child: Text(context.l10n.ts('Pendiente')),
+              ),
+              PopupMenuItem(
+                value: 'confirmed',
+                child: Text(context.l10n.ts('Confirmada')),
+              ),
+              PopupMenuItem(
+                value: 'preparing',
+                child: Text(context.l10n.ts('Preparando')),
+              ),
+              PopupMenuItem(
+                value: 'shipped',
+                child: Text(context.l10n.ts('Enviada')),
+              ),
             ],
             child: _isUpdating
                 ? const SizedBox(
@@ -626,7 +667,13 @@ class _AdminOrderCardState extends State<_AdminOrderCard> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            '${updated.orderCode} actualizado a ${_shopOrderStatus(updated.status).label}.',
+            context.l10n.ts(
+              '{code} actualizado a {status}.',
+              {
+                'code': updated.orderCode,
+                'status': _shopOrderStatus(context, updated.status).label,
+              },
+            ),
           ),
         ),
       );
@@ -693,7 +740,13 @@ class _SpecialistPulseCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${specialist.headline} · $serviceCount servicios',
+                  context.l10n.ts(
+                    '{headline} · {count} servicios',
+                    {
+                      'headline': specialist.headline,
+                      'count': '$serviceCount',
+                    },
+                  ),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppPalette.mutedLavender,
                         fontWeight: FontWeight.w700,
@@ -710,7 +763,7 @@ class _SpecialistPulseCard extends StatelessWidget {
             ),
             child: Text(
               specialist.nextAvailableAt.isEmpty
-                  ? 'Disponibilidad por revisar'
+                  ? context.l10n.ts('Disponibilidad por revisar')
                   : specialist.nextAvailableAt,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     color: AppPalette.indigo,
@@ -775,26 +828,26 @@ class _ShopOrderStatusCopy {
   final Color color;
 }
 
-_ShopOrderStatusCopy _shopOrderStatus(String status) {
+_ShopOrderStatusCopy _shopOrderStatus(BuildContext context, String status) {
   switch (status) {
     case 'confirmed':
-      return const _ShopOrderStatusCopy(
-        label: 'Confirmada',
+      return _ShopOrderStatusCopy(
+        label: context.l10n.ts('Confirmada'),
         color: AppPalette.success,
       );
     case 'preparing':
-      return const _ShopOrderStatusCopy(
-        label: 'Preparando',
+      return _ShopOrderStatusCopy(
+        label: context.l10n.ts('Preparando'),
         color: AppPalette.flameGold,
       );
     case 'shipped':
-      return const _ShopOrderStatusCopy(
-        label: 'Enviada',
+      return _ShopOrderStatusCopy(
+        label: context.l10n.ts('Enviada'),
         color: AppPalette.indigo,
       );
     default:
-      return const _ShopOrderStatusCopy(
-        label: 'Pendiente',
+      return _ShopOrderStatusCopy(
+        label: context.l10n.ts('Pendiente'),
         color: AppPalette.berry,
       );
   }

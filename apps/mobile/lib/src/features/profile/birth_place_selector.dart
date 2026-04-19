@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../core/data/birth_place_catalog.dart';
+import '../../core/i18n/app_i18n.dart';
 
 class BirthPlaceSelector extends StatelessWidget {
   const BirthPlaceSelector({
@@ -40,6 +41,7 @@ class BirthPlaceSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final place = selectedPlace;
 
     return Column(
@@ -123,7 +125,15 @@ class BirthPlaceSelector extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 6),
-                Text('Zona ${place.timeZoneId} · UTC ${place.utcOffset}'),
+                Text(
+                  l10n.ts(
+                    'Zona {zone} · UTC {offset}',
+                    {
+                      'zone': place.timeZoneId,
+                      'offset': place.utcOffset,
+                    },
+                  ),
+                ),
                 const SizedBox(height: 2),
                 Text(
                   'Lat ${place.latitude.toStringAsFixed(4)} · Lon ${place.longitude.toStringAsFixed(4)}',
@@ -221,6 +231,7 @@ class _BirthPlaceSearchSheetState extends State<_BirthPlaceSearchSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
 
     return SafeArea(
@@ -233,7 +244,7 @@ class _BirthPlaceSearchSheetState extends State<_BirthPlaceSearchSheet> {
               controller: _queryController,
               autofocus: true,
               decoration: InputDecoration(
-                labelText: 'Buscar ciudad',
+                labelText: l10n.ts('Buscar ciudad'),
                 hintText: widget.hintText,
                 prefixIcon: const Icon(Icons.search_rounded),
                 suffixIcon: _isLoading
@@ -251,11 +262,13 @@ class _BirthPlaceSearchSheetState extends State<_BirthPlaceSearchSheet> {
             const SizedBox(height: 16),
             Flexible(
               child: _results.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Padding(
-                        padding: EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(20),
                         child: Text(
-                          'No encontré lugares con esa búsqueda. Prueba con ciudad, provincia o país.',
+                          l10n.ts(
+                            'No encontré lugares con esa búsqueda. Prueba con ciudad, provincia o país.',
+                          ),
                           textAlign: TextAlign.center,
                         ),
                       ),

@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../core/i18n/app_i18n.dart';
 import '../../core/theme/app_palette.dart';
 import '../../models/astro_models.dart';
 
@@ -29,12 +30,14 @@ class AstroChartWheelCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Rueda natal',
+                  context.l10n.ts('Rueda natal'),
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'La rueda muestra signos, casas, grados, ejes y aspectos con una lectura más técnica. Debajo queda la ficha resumida para revisar posiciones y cúspides con claridad.',
+                  context.l10n.ts(
+                    'La rueda muestra signos, casas, grados, ejes y aspectos con una lectura más técnica. Debajo queda la ficha resumida para revisar posiciones y cúspides con claridad.',
+                  ),
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 18),

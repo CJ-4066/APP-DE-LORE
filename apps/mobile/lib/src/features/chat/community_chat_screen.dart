@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/i18n/app_i18n.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/utils/formatters.dart';
 import '../../models/chat_models.dart';
@@ -40,10 +41,12 @@ class _CommunityChatScreenState extends State<CommunityChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Scaffold(
       backgroundColor: AppPalette.petalSoft,
       appBar: AppBar(
-        title: const Text('Chat general'),
+        title: Text(l10n.ts('Chat general')),
       ),
       body: Column(
         children: [
@@ -62,7 +65,9 @@ class _CommunityChatScreenState extends State<CommunityChatScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Espacio abierto para comentar tránsitos, sensaciones y preguntas breves del día.',
+                  l10n.ts(
+                    'Espacio abierto para comentar tránsitos, sensaciones y preguntas breves del día.',
+                  ),
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: AppPalette.mutedLavender,
                         height: 1.4,
@@ -70,7 +75,9 @@ class _CommunityChatScreenState extends State<CommunityChatScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Mantén cada mensaje claro y corto para que la conversación sea fácil de seguir.',
+                  l10n.ts(
+                    'Mantén cada mensaje claro y corto para que la conversación sea fácil de seguir.',
+                  ),
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
                         color: AppPalette.mutedLavender,
                       ),
@@ -94,8 +101,10 @@ class _CommunityChatScreenState extends State<CommunityChatScreen> {
                       minLines: 1,
                       maxLines: 4,
                       textCapitalization: TextCapitalization.sentences,
-                      decoration: const InputDecoration(
-                        hintText: 'Escribe un mensaje para la comunidad',
+                      decoration: InputDecoration(
+                        hintText: l10n.ts(
+                          'Escribe un mensaje para la comunidad',
+                        ),
                       ),
                     ),
                   ),
@@ -108,7 +117,7 @@ class _CommunityChatScreenState extends State<CommunityChatScreen> {
                             height: 18,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text('Enviar'),
+                        : Text(l10n.ts('Enviar')),
                   ),
                 ],
               ),

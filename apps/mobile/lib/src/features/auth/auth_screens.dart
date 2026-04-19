@@ -297,32 +297,39 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return _AuthScaffold(
-      title: 'Completa tu perfil',
-      subtitle:
-          'Teléfono verificado: ${widget.phoneNumber}. Antes de entrar necesitamos tus datos base para personalizar tarot, astrología y agenda.',
+      title: l10n.ts('Completa tu perfil'),
+      subtitle: l10n.ts(
+        'Teléfono verificado: {phone}. Antes de entrar necesitamos tus datos base para personalizar tarot, astrología y agenda.',
+        {'phone': widget.phoneNumber},
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'Datos requeridos',
+            l10n.ts('Datos requeridos'),
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 6),
           Text(
-            'Nombre, apellido, lugar de nacimiento, fecha y hora de nacimiento.',
+            l10n.ts(
+              'Nombre, apellido, lugar de nacimiento, fecha y hora de nacimiento.',
+            ),
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 16),
           Text(
-            '¿Cómo entrarás a la app?',
+            l10n.ts('¿Cómo entrarás a la app?'),
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 10),
           _AccountTypeCard(
-            title: 'Cliente',
-            subtitle:
-                'Quiero comprar, reservar consultas, tomar cursos y participar en la comunidad.',
+            title: l10n.ts('Cliente'),
+            subtitle: l10n.ts(
+              'Quiero comprar, reservar consultas, tomar cursos y participar en la comunidad.',
+            ),
             icon: Icons.person_outline,
             selected: _accountType == 'client',
             onTap: () {
@@ -333,9 +340,10 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
           ),
           const SizedBox(height: 10),
           _AccountTypeCard(
-            title: 'Especialista',
-            subtitle:
-                'Quiero gestionar consultas, precios, citas, contenido, comunidad y tienda.',
+            title: l10n.ts('Especialista'),
+            subtitle: l10n.ts(
+              'Quiero gestionar consultas, precios, citas, contenido, comunidad y tienda.',
+            ),
             icon: Icons.workspace_premium_outlined,
             selected: _accountType == 'specialist',
             onTap: () {
@@ -347,19 +355,19 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
           const SizedBox(height: 16),
           TextField(
             controller: _firstNameController,
-            decoration: const InputDecoration(labelText: 'Nombre'),
+            decoration: InputDecoration(labelText: l10n.ts('Nombre')),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _lastNameController,
-            decoration: const InputDecoration(labelText: 'Apellido'),
+            decoration: InputDecoration(labelText: l10n.ts('Apellido')),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
-            decoration: const InputDecoration(
-              labelText: 'Correo',
+            decoration: InputDecoration(
+              labelText: l10n.ts('Correo'),
               hintText: 'opcional@correo.com',
             ),
           ),
@@ -372,22 +380,22 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 _selectedBirthPlace = value;
               });
             },
-            label: 'Lugar de nacimiento',
-            hintText: 'Busca ciudad y país',
+            label: l10n.ts('Lugar de nacimiento'),
+            hintText: l10n.ts('Busca ciudad y país'),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _birthDateController,
-            decoration: const InputDecoration(
-              labelText: 'Fecha de nacimiento',
+            decoration: InputDecoration(
+              labelText: l10n.ts('Fecha de nacimiento'),
               hintText: '2000-11-28',
             ),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _birthTimeController,
-            decoration: const InputDecoration(
-              labelText: 'Hora de nacimiento',
+            decoration: InputDecoration(
+              labelText: l10n.ts('Hora de nacimiento'),
               hintText: '01:40',
             ),
           ),
@@ -403,9 +411,11 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                     final place = _selectedBirthPlace;
                     if (place == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
+                        SnackBar(
                           content: Text(
-                            'Selecciona tu lugar de nacimiento para completar coordenadas y zona horaria.',
+                            l10n.ts(
+                              'Selecciona tu lugar de nacimiento para completar coordenadas y zona horaria.',
+                            ),
                           ),
                         ),
                       );
@@ -436,7 +446,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                     height: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('Guardar perfil y entrar'),
+                : Text(l10n.ts('Guardar perfil y entrar')),
           ),
         ],
       ),

@@ -13,9 +13,10 @@ class AstroChartTechnicalHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final meta = result.meta;
+    final l10n = context.l10n;
     final birthUtc = DateTime.tryParse(meta.birthDateTimeUtc)?.toUtc();
     final subjectName = meta.subjectName.trim().isEmpty
-        ? 'CARTA NATAL'
+        ? l10n.ts('CARTA NATAL')
         : meta.subjectName.trim().toUpperCase();
     final localBirth = [
       _formatDateLabel(meta.birthDate),
@@ -45,7 +46,7 @@ class AstroChartTechnicalHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Carta natal',
+            l10n.ts('Carta natal'),
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w800,
                   color: classic ? const Color(0xFF1A1A1A) : AppPalette.indigo,
@@ -86,7 +87,10 @@ class AstroChartTechnicalHeader extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Tropical/geocéntrico · Carta eclíptica · Casas: ${_capitalize(meta.houseSystem)}',
+            l10n.ts(
+              'Tropical/geocéntrico · Carta eclíptica · Casas: {houses}',
+              {'houses': _capitalize(meta.houseSystem)},
+            ),
             style: const TextStyle(
               fontSize: 12.5,
               color: AppPalette.mutedLavender,
@@ -95,7 +99,13 @@ class AstroChartTechnicalHeader extends StatelessWidget {
           ),
           const SizedBox(height: 2),
           Text(
-            'Nodos: ${_nodeTypeLabel(meta.nodeType)} · Fuente: ${_ephemerisSourceLabel(meta.ephemerisSource)}',
+            l10n.ts(
+              'Nodos: {nodes} · Fuente: {source}',
+              {
+                'nodes': _nodeTypeLabel(meta.nodeType),
+                'source': _ephemerisSourceLabel(meta.ephemerisSource),
+              },
+            ),
             style: const TextStyle(
               fontSize: 12,
               color: AppPalette.mutedLavender,
@@ -240,14 +250,22 @@ class AstroChartWheelLegend extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final items = [
       ...result.planets.map(
         (planet) => _LegendItemData(
           glyph: _planetGlyph(planet.label),
           color: _planetColor(planet.label),
           title: _displayWheelLabel(planet.label),
-          value:
-              '${planet.sign} · ${planet.degreeFormatted} · Casa ${planet.house}${planet.retrograde ? ' · R' : ''}',
+          value: l10n.ts(
+            '{sign} · {degree} · Casa {house}{retrograde}',
+            {
+              'sign': planet.sign,
+              'degree': planet.degreeFormatted,
+              'house': '${planet.house}',
+              'retrograde': planet.retrograde ? ' · R' : '',
+            },
+          ),
         ),
       ),
       ...result.points.map(
@@ -255,8 +273,15 @@ class AstroChartWheelLegend extends StatelessWidget {
           glyph: _planetGlyph(point.label),
           color: _planetColor(point.label),
           title: _displayWheelLabel(point.label),
-          value:
-              '${point.sign} · ${point.degreeFormatted} · Casa ${point.house}${point.retrograde ? ' · R' : ''}',
+          value: l10n.ts(
+            '{sign} · {degree} · Casa {house}{retrograde}',
+            {
+              'sign': point.sign,
+              'degree': point.degreeFormatted,
+              'house': '${point.house}',
+              'retrograde': point.retrograde ? ' · R' : '',
+            },
+          ),
         ),
       ),
     ];
@@ -286,8 +311,9 @@ class _WheelFactsPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final meta = result.meta;
+    final l10n = context.l10n;
     final subjectName = meta.subjectName.trim().isEmpty
-        ? 'Carta natal'
+        ? l10n.ts('Carta natal')
         : meta.subjectName.trim();
 
     return Container(
@@ -301,21 +327,23 @@ class _WheelFactsPanel extends StatelessWidget {
         spacing: 10,
         runSpacing: 10,
         children: [
-          _FactPill(label: 'Carta', value: subjectName),
+          _FactPill(label: l10n.ts('Carta'), value: subjectName),
           _FactPill(
-            label: 'Nacimiento',
+            label: l10n.ts('Nacimiento'),
             value: '${meta.birthDate} · ${meta.birthTime}',
           ),
-          _FactPill(label: 'Ubicación', value: meta.locationLabel),
-          _FactPill(label: 'Casas', value: _capitalize(meta.houseSystem)),
-          _FactPill(label: 'Nodos', value: _nodeTypeLabel(meta.nodeType)),
+          _FactPill(label: l10n.ts('Ubicación'), value: meta.locationLabel),
+          _FactPill(
+              label: l10n.ts('Casas'), value: _capitalize(meta.houseSystem)),
+          _FactPill(
+              label: l10n.ts('Nodos'), value: _nodeTypeLabel(meta.nodeType)),
           _FactPill(label: 'Lilith', value: _lilithTypeLabel(meta.lilithType)),
           _FactPill(
-            label: 'Partes',
+            label: l10n.ts('Partes'),
             value: _arabicPartsModeLabel(meta.arabicPartsMode),
           ),
           _FactPill(
-            label: 'Fuente',
+            label: l10n.ts('Fuente'),
             value: _ephemerisSourceLabel(meta.ephemerisSource),
           ),
           _FactPill(
@@ -324,7 +352,7 @@ class _WheelFactsPanel extends StatelessWidget {
               label: 'MC', value: result.angles.midheaven.degreeFormatted),
           if (meta.computedTechnicalPoints.isNotEmpty)
             _FactPill(
-              label: 'Puntos',
+              label: l10n.ts('Puntos'),
               value: meta.computedTechnicalPoints
                   .map(_technicalPointShortLabel)
                   .join(' · '),

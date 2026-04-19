@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/i18n/app_i18n.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/mystic_ui.dart';
 import '../../core/widgets/specialist_rating_badge.dart';
@@ -119,8 +120,9 @@ class _NumerologyScreenState extends State<NumerologyScreen> {
     final birthDate = _normalizeBirthDateForApi(_birthDateController.text);
     if (birthName.isEmpty || birthDate.isEmpty) {
       setState(() {
-        _errorMessage =
-            'Ingresa tu nombre completo al nacer y tu fecha de nacimiento.';
+        _errorMessage = context.l10n.ts(
+          'Ingresa tu nombre completo al nacer y tu fecha de nacimiento.',
+        );
       });
       return;
     }
@@ -169,32 +171,33 @@ class _NumerologyScreenState extends State<NumerologyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final mediaQuery = MediaQuery.of(context);
     final textScale = mediaQuery.textScaler.scale(1).clamp(1.0, 1.02);
-    const menuFlow = <MysticFlowOption>[
+    final menuFlow = <MysticFlowOption>[
       MysticFlowOption(
-        label: 'Panorama',
-        caption: 'Resumen vivo del mapa',
+        label: l10n.ts('Panorama'),
+        caption: l10n.ts('Resumen vivo del mapa'),
         glyphKind: MysticGlyphKind.numerology,
       ),
       MysticFlowOption(
-        label: 'Números',
-        caption: 'Núcleos y patrones',
+        label: l10n.ts('Números'),
+        caption: l10n.ts('Núcleos y patrones'),
         glyphKind: MysticGlyphKind.generic,
       ),
       MysticFlowOption(
-        label: 'Ciclos',
-        caption: 'Timing y pináculos',
+        label: l10n.ts('Ciclos'),
+        caption: l10n.ts('Timing y pináculos'),
         glyphKind: MysticGlyphKind.ritual,
       ),
       MysticFlowOption(
-        label: 'Especialistas',
-        caption: 'Acompañamiento humano',
+        label: l10n.ts('Especialistas'),
+        caption: l10n.ts('Acompañamiento humano'),
         glyphKind: MysticGlyphKind.specialist,
       ),
       MysticFlowOption(
-        label: 'Cursos',
-        caption: 'Rutas y práctica guiada',
+        label: l10n.ts('Cursos'),
+        caption: l10n.ts('Rutas y práctica guiada'),
         glyphKind: MysticGlyphKind.course,
       ),
     ];
@@ -259,7 +262,7 @@ class _NumerologyScreenState extends State<NumerologyScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Numerología',
+                          l10n.ts('Numerología'),
                           style: Theme.of(context)
                               .textTheme
                               .headlineMedium
@@ -270,9 +273,11 @@ class _NumerologyScreenState extends State<NumerologyScreen> {
                               ),
                         ),
                         const SizedBox(height: 10),
-                        const Text(
-                          'Calcula tus números nucleares, tus ciclos y la lectura de tu nombre natal dentro del sistema pitagórico.',
-                          style: TextStyle(
+                        Text(
+                          l10n.ts(
+                            'Calcula tus números nucleares, tus ciclos y la lectura de tu nombre natal dentro del sistema pitagórico.',
+                          ),
+                          style: const TextStyle(
                             color: Colors.white70,
                             fontSize: 15,
                             height: 1.45,
@@ -298,17 +303,17 @@ class _NumerologyScreenState extends State<NumerologyScreen> {
                             runSpacing: 10,
                             children: [
                               _HeroMetricPill(
-                                label: 'Sendero',
+                                label: l10n.ts('Sendero'),
                                 value:
                                     _profile!.coreNumbers.lifePath.displayValue,
                               ),
                               _HeroMetricPill(
-                                label: 'Expresión',
+                                label: l10n.ts('Expresión'),
                                 value: _profile!
                                     .coreNumbers.expression.displayValue,
                               ),
                               _HeroMetricPill(
-                                label: 'Año',
+                                label: l10n.ts('Año'),
                                 value:
                                     _profile!.cycles.personalYear.displayValue,
                               ),
@@ -320,33 +325,33 @@ class _NumerologyScreenState extends State<NumerologyScreen> {
                   ),
                   const SizedBox(height: 18),
                   _SectionCard(
-                    title: 'Generar perfil numerológico',
+                    title: l10n.ts('Generar perfil numerológico'),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         TextField(
                           controller: _birthNameController,
                           textCapitalization: TextCapitalization.words,
-                          decoration: const InputDecoration(
-                            labelText: 'Nombre completo al nacer',
-                            hintText: 'Ejemplo: Maria Fernanda Quispe',
+                          decoration: InputDecoration(
+                            labelText: l10n.ts('Nombre completo al nacer'),
+                            hintText: l10n.ts('Ejemplo: Maria Fernanda Quispe'),
                           ),
                         ),
                         const SizedBox(height: 12),
                         TextField(
                           controller: _currentNameController,
                           textCapitalization: TextCapitalization.words,
-                          decoration: const InputDecoration(
-                            labelText: 'Nombre actual o social',
-                            hintText: 'Opcional, para matiz actual',
+                          decoration: InputDecoration(
+                            labelText: l10n.ts('Nombre actual o social'),
+                            hintText: l10n.ts('Opcional, para matiz actual'),
                           ),
                         ),
                         const SizedBox(height: 12),
                         TextField(
                           controller: _birthDateController,
                           keyboardType: TextInputType.datetime,
-                          decoration: const InputDecoration(
-                            labelText: 'Fecha de nacimiento',
+                          decoration: InputDecoration(
+                            labelText: l10n.ts('Fecha de nacimiento'),
                             hintText: 'DD-MM-YYYY',
                           ),
                         ),
@@ -379,8 +384,8 @@ class _NumerologyScreenState extends State<NumerologyScreen> {
                                   : const Icon(Icons.calculate_outlined),
                               label: Text(
                                 _isGenerating
-                                    ? 'Calculando...'
-                                    : 'Generar numerología',
+                                    ? l10n.ts('Calculando...')
+                                    : l10n.ts('Generar numerología'),
                               ),
                             ),
                             OutlinedButton.icon(
@@ -390,7 +395,7 @@ class _NumerologyScreenState extends State<NumerologyScreen> {
                                         numerologyServices.first.id,
                                       ),
                               icon: const Icon(Icons.calendar_month_outlined),
-                              label: const Text('Agendar consulta'),
+                              label: Text(l10n.ts('Agendar consulta')),
                             ),
                           ],
                         ),
@@ -487,46 +492,48 @@ class _NumerologySectionBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     switch (selectedMenu) {
       case _NumerologyMenu.panorama:
         final appliedInsights = profile == null
             ? const <_AppliedInsightData>[]
-            : _buildAppliedInsights(profile!);
+            : _buildAppliedInsights(profile!, l10n);
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (profile != null) ...[
               _SectionCard(
-                title: 'Mapa central',
+                title: l10n.ts('Mapa central'),
                 child: _NumerologyHeroMatrix(profile: profile!),
               ),
               const SizedBox(height: 16),
               _SectionCard(
-                title: 'Lectura integrada',
+                title: l10n.ts('Lectura integrada'),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(profile!.narrative.summary),
+                    Text(_buildLocalizedNumerologySummary(profile!, l10n)),
                     const SizedBox(height: 14),
                     Wrap(
                       spacing: 12,
                       runSpacing: 12,
                       children: [
                         _StatCard(
-                          title: 'Sendero',
+                          title: l10n.ts('Sendero'),
                           value: profile!.coreNumbers.lifePath.displayValue,
                           description: profile!.coreNumbers.lifePath.archetype,
                           accent: _numerologyInk,
                         ),
                         _StatCard(
-                          title: 'Expresión',
+                          title: l10n.ts('Expresión'),
                           value: profile!.coreNumbers.expression.displayValue,
                           description:
                               profile!.coreNumbers.expression.archetype,
                           accent: _numerologyAccent,
                         ),
                         _StatCard(
-                          title: 'Año personal',
+                          title: l10n.ts('Año personal'),
                           value: profile!.cycles.personalYear.displayValue,
                           description: profile!.cycles.personalYear.archetype,
                           accent: _numerologyAccentAlt,
@@ -538,7 +545,7 @@ class _NumerologySectionBody extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               _SectionCard(
-                title: 'Aplicación real',
+                title: l10n.ts('Aplicación real'),
                 child: Wrap(
                   spacing: 12,
                   runSpacing: 12,
@@ -549,13 +556,13 @@ class _NumerologySectionBody extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               _SectionCard(
-                title: 'Alineación del nombre y del mapa',
+                title: l10n.ts('Alineación del nombre y del mapa'),
                 child: _AlignmentNarrative(profile: profile!),
               ),
               const SizedBox(height: 16),
             ],
             _SectionCard(
-              title: 'Conceptos base',
+              title: l10n.ts('Conceptos base'),
               child: Column(
                 children: guide?.concepts
                         .map(
@@ -583,13 +590,13 @@ class _NumerologySectionBody extends StatelessWidget {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        concept.title,
+                                        l10n.ts(concept.title),
                                         style: Theme.of(context)
                                             .textTheme
                                             .titleMedium,
                                       ),
                                       const SizedBox(height: 4),
-                                      Text(concept.summary),
+                                      Text(l10n.ts(concept.summary)),
                                     ],
                                   ),
                                 ),
@@ -604,17 +611,19 @@ class _NumerologySectionBody extends StatelessWidget {
             if (profile != null) ...[
               const SizedBox(height: 16),
               _SectionCard(
-                title: 'Enfoque profesional',
-                child: Text(profile!.narrative.vocation),
+                title: l10n.ts('Enfoque profesional'),
+                child: Text(_buildLocalizedNumerologyVocation(profile!, l10n)),
               ),
               const SizedBox(height: 16),
               _SectionCard(
-                title: 'Vinculos y deseo',
-                child: Text(profile!.narrative.relationships),
+                title: l10n.ts('Vinculos y deseo'),
+                child: Text(
+                  _buildLocalizedNumerologyRelationships(profile!, l10n),
+                ),
               ),
               const SizedBox(height: 16),
               _SectionCard(
-                title: 'Radar del momento',
+                title: l10n.ts('Radar del momento'),
                 child: _TimingRadar(profile: profile!),
               ),
             ],
@@ -622,10 +631,11 @@ class _NumerologySectionBody extends StatelessWidget {
         );
       case _NumerologyMenu.numeros:
         if (profile == null) {
-          return const _EmptyState(
-            title: 'Genera tu perfil numerológico',
-            subtitle:
-                'Necesitamos tu nombre completo al nacer y tu fecha de nacimiento para desplegar los números nucleares.',
+          return _EmptyState(
+            title: l10n.ts('Genera tu perfil numerológico'),
+            subtitle: l10n.ts(
+              'Necesitamos tu nombre completo al nacer y tu fecha de nacimiento para desplegar los números nucleares.',
+            ),
           );
         }
 
@@ -654,7 +664,7 @@ class _NumerologySectionBody extends StatelessWidget {
               ),
             ),
             _SectionCard(
-              title: 'Patrones del nombre',
+              title: l10n.ts('Patrones del nombre'),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -665,7 +675,13 @@ class _NumerologySectionBody extends StatelessWidget {
                         .map(
                           (item) => Chip(
                             label: Text(
-                              '${item.value} · ${item.count} repeticiones',
+                              l10n.ts(
+                                '{value} · {count} repeticiones',
+                                {
+                                  'value': '${item.value}',
+                                  'count': '${item.count}',
+                                },
+                              ),
                             ),
                           ),
                         )
@@ -674,21 +690,50 @@ class _NumerologySectionBody extends StatelessWidget {
                   const SizedBox(height: 12),
                   Text(
                     profile!.patterns.hiddenPassion == null
-                        ? 'No aparece una pasión oculta dominante marcada.'
-                        : 'Pasión oculta ${profile!.patterns.hiddenPassion!.displayValue}: ${profile!.patterns.hiddenPassion!.essence}',
+                        ? l10n.ts(
+                            'No aparece una pasión oculta dominante marcada.',
+                          )
+                        : l10n.ts(
+                            'Pasión oculta {value}: {essence}',
+                            {
+                              'value':
+                                  profile!.patterns.hiddenPassion!.displayValue,
+                              'essence': l10n.ts(
+                                profile!.patterns.hiddenPassion!.essence,
+                              ),
+                            },
+                          ),
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Letra inicial ${profile!.patterns.cornerstone.letter}: ${profile!.patterns.cornerstone.meaning}',
+                    l10n.ts(
+                      'Letra inicial {letter}: {meaning}',
+                      {
+                        'letter': profile!.patterns.cornerstone.letter,
+                        'meaning': profile!.patterns.cornerstone.meaning,
+                      },
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Letra final ${profile!.patterns.capstone.letter}: ${profile!.patterns.capstone.meaning}',
+                    l10n.ts(
+                      'Letra final {letter}: {meaning}',
+                      {
+                        'letter': profile!.patterns.capstone.letter,
+                        'meaning': profile!.patterns.capstone.meaning,
+                      },
+                    ),
                   ),
                   if (profile!.patterns.firstVowel != null) ...[
                     const SizedBox(height: 8),
                     Text(
-                      'Primera vocal ${profile!.patterns.firstVowel!.letter}: ${profile!.patterns.firstVowel!.meaning}',
+                      l10n.ts(
+                        'Primera vocal {letter}: {meaning}',
+                        {
+                          'letter': profile!.patterns.firstVowel!.letter,
+                          'meaning': profile!.patterns.firstVowel!.meaning,
+                        },
+                      ),
                     ),
                   ],
                 ],
@@ -698,10 +743,11 @@ class _NumerologySectionBody extends StatelessWidget {
         );
       case _NumerologyMenu.ciclos:
         if (profile == null) {
-          return const _EmptyState(
-            title: 'Sin ciclos aún',
-            subtitle:
-                'Primero genera el perfil para desplegar año personal, pináculos y desafíos.',
+          return _EmptyState(
+            title: l10n.ts('Sin ciclos aún'),
+            subtitle: l10n.ts(
+              'Primero genera el perfil para desplegar año personal, pináculos y desafíos.',
+            ),
           );
         }
 
@@ -713,19 +759,19 @@ class _NumerologySectionBody extends StatelessWidget {
               runSpacing: 12,
               children: [
                 _StatCard(
-                  title: 'Año personal',
+                  title: l10n.ts('Año personal'),
                   value: profile!.cycles.personalYear.displayValue,
                   description: profile!.cycles.personalYear.archetype,
                   accent: _numerologyInk,
                 ),
                 _StatCard(
-                  title: 'Mes personal',
+                  title: l10n.ts('Mes personal'),
                   value: profile!.cycles.personalMonth.displayValue,
                   description: profile!.cycles.personalMonth.archetype,
                   accent: _numerologyAccent,
                 ),
                 _StatCard(
-                  title: 'Día personal',
+                  title: l10n.ts('Día personal'),
                   value: profile!.cycles.personalDay.displayValue,
                   description: profile!.cycles.personalDay.archetype,
                   accent: _numerologyAccentAlt,
@@ -734,12 +780,12 @@ class _NumerologySectionBody extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             _SectionCard(
-              title: 'Timing del momento',
-              child: Text(profile!.narrative.timing),
+              title: l10n.ts('Timing del momento'),
+              child: Text(_buildLocalizedNumerologyTiming(profile!, l10n)),
             ),
             const SizedBox(height: 16),
             _SectionCard(
-              title: 'Pináculos',
+              title: l10n.ts('Pináculos'),
               child: Column(
                 children: profile!.cycles.pinnacleCycles
                     .map(
@@ -753,7 +799,7 @@ class _NumerologySectionBody extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             _SectionCard(
-              title: 'Desafíos',
+              title: l10n.ts('Desafíos'),
               child: Column(
                 children: profile!.cycles.challengeCycles
                     .map(
@@ -768,15 +814,16 @@ class _NumerologySectionBody extends StatelessWidget {
             if (profile!.patterns.karmicLessons.isNotEmpty) ...[
               const SizedBox(height: 16),
               _SectionCard(
-                title: 'Lecciones kármicas',
+                title: l10n.ts('Lecciones kármicas'),
                 child: Wrap(
                   spacing: 8,
                   runSpacing: 8,
                   children: profile!.patterns.karmicLessons
                       .map(
                         (item) => Chip(
-                          label:
-                              Text('${item.displayValue} · ${item.guidance}'),
+                          label: Text(
+                            '${item.displayValue} · ${l10n.ts(item.guidance)}',
+                          ),
                         ),
                       )
                       .toList(),
@@ -796,26 +843,37 @@ class _NumerologySectionBody extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(specialist.headline),
+                        Text(l10n.ts(specialist.headline)),
                         const SizedBox(height: 12),
-                        Text(specialist.bio),
+                        Text(l10n.ts(specialist.bio)),
                         const SizedBox(height: 12),
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
                           children: [
                             Chip(
-                              label: Text('${specialist.yearsExperience} años'),
+                              label: Text(
+                                l10n.ts(
+                                  '{count} años',
+                                  {'count': '${specialist.yearsExperience}'},
+                                ),
+                              ),
                             ),
                             SpecialistRatingBadge(rating: specialist.rating),
-                            ...specialist.specialties
-                                .take(3)
-                                .map((item) => Chip(label: Text(item))),
+                            ...specialist.specialties.take(3).map(
+                                  (item) => Chip(label: Text(l10n.ts(item))),
+                                ),
                           ],
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          'Próxima disponibilidad: ${formatSchedule(specialist.nextAvailableAt)}',
+                          l10n.ts(
+                            'Próxima disponibilidad: {date}',
+                            {
+                              'date':
+                                  formatSchedule(specialist.nextAvailableAt),
+                            },
+                          ),
                         ),
                       ],
                     ),
@@ -831,21 +889,28 @@ class _NumerologySectionBody extends StatelessWidget {
               (item) => Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: _SectionCard(
-                  title: item.title,
+                  title: l10n.ts(item.title),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${item.category} · ${item.lessonCount} lecciones · ${item.estimatedHours.toStringAsFixed(1)} h',
+                        l10n.ts(
+                          '{category} · {count} lecciones · {hours} h',
+                          {
+                            'category': l10n.ts(item.category),
+                            'count': '${item.lessonCount}',
+                            'hours': item.estimatedHours.toStringAsFixed(1),
+                          },
+                        ),
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        item.subtitle,
+                        l10n.ts(item.subtitle),
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: 12),
-                      Text(item.description),
+                      Text(l10n.ts(item.description)),
                     ],
                   ),
                 ),
@@ -853,7 +918,7 @@ class _NumerologySectionBody extends StatelessWidget {
             ),
             if (guide != null)
               _SectionCard(
-                title: 'Referencias online',
+                title: l10n.ts('Referencias online'),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: guide!.references
@@ -868,7 +933,7 @@ class _NumerologySectionBody extends StatelessWidget {
                                 style: Theme.of(context).textTheme.titleMedium,
                               ),
                               const SizedBox(height: 4),
-                              Text(reference.note),
+                              Text(l10n.ts(reference.note)),
                               const SizedBox(height: 4),
                               Text(
                                 reference.url,
@@ -945,11 +1010,15 @@ class _NumerologyHeroMatrix extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'La base del mapa se organiza entre tu sendero, tu forma de expresarte y el deseo interno que empuja tus decisiones.',
+          l10n.ts(
+            'La base del mapa se organiza entre tu sendero, tu forma de expresarte y el deseo interno que empuja tus decisiones.',
+          ),
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: const Color(0xFF5F6E72),
                 height: 1.4,
@@ -961,21 +1030,21 @@ class _NumerologyHeroMatrix extends StatelessWidget {
           child: Row(
             children: [
               _AppliedCoreNumberCard(
-                title: 'Sendero',
+                title: l10n.ts('Sendero'),
                 subtitle: profile.coreNumbers.lifePath.archetype,
                 value: profile.coreNumbers.lifePath.displayValue,
                 accent: _numerologyInk,
               ),
               const SizedBox(width: 12),
               _AppliedCoreNumberCard(
-                title: 'Expresión',
+                title: l10n.ts('Expresión'),
                 subtitle: profile.coreNumbers.expression.archetype,
                 value: profile.coreNumbers.expression.displayValue,
                 accent: _numerologyAccent,
               ),
               const SizedBox(width: 12),
               _AppliedCoreNumberCard(
-                title: 'Alma',
+                title: l10n.ts('Alma'),
                 subtitle: profile.coreNumbers.soulUrge.archetype,
                 value: profile.coreNumbers.soulUrge.displayValue,
                 accent: _numerologyAccentAlt,
@@ -1003,6 +1072,8 @@ class _AppliedCoreNumberCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Container(
       width: 150,
       height: 126,
@@ -1044,7 +1115,7 @@ class _AppliedCoreNumberCard extends StatelessWidget {
           const SizedBox(height: 8),
           Expanded(
             child: Text(
-              subtitle,
+              l10n.ts(subtitle),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
@@ -1069,6 +1140,8 @@ class _AppliedInsightCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Container(
       width: 320,
       padding: const EdgeInsets.all(18),
@@ -1117,12 +1190,12 @@ class _AppliedInsightCard extends StatelessWidget {
           Text(item.summary),
           const SizedBox(height: 10),
           Text(
-            'Activa: ${item.move}',
+            l10n.ts('Activa: {move}', {'move': item.move}),
             style: const TextStyle(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
           Text(
-            'Cuida: ${item.caution}',
+            l10n.ts('Cuida: {caution}', {'caution': item.caution}),
             style: const TextStyle(color: Colors.black54),
           ),
         ],
@@ -1140,6 +1213,7 @@ class _AlignmentNarrative extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final currentExpression = profile.coreNumbers.currentNameExpression;
     final currentSoulUrge = profile.coreNumbers.currentNameSoulUrge;
     final dominant = profile.patterns.dominantNumbers.isEmpty
@@ -1151,25 +1225,47 @@ class _AlignmentNarrative extends StatelessWidget {
       children: [
         Text(
           currentExpression == null
-              ? 'Tu nombre actual está vibrando igual que tu nombre base, así que la expresión externa del mapa se mantiene bastante coherente.'
-              : 'Tu nombre actual mueve una capa distinta del mapa: la expresión pasa a ${currentExpression.displayValue} y el deseo visible se ajusta con el nombre que usas hoy.',
+              ? l10n.ts(
+                  'Tu nombre actual está vibrando igual que tu nombre base, así que la expresión externa del mapa se mantiene bastante coherente.',
+                )
+              : l10n.ts(
+                  'Tu nombre actual mueve una capa distinta del mapa: la expresión pasa a {value} y el deseo visible se ajusta con el nombre que usas hoy.',
+                  {'value': currentExpression.displayValue},
+                ),
         ),
         if (currentSoulUrge != null) ...[
           const SizedBox(height: 12),
           Text(
-            'Hoy tu deseo visible toma tono ${currentSoulUrge.displayValue}, lo que cambia cómo pides, recibes y priorizas energía en los vínculos.',
+            l10n.ts(
+              'Hoy tu deseo visible toma tono {value}, lo que cambia cómo pides, recibes y priorizas energía en los vínculos.',
+              {'value': currentSoulUrge.displayValue},
+            ),
           ),
         ],
         if (dominant != null) ...[
           const SizedBox(height: 12),
           Text(
-            'La frecuencia más repetida de tu nombre es ${dominant.value}, por eso el mapa insiste una y otra vez en un estilo ${dominant.archetype.toLowerCase()}.',
+            l10n.ts(
+              'La frecuencia más repetida de tu nombre es {value}, por eso el mapa insiste una y otra vez en un estilo {archetype}.',
+              {
+                'value': '${dominant.value}',
+                'archetype': l10n.ts(dominant.archetype).toLowerCase(),
+              },
+            ),
           ),
         ],
         if (profile.patterns.karmicLessons.isNotEmpty) ...[
           const SizedBox(height: 12),
           Text(
-            'Tus lecciones kármicas más visibles ahora piden trabajo en ${profile.patterns.karmicLessons.take(2).map((item) => item.displayValue).join(' y ')}.',
+            l10n.ts(
+              'Tus lecciones kármicas más visibles ahora piden trabajo en {lessons}.',
+              {
+                'lessons': profile.patterns.karmicLessons
+                    .take(2)
+                    .map((item) => item.displayValue)
+                    .join(' ${l10n.ts('y')} '),
+              },
+            ),
           ),
         ],
       ],
@@ -1186,6 +1282,7 @@ class _TimingRadar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final year = profile.cycles.personalYear;
     final month = profile.cycles.personalMonth;
     final day = profile.cycles.personalDay;
@@ -1198,19 +1295,19 @@ class _TimingRadar extends StatelessWidget {
           runSpacing: 12,
           children: [
             _StatCard(
-              title: 'Año personal',
+              title: l10n.ts('Año personal'),
               value: year.displayValue,
               description: year.archetype,
               accent: _numerologyInk,
             ),
             _StatCard(
-              title: 'Mes personal',
+              title: l10n.ts('Mes personal'),
               value: month.displayValue,
               description: month.archetype,
               accent: _numerologyAccent,
             ),
             _StatCard(
-              title: 'Día personal',
+              title: l10n.ts('Día personal'),
               value: day.displayValue,
               description: day.archetype,
               accent: const Color(0xFF5E819A),
@@ -1219,16 +1316,27 @@ class _TimingRadar extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         Text(
-          'El año marca el clima grande, el mes baja el tono operativo y el día afina cómo te conviene moverte hoy. Tu mejor timing aparece cuando no peleas esas tres capas entre sí.',
+          l10n.ts(
+            'El año marca el clima grande, el mes baja el tono operativo y el día afina cómo te conviene moverte hoy. Tu mejor timing aparece cuando no peleas esas tres capas entre sí.',
+          ),
         ),
         const SizedBox(height: 12),
         Text(
-          'Movimiento recomendado: ${year.guidance}',
+          l10n.ts(
+            'Movimiento recomendado: {guidance}',
+            {'guidance': l10n.ts(year.guidance)},
+          ),
           style: const TextStyle(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 8),
         Text(
-          'Evita: ${year.shadows.take(2).join(' y ')}.',
+          l10n.ts(
+            'Evita: {items}.',
+            {
+              'items':
+                  year.shadows.take(2).map(l10n.ts).join(' ${l10n.ts('y')} '),
+            },
+          ),
           style: const TextStyle(color: Colors.black54),
         ),
       ],
@@ -1275,6 +1383,8 @@ class _NumberCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(18),
@@ -1306,32 +1416,44 @@ class _NumberCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        card.title,
+                        l10n.ts(card.title),
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: 4),
-                      Text(card.archetype),
+                      Text(l10n.ts(card.archetype)),
                     ],
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 14),
-            Text(card.essence),
+            Text(l10n.ts(card.essence)),
             const SizedBox(height: 12),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
-                ...card.gifts.map((item) => Chip(label: Text(item))),
-                if (card.isMaster) const Chip(label: Text('Maestro')),
-                if (card.isKarmicDebt) const Chip(label: Text('Deuda karmica')),
+                ...card.gifts.map(
+                  (item) => Chip(label: Text(l10n.ts(item))),
+                ),
+                if (card.isMaster) Chip(label: Text(l10n.ts('Maestro'))),
+                if (card.isKarmicDebt)
+                  Chip(label: Text(l10n.ts('Deuda karmica'))),
               ],
             ),
             const SizedBox(height: 12),
-            Text('Sombra: ${card.shadows.join(' · ')}'),
+            Text(
+              l10n.ts(
+                'Sombra: {items}',
+                {'items': card.shadows.map(l10n.ts).join(' · ')},
+              ),
+            ),
             const SizedBox(height: 8),
-            Text('Guia: ${card.guidance}'),
+            Text(
+              l10n.ts('Guia: {guidance}', {
+                'guidance': l10n.ts(card.guidance),
+              }),
+            ),
           ],
         ),
       ),
@@ -1348,6 +1470,8 @@ class _CycleTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -1381,13 +1505,13 @@ class _CycleTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  cycle.label,
+                  l10n.ts(cycle.label),
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 4),
-                Text(cycle.ageRange),
+                Text(_localizedAgeRange(cycle.ageRange, l10n)),
                 const SizedBox(height: 6),
-                Text(cycle.focus),
+                Text(l10n.ts(cycle.focus)),
               ],
             ),
           ),
@@ -1412,6 +1536,8 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Container(
       width: 160,
       height: 140,
@@ -1454,7 +1580,7 @@ class _StatCard extends StatelessWidget {
           const SizedBox(height: 10),
           Expanded(
             child: Text(
-              description,
+              l10n.ts(description),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
@@ -1529,7 +1655,97 @@ class _AppliedInsightData {
   final Color accent;
 }
 
-List<_AppliedInsightData> _buildAppliedInsights(NumerologyProfileData profile) {
+String _localizedAgeRange(String value, AppLocalizations l10n) {
+  return value.replaceAll(' a ', ' ${l10n.ts('a')} ');
+}
+
+String _buildLocalizedNumerologySummary(
+  NumerologyProfileData profile,
+  AppLocalizations l10n,
+) {
+  final dominant = profile.patterns.dominantNumbers.isEmpty
+      ? null
+      : profile.patterns.dominantNumbers.first;
+  final base = l10n.ts(
+    'Tu Sendero de Vida {lifePath} marca el tono central del camino, mientras tu Expresión {expression} describe la forma en que despliegas tus talentos. Tu Alma {soul} muestra la motivación profunda y tu Personalidad {personality} la primera capa que leen los demás.',
+    {
+      'lifePath': profile.coreNumbers.lifePath.displayValue,
+      'expression': profile.coreNumbers.expression.displayValue,
+      'soul': profile.coreNumbers.soulUrge.displayValue,
+      'personality': profile.coreNumbers.personality.displayValue,
+    },
+  );
+  if (dominant == null) {
+    return base;
+  }
+  final dominantLine = l10n.ts(
+    'La frecuencia más repetida de tu nombre es {value}, lo que refuerza un estilo {archetype}.',
+    {
+      'value': '${dominant.value}',
+      'archetype': l10n.ts(dominant.archetype).toLowerCase(),
+    },
+  );
+  return '$base $dominantLine';
+}
+
+String _buildLocalizedNumerologyVocation(
+  NumerologyProfileData profile,
+  AppLocalizations l10n,
+) {
+  return l10n.ts(
+    'Profesionalmente conviene unir la dirección {lifePathArchetype} de tu camino con la forma {expressionArchetype} en que ejecutas. Si honras tu número de Expresión, el trabajo deja de ser solo obligación y se vuelve canal de realización.',
+    {
+      'lifePathArchetype':
+          l10n.ts(profile.coreNumbers.lifePath.archetype).toLowerCase(),
+      'expressionArchetype':
+          l10n.ts(profile.coreNumbers.expression.archetype).toLowerCase(),
+    },
+  );
+}
+
+String _buildLocalizedNumerologyRelationships(
+  NumerologyProfileData profile,
+  AppLocalizations l10n,
+) {
+  final hiddenPassion = profile.patterns.hiddenPassion;
+  final hiddenPassionText = hiddenPassion == null
+      ? l10n.ts(
+          'No aparece una pasión oculta dominante; el mapa está más repartido.',
+        )
+      : l10n.ts(
+          'Tu pasión oculta {value} empuja procesos donde {essence}',
+          {
+            'value': hiddenPassion.displayValue,
+            'essence': l10n.ts(hiddenPassion.essence).toLowerCase(),
+          },
+        );
+
+  return l10n.ts(
+    'En vínculos pesa especialmente tu Alma {soul}, porque ahí se ve lo que realmente necesitas para sentirte reconocido. Tu Personalidad {personality} actúa como filtro externo, así que no siempre lo que muestras coincide con lo que deseas por dentro. {hiddenPassion}',
+    {
+      'soul': profile.coreNumbers.soulUrge.displayValue,
+      'personality': profile.coreNumbers.personality.displayValue,
+      'hiddenPassion': hiddenPassionText,
+    },
+  );
+}
+
+String _buildLocalizedNumerologyTiming(
+  NumerologyProfileData profile,
+  AppLocalizations l10n,
+) {
+  return l10n.ts(
+    'El Año Personal {personalYear} describe el clima actual de tus decisiones. Toma este ciclo como una capa externa: abre oportunidades y pruebas, pero se expresa mejor cuando la alineas con tus números base.',
+    {
+      'personalYear': profile.cycles.personalYear.displayValue,
+    },
+  );
+}
+
+List<_AppliedInsightData> _buildAppliedInsights(
+  NumerologyProfileData profile,
+  AppLocalizations l10n,
+) {
   final love = profile.coreNumbers.soulUrge;
   final work = profile.coreNumbers.expression;
   final money = profile.coreNumbers.maturity;
@@ -1543,14 +1759,14 @@ List<_AppliedInsightData> _buildAppliedInsights(NumerologyProfileData profile) {
     required IconData icon,
     required Color accent,
   }) {
-    final caution = card.shadows.take(2).join(' y ');
+    final caution = card.shadows.take(2).map(l10n.ts).join(' ${l10n.ts('y')} ');
     return _AppliedInsightData(
-      title: title,
+      title: l10n.ts(title),
       number: card.displayValue,
-      archetype: card.archetype,
-      summary: '$prefix ${card.essence}',
-      move: card.guidance,
-      caution: caution.isEmpty ? 'No fuerces este eje.' : caution,
+      archetype: l10n.ts(card.archetype),
+      summary: '${l10n.ts(prefix)} ${l10n.ts(card.essence)}',
+      move: l10n.ts(card.guidance),
+      caution: caution.isEmpty ? l10n.ts('No fuerces este eje.') : caution,
       icon: icon,
       accent: accent,
     );

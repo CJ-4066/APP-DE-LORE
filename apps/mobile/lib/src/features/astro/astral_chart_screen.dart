@@ -5,6 +5,7 @@ import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../core/data/birth_place_catalog.dart';
+import '../../core/i18n/app_i18n.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/mystic_ui.dart';
@@ -178,8 +179,9 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
         latitudeText.isEmpty ||
         longitudeText.isEmpty) {
       setState(() {
-        _errorMessage =
-            'Completa fecha, país, ciudad, UTC offset y coordenadas para generar la carta.';
+        _errorMessage = context.l10n.ts(
+          'Completa fecha, país, ciudad, UTC offset y coordenadas para generar la carta.',
+        );
       });
       return;
     }
@@ -187,7 +189,9 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
     if (!RegExp(r'^(\d{4}-\d{2}-\d{2}|\d{2}-\d{2}-\d{4})$')
         .hasMatch(birthDate)) {
       setState(() {
-        _errorMessage = 'La fecha debe tener formato DD-MM-YYYY o YYYY-MM-DD.';
+        _errorMessage = context.l10n.ts(
+          'La fecha debe tener formato DD-MM-YYYY o YYYY-MM-DD.',
+        );
       });
       return;
     }
@@ -195,8 +199,9 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
     if (!_birthTimeUnknown &&
         !RegExp(r'^(\d{2}:\d{2}|\d{2}:\d{2}:\d{2})$').hasMatch(birthTime)) {
       setState(() {
-        _errorMessage =
-            'La hora debe tener formato HH:MM o HH:MM:SS, o marcar hora desconocida.';
+        _errorMessage = context.l10n.ts(
+          'La hora debe tener formato HH:MM o HH:MM:SS, o marcar hora desconocida.',
+        );
       });
       return;
     }
@@ -224,21 +229,24 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
     final utcOffset = _utcOffsetController.text.trim();
     if (!RegExp(r'^[+-]\d{2}:\d{2}$').hasMatch(utcOffset)) {
       setState(() {
-        _errorMessage = 'El UTC offset debe tener formato +/-HH:MM.';
+        _errorMessage =
+            context.l10n.ts('El UTC offset debe tener formato +/-HH:MM.');
       });
       return;
     }
 
     if (latitude == null || latitude < -90 || latitude > 90) {
       setState(() {
-        _errorMessage = 'La latitud debe estar entre -90 y 90.';
+        _errorMessage =
+            context.l10n.ts('La latitud debe estar entre -90 y 90.');
       });
       return;
     }
 
     if (longitude == null || longitude < -180 || longitude > 180) {
       setState(() {
-        _errorMessage = 'La longitud debe estar entre -180 y 180.';
+        _errorMessage =
+            context.l10n.ts('La longitud debe estar entre -180 y 180.');
       });
       return;
     }
@@ -373,6 +381,8 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
       _isExporting = true;
     });
 
+    final l10n = context.l10n;
+
     try {
       final payload = await _buildClassicChartImagePayload();
 
@@ -387,7 +397,7 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
               ),
             ],
             fileNameOverrides: [payload.fileName],
-            title: 'Carta astral Lo Renaciente',
+            title: l10n.ts('Carta astral Lo Renaciente'),
             downloadFallbackEnabled: true,
           ),
         );
@@ -397,9 +407,11 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
         }
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(
-              'La imagen se preparó para descarga desde el navegador.',
+              context.l10n.ts(
+                'La imagen se preparó para descarga desde el navegador.',
+              ),
             ),
           ),
         );
@@ -421,11 +433,11 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text(
-            'La rueda natal se guardó en Fotos.',
+          content: Text(
+            context.l10n.ts('La rueda natal se guardó en Fotos.'),
           ),
           action: SnackBarAction(
-            label: 'Compartir',
+            label: context.l10n.ts('Compartir'),
             onPressed: () {
               _shareChartImage(payload);
             },
@@ -440,7 +452,10 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'No se pudo generar la imagen de la carta: ${error.toString().replaceFirst('Exception: ', '')}',
+            context.l10n.ts(
+              'No se pudo generar la imagen de la carta: {error}',
+              {'error': error.toString().replaceFirst('Exception: ', '')},
+            ),
           ),
         ),
       );
@@ -475,7 +490,10 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'No se pudo compartir la carta: ${error.toString().replaceFirst('Exception: ', '')}',
+            context.l10n.ts(
+              'No se pudo compartir la carta: {error}',
+              {'error': error.toString().replaceFirst('Exception: ', '')},
+            ),
           ),
         ),
       );
@@ -494,8 +512,9 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
 
     await SharePlus.instance.share(
       ShareParams(
-        text:
-            'Mi carta astral de Lo Renaciente. Puedes guardarla tambien en Archivos o compartirla.',
+        text: context.l10n.ts(
+          'Mi carta astral de Lo Renaciente. Puedes guardarla tambien en Archivos o compartirla.',
+        ),
         files: [
           XFile.fromData(
             payload.bytes,
@@ -504,7 +523,7 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
           ),
         ],
         fileNameOverrides: [payload.fileName],
-        subject: 'Carta astral Lo Renaciente',
+        subject: context.l10n.ts('Carta astral Lo Renaciente'),
         sharePositionOrigin: renderBox == null
             ? null
             : renderBox.localToGlobal(Offset.zero) & renderBox.size,
@@ -605,6 +624,8 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
   }
 
   Widget _buildIntroHero(ThemeData theme) {
+    final l10n = context.l10n;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -621,16 +642,18 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Activa tu motor natal',
+            l10n.ts('Activa tu motor natal'),
             style: theme.textTheme.headlineSmall?.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w800,
             ),
           ),
           const SizedBox(height: 10),
-          const Text(
-            'Esta sección ya usa el motor propio de Lo Renaciente para calcular carta natal, tránsitos, revoluciones y eventos próximos.',
-            style: TextStyle(
+          Text(
+            l10n.ts(
+              'Esta sección ya usa el motor propio de Lo Renaciente para calcular carta natal, tránsitos, revoluciones y eventos próximos.',
+            ),
+            style: const TextStyle(
               color: Colors.white70,
               fontSize: 15,
               height: 1.4,
@@ -640,11 +663,11 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: const [
-              Chip(label: Text('Carta natal')),
-              Chip(label: Text('Tránsitos')),
-              Chip(label: Text('Revoluciones')),
-              Chip(label: Text('Eclipses')),
+            children: [
+              Chip(label: Text(l10n.ts('Carta natal'))),
+              Chip(label: Text(l10n.ts('Tránsitos'))),
+              Chip(label: Text(l10n.ts('Revoluciones'))),
+              Chip(label: Text(l10n.ts('Eclipses'))),
             ],
           ),
         ],
@@ -653,22 +676,24 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
   }
 
   Widget _buildNatalDataSection() {
+    final l10n = context.l10n;
+
     return _SectionCard(
-      title: 'Datos natales',
+      title: l10n.ts('Datos natales'),
       child: Column(
         children: [
           TextField(
             controller: _subjectNameController,
-            decoration: const InputDecoration(
-              labelText: 'Nombre (opcional)',
-              hintText: 'Nombre de la carta',
+            decoration: InputDecoration(
+              labelText: l10n.ts('Nombre (opcional)'),
+              hintText: l10n.ts('Nombre de la carta'),
             ),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _birthDateController,
-            decoration: const InputDecoration(
-              labelText: 'Fecha de nacimiento',
+            decoration: InputDecoration(
+              labelText: l10n.ts('Fecha de nacimiento'),
               hintText: '00-00-0000',
             ),
           ),
@@ -676,9 +701,11 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
           SwitchListTile.adaptive(
             value: _birthTimeUnknown,
             contentPadding: EdgeInsets.zero,
-            title: const Text('Hora de nacimiento desconocida'),
-            subtitle: const Text(
-              'Si no conoces la hora exacta, el sistema calculará con una referencia media y la marcará como no exacta.',
+            title: Text(l10n.ts('Hora de nacimiento desconocida')),
+            subtitle: Text(
+              l10n.ts(
+                'Si no conoces la hora exacta, el sistema calculará con una referencia media y la marcará como no exacta.',
+              ),
             ),
             onChanged: (value) {
               setState(() {
@@ -693,8 +720,8 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
                 child: TextField(
                   controller: _birthTimeController,
                   enabled: !_birthTimeUnknown,
-                  decoration: const InputDecoration(
-                    labelText: 'Hora de nacimiento',
+                  decoration: InputDecoration(
+                    labelText: l10n.ts('Hora de nacimiento'),
                     hintText: '00:00:00',
                   ),
                 ),
@@ -742,8 +769,8 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
               ),
               label: Text(
                 _showManualLocationFields
-                    ? 'Ocultar edición técnica'
-                    : 'Editar datos técnicos manualmente',
+                    ? l10n.ts('Ocultar edición técnica')
+                    : l10n.ts('Editar datos técnicos manualmente'),
               ),
             ),
           ),
@@ -767,7 +794,7 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
                       height: 18,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Generar carta astral'),
+                  : Text(l10n.ts('Generar carta astral')),
             ),
           ),
         ],
@@ -776,12 +803,14 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
   }
 
   Widget _buildTimeZoneField() {
+    final l10n = context.l10n;
+
     return InputDecorator(
-      decoration: const InputDecoration(
-        labelText: 'Zona horaria',
+      decoration: InputDecoration(
+        labelText: l10n.ts('Zona horaria'),
       ),
       child: Text(
-        _timeZoneId.isEmpty ? 'Sin resolver' : _timeZoneId,
+        _timeZoneId.isEmpty ? l10n.ts('Sin resolver') : _timeZoneId,
         style: TextStyle(
           color: _timeZoneId.isEmpty
               ? const Color(0xFF867A6C)
@@ -876,8 +905,9 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
   }
 
   Widget _buildLocationSummary() {
+    final l10n = context.l10n;
     final locationText = _cityController.text.isEmpty
-        ? 'Aún no seleccionaste un lugar natal'
+        ? l10n.ts('Aún no seleccionaste un lugar natal')
         : [
             _cityController.text,
             _stateController.text,
@@ -885,7 +915,9 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
           ].where((item) => item.trim().isNotEmpty).join(', ');
 
     final technicalText = _utcOffsetController.text.isEmpty
-        ? 'Selecciona una ciudad del listado para completar automáticamente los datos técnicos.'
+        ? l10n.ts(
+            'Selecciona una ciudad del listado para completar automáticamente los datos técnicos.',
+          )
         : 'UTC ${_utcOffsetController.text} · Lat ${_latitudeController.text} · Lon ${_longitudeController.text}';
 
     return Container(
@@ -920,29 +952,31 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
   }
 
   Widget _buildManualLocationFields() {
+    final l10n = context.l10n;
+
     return Column(
       children: [
         TextField(
           controller: _countryController,
-          decoration: const InputDecoration(
-            labelText: 'País',
+          decoration: InputDecoration(
+            labelText: l10n.ts('País'),
             hintText: 'Perú',
           ),
         ),
         const SizedBox(height: 12),
         TextField(
           controller: _stateController,
-          decoration: const InputDecoration(
-            labelText: 'Provincia o estado',
-            hintText: 'Opcional o para carga manual',
+          decoration: InputDecoration(
+            labelText: l10n.ts('Provincia o estado'),
+            hintText: l10n.ts('Opcional o para carga manual'),
           ),
         ),
         const SizedBox(height: 12),
         TextField(
           controller: _cityController,
-          decoration: const InputDecoration(
-            labelText: 'Ciudad',
-            hintText: 'Selecciona o escribe manualmente',
+          decoration: InputDecoration(
+            labelText: l10n.ts('Ciudad'),
+            hintText: l10n.ts('Selecciona o escribe manualmente'),
           ),
         ),
         const SizedBox(height: 12),
@@ -963,8 +997,8 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
                   decimal: true,
                   signed: true,
                 ),
-                decoration: const InputDecoration(
-                  labelText: 'Latitud',
+                decoration: InputDecoration(
+                  labelText: l10n.ts('Latitud'),
                   hintText: '-12.0464',
                 ),
               ),
@@ -977,8 +1011,8 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
                   decimal: true,
                   signed: true,
                 ),
-                decoration: const InputDecoration(
-                  labelText: 'Longitud',
+                decoration: InputDecoration(
+                  labelText: l10n.ts('Longitud'),
                   hintText: '-77.0428',
                 ),
               ),
@@ -1009,6 +1043,8 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
   }
 
   Widget _buildFlowContent(ThemeData theme) {
+    final l10n = context.l10n;
+
     switch (_selectedSection) {
       case _AstroFlowSection.setup:
         return Column(
@@ -1018,9 +1054,11 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
             const SizedBox(height: 16),
             if (_result == null)
               _SectionCard(
-                title: 'Vista previa',
+                title: l10n.ts('Vista previa'),
                 child: Text(
-                  'Completa los datos natales y toca "Generar carta astral" para pasar a la rueda, la lectura técnica y los tiempos activos sin cargar toda la pantalla de una sola vez.',
+                  l10n.ts(
+                    'Completa los datos natales y toca "Generar carta astral" para pasar a la rueda, la lectura técnica y los tiempos activos sin cargar toda la pantalla de una sola vez.',
+                  ),
                   style: theme.textTheme.bodyLarge,
                 ),
               ),
@@ -1030,9 +1068,10 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
         if (_result == null) {
           return _buildFlowEmptyState(
             key: const ValueKey('astro-wheel-empty'),
-            title: 'Genera la carta primero',
-            subtitle:
-                'La rueda, la descarga PNG y la ficha técnica aparecerán aquí apenas calcules tu carta natal.',
+            title: l10n.ts('Genera la carta primero'),
+            subtitle: l10n.ts(
+              'La rueda, la descarga PNG y la ficha técnica aparecerán aquí apenas calcules tu carta natal.',
+            ),
           );
         }
         return Column(
@@ -1047,9 +1086,10 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
         if (_result == null) {
           return _buildFlowEmptyState(
             key: const ValueKey('astro-essence-empty'),
-            title: 'Tu lectura central aún no está lista',
-            subtitle:
-                'Cuando generes la carta verás Sol, Luna, Ascendente, regencias, dominantes e interpretación en este bloque.',
+            title: l10n.ts('Tu lectura central aún no está lista'),
+            subtitle: l10n.ts(
+              'Cuando generes la carta verás Sol, Luna, Ascendente, regencias, dominantes e interpretación en este bloque.',
+            ),
           );
         }
         return Column(
@@ -1072,9 +1112,10 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
         if (_result == null) {
           return _buildFlowEmptyState(
             key: const ValueKey('astro-technical-empty'),
-            title: 'Todavía no hay técnica para revisar',
-            subtitle:
-                'Este espacio mostrará puntos técnicos, planetas, casas y aspectos principales cuando la carta esté calculada.',
+            title: l10n.ts('Todavía no hay técnica para revisar'),
+            subtitle: l10n.ts(
+              'Este espacio mostrará puntos técnicos, planetas, casas y aspectos principales cuando la carta esté calculada.',
+            ),
           );
         }
         return Column(
@@ -1091,9 +1132,10 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
         if (_result == null) {
           return _buildFlowEmptyState(
             key: const ValueKey('astro-timing-empty'),
-            title: 'Aún no tenemos tiempos activos',
-            subtitle:
-                'Tránsitos, revoluciones y eventos próximos aparecerán aquí cuando generes la carta.',
+            title: l10n.ts('Aún no tenemos tiempos activos'),
+            subtitle: l10n.ts(
+              'Tránsitos, revoluciones y eventos próximos aparecerán aquí cuando generes la carta.',
+            ),
           );
         }
         return Column(
@@ -1122,6 +1164,8 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
   }
 
   Widget _buildResultActions() {
+    final l10n = context.l10n;
+
     return Row(
       children: [
         Expanded(
@@ -1135,7 +1179,9 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
                   )
                 : const Icon(Icons.download_outlined),
             label: Text(
-              _isExporting ? 'Generando imagen...' : 'Descargar carta',
+              _isExporting
+                  ? l10n.ts('Generando imagen...')
+                  : l10n.ts('Descargar carta'),
             ),
           ),
         ),
@@ -1144,7 +1190,7 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
           child: OutlinedButton.icon(
             onPressed: _isExporting ? null : _shareCurrentChartImage,
             icon: const Icon(Icons.ios_share_rounded),
-            label: const Text('Compartir imagen'),
+            label: Text(l10n.ts('Compartir imagen')),
           ),
         ),
       ],
@@ -1152,8 +1198,10 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
   }
 
   Widget _buildPlanetsAndHousesSection(AstroNatalChartResult natalChart) {
+    final l10n = context.l10n;
+
     return _SectionCard(
-      title: 'Planetas y casas',
+      title: l10n.ts('Planetas y casas'),
       child: Column(
         children: [
           Wrap(
@@ -1164,8 +1212,14 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
                 .map(
                   (planet) => _PillStat(
                     title: _displayAstroLabel(planet.label),
-                    value:
-                        '${planet.sign} · Casa ${planet.house}${planet.retrograde ? ' · R' : ''}',
+                    value: l10n.ts(
+                      '{sign} · Casa {house}{retrograde}',
+                      {
+                        'sign': planet.sign,
+                        'house': '${planet.house}',
+                        'retrograde': planet.retrograde ? ' · R' : '',
+                      },
+                    ),
                   ),
                 )
                 .toList(),
@@ -1180,7 +1234,10 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
                     child: Row(
                       children: [
                         Text(
-                          'Casa ${house.number}',
+                          l10n.ts(
+                            'Casa {house}',
+                            {'house': '${house.number}'},
+                          ),
                           style: const TextStyle(
                             fontWeight: FontWeight.w700,
                           ),
@@ -1203,8 +1260,10 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
   }
 
   Widget _buildAspectsSection(AstroNatalChartResult natalChart) {
+    final l10n = context.l10n;
+
     return _SectionCard(
-      title: 'Aspectos principales',
+      title: l10n.ts('Aspectos principales'),
       child: Column(
         children: natalChart.aspects
             .take(10)
@@ -1227,7 +1286,7 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
 
   Widget _buildInterpretationSection(AstroNatalChartResult natalChart) {
     return _SectionCard(
-      title: 'Interpretación base',
+      title: context.l10n.ts('Interpretación base'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: natalChart.interpretation
@@ -1243,13 +1302,18 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
   }
 
   Widget _buildTransitsSection(AstroOverviewData result) {
+    final l10n = context.l10n;
+
     return _SectionCard(
-      title: 'Transitos del momento',
+      title: l10n.ts('Transitos del momento'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Fecha de cálculo: ${formatSchedule(result.transits.targetDateUtc)}',
+            l10n.ts(
+              'Fecha de cálculo: {date}',
+              {'date': formatSchedule(result.transits.targetDateUtc)},
+            ),
           ),
           const SizedBox(height: 12),
           ...result.transits.highlights.take(6).map(
@@ -1264,18 +1328,20 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
   }
 
   Widget _buildReturnsSection(AstroOverviewData result) {
+    final l10n = context.l10n;
+
     return _SectionCard(
-      title: 'Revoluciones',
+      title: l10n.ts('Revoluciones'),
       child: Column(
         children: [
           _TimelineRow(
-            label: 'Próxima revolución solar',
+            label: l10n.ts('Próxima revolución solar'),
             value: formatSchedule(result.returns.solarReturn.startsAt),
             detail: result.returns.solarReturn.degree,
           ),
           const SizedBox(height: 12),
           _TimelineRow(
-            label: 'Próxima revolución lunar',
+            label: l10n.ts('Próxima revolución lunar'),
             value: formatSchedule(result.returns.lunarReturn.startsAt),
             detail: result.returns.lunarReturn.degree,
           ),
@@ -1286,7 +1352,7 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
 
   Widget _buildEventsSection(AstroOverviewData result) {
     return _SectionCard(
-      title: 'Eventos próximos',
+      title: context.l10n.ts('Eventos próximos'),
       child: Column(
         children: [
           ...result.events.moonPhases.take(4).map(
@@ -1323,37 +1389,38 @@ class _AstralChartScreenState extends State<AstralChartScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    const sections = <MysticFlowOption>[
+    final l10n = context.l10n;
+    final sections = <MysticFlowOption>[
       MysticFlowOption(
-        label: 'Configura',
-        caption: 'Datos natales y ajustes',
+        label: l10n.ts('Configura'),
+        caption: l10n.ts('Datos natales y ajustes'),
         glyphKind: MysticGlyphKind.person,
       ),
       MysticFlowOption(
-        label: 'Rueda',
-        caption: 'Carta, ficha y exportación',
+        label: l10n.ts('Rueda'),
+        caption: l10n.ts('Carta, ficha y exportación'),
         glyphKind: MysticGlyphKind.astral,
       ),
       MysticFlowOption(
-        label: 'Esencia',
-        caption: 'Tríada, regencias y sentido',
+        label: l10n.ts('Esencia'),
+        caption: l10n.ts('Tríada, regencias y sentido'),
         glyphKind: MysticGlyphKind.subscription,
       ),
       MysticFlowOption(
-        label: 'Técnica',
-        caption: 'Puntos, casas y aspectos',
+        label: l10n.ts('Técnica'),
+        caption: l10n.ts('Puntos, casas y aspectos'),
         glyphKind: MysticGlyphKind.generic,
       ),
       MysticFlowOption(
-        label: 'Tiempo',
-        caption: 'Tránsitos y eventos',
+        label: l10n.ts('Tiempo'),
+        caption: l10n.ts('Tránsitos y eventos'),
         glyphKind: MysticGlyphKind.ritual,
       ),
     ];
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Carta Astral'),
+        title: Text(l10n.ts('Carta Astral')),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),

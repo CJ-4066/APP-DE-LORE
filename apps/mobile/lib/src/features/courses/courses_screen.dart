@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/i18n/app_i18n.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/widgets/mystic_ui.dart';
 import '../../models/app_models.dart';
@@ -30,6 +31,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     if (widget.canManageCourses) {
       return _CourseManagerView(
         data: widget.data,
@@ -59,7 +61,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
                 runSpacing: 10,
                 children: [
                   _MenuChip(
-                    label: 'Rituales',
+                    label: l10n.ts('Rituales'),
                     selected: _selectedSection == _LibrarySection.rituals,
                     onTap: () {
                       setState(() {
@@ -68,7 +70,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
                     },
                   ),
                   _MenuChip(
-                    label: 'Cursos',
+                    label: l10n.ts('Cursos'),
                     selected: _selectedSection == _LibrarySection.courses,
                     onTap: () {
                       setState(() {
@@ -107,6 +109,7 @@ class _CourseManagerView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final courses = data.courses;
     final lessonCount = courses.fold<int>(
       0,
@@ -133,10 +136,11 @@ class _CourseManagerView extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
             children: [
               MysticBannerCard(
-                eyebrow: 'Gestión académica',
-                title: 'Cursos y PDFs',
-                subtitle:
-                    'Administra rutas formativas, lecciones, materiales descargables y estado de publicación.',
+                eyebrow: l10n.ts('Gestión académica'),
+                title: l10n.ts('Cursos y PDFs'),
+                subtitle: l10n.ts(
+                  'Administra rutas formativas, lecciones, materiales descargables y estado de publicación.',
+                ),
                 glyphKind: MysticGlyphKind.course,
                 gradient: const [
                   AppPalette.midnight,
@@ -144,12 +148,15 @@ class _CourseManagerView extends StatelessWidget {
                   AppPalette.orchid,
                 ],
                 tags: [
-                  '${courses.length} cursos',
-                  '$lessonCount lecciones',
-                  '$featuredCount destacados',
-                  '$premiumCount premium',
+                  l10n.ts('{count} cursos', {'count': '${courses.length}'}),
+                  l10n.ts('{count} lecciones', {'count': '$lessonCount'}),
+                  l10n.ts(
+                    '{count} destacados',
+                    {'count': '$featuredCount'},
+                  ),
+                  l10n.ts('{count} premium', {'count': '$premiumCount'}),
                 ],
-                primaryLabel: 'Actualizar',
+                primaryLabel: l10n.ts('Actualizar'),
                 onPrimaryTap: () {
                   onRefresh();
                 },
@@ -163,7 +170,7 @@ class _CourseManagerView extends StatelessWidget {
               ),
               const SizedBox(height: 22),
               Text(
-                'Contenido publicado',
+                l10n.ts('Contenido publicado'),
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       color: AppPalette.butterflyInk,
                       fontWeight: FontWeight.w900,
@@ -171,10 +178,11 @@ class _CourseManagerView extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               if (courses.isEmpty)
-                const MysticMiniBanner(
-                  title: 'Sin cursos cargados',
-                  subtitle:
-                      'Cuando se conecte la creación de cursos, aquí se administrarán PDFs, módulos y lecciones.',
+                MysticMiniBanner(
+                  title: l10n.ts('Sin cursos cargados'),
+                  subtitle: l10n.ts(
+                    'Cuando se conecte la creación de cursos, aquí se administrarán PDFs, módulos y lecciones.',
+                  ),
                   glyphKind: MysticGlyphKind.course,
                   accent: AppPalette.indigo,
                 )
@@ -208,6 +216,7 @@ class _CourseManagerMetrics extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = (constraints.maxWidth - 12) / 2;
@@ -218,28 +227,28 @@ class _CourseManagerMetrics extends StatelessWidget {
             _CourseMetricTile(
               width: width,
               icon: Icons.auto_stories_outlined,
-              label: 'Cursos',
+              label: l10n.ts('Cursos'),
               value: '$courseCount',
               color: AppPalette.indigo,
             ),
             _CourseMetricTile(
               width: width,
               icon: Icons.article_outlined,
-              label: 'Lecciones/PDF',
+              label: l10n.ts('Lecciones/PDF'),
               value: '$lessonCount',
               color: AppPalette.royalViolet,
             ),
             _CourseMetricTile(
               width: width,
               icon: Icons.auto_awesome_rounded,
-              label: 'Destacados',
+              label: l10n.ts('Destacados'),
               value: '$featuredCount',
               color: AppPalette.flameGold,
             ),
             _CourseMetricTile(
               width: width,
               icon: Icons.workspace_premium_outlined,
-              label: 'Premium',
+              label: l10n.ts('Premium'),
               value: '$premiumCount',
               color: AppPalette.berry,
             ),
@@ -327,6 +336,7 @@ class _CourseAdminCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Container(
       decoration: BoxDecoration(
         color: AppPalette.moonIvory,
@@ -378,15 +388,21 @@ class _CourseAdminCard extends StatelessWidget {
                   runSpacing: 8,
                   children: [
                     _CourseStatusPill(
-                      label: '${course.lessonCount} lecciones',
+                      label: l10n.ts(
+                        '{count} lecciones',
+                        {'count': '${course.lessonCount}'},
+                      ),
                     ),
                     _CourseStatusPill(
-                      label: '${course.estimatedHours.toStringAsFixed(1)} h',
+                      label: l10n.ts(
+                        '{hours} h',
+                        {'hours': course.estimatedHours.toStringAsFixed(1)},
+                      ),
                     ),
                     if (course.featured)
-                      const _CourseStatusPill(label: 'Destacado'),
+                      _CourseStatusPill(label: l10n.ts('Destacado')),
                     if (course.premium)
-                      const _CourseStatusPill(label: 'Premium'),
+                      _CourseStatusPill(label: l10n.ts('Premium')),
                   ],
                 ),
               ],
@@ -470,22 +486,31 @@ class _RitualsPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const rituals = [
+    final l10n = context.l10n;
+    final rituals = [
       (
-        'Apertura suave',
-        'Respira, enciende una vela y escribe una intención concreta para el día.',
+        l10n.ts('Apertura suave'),
+        l10n.ts(
+          'Respira, enciende una vela y escribe una intención concreta para el día.',
+        ),
       ),
       (
-        'Cierre de ruido',
-        'Haz una pausa de 5 minutos, ordena tu mesa y anota qué energía no quieres arrastrar.',
+        l10n.ts('Cierre de ruido'),
+        l10n.ts(
+          'Haz una pausa de 5 minutos, ordena tu mesa y anota qué energía no quieres arrastrar.',
+        ),
       ),
       (
-        'Ritual lunar breve',
-        'Observa la fase actual, formula una pregunta y deja un solo gesto simbólico.',
+        l10n.ts('Ritual lunar breve'),
+        l10n.ts(
+          'Observa la fase actual, formula una pregunta y deja un solo gesto simbólico.',
+        ),
       ),
       (
-        'Protección simple',
-        'Define un límite claro para hoy y repítelo antes de entrar a conversaciones intensas.',
+        l10n.ts('Protección simple'),
+        l10n.ts(
+          'Define un límite claro para hoy y repítelo antes de entrar a conversaciones intensas.',
+        ),
       ),
     ];
 
@@ -518,11 +543,13 @@ class _CoursesPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     if (courses.isEmpty) {
-      return const MysticMiniBanner(
-        title: 'No hay cursos cargados',
-        subtitle:
-            'Cuando quieras volver a expandir esta pestaña, aquí puede entrar el catálogo completo.',
+      return MysticMiniBanner(
+        title: l10n.ts('No hay cursos cargados'),
+        subtitle: l10n.ts(
+          'Cuando quieras volver a expandir esta pestaña, aquí puede entrar el catálogo completo.',
+        ),
         glyphKind: MysticGlyphKind.course,
         accent: AppPalette.indigo,
       );
@@ -538,7 +565,7 @@ class _CoursesPanel extends StatelessWidget {
               child: MysticMiniBanner(
                 title: course.title,
                 subtitle:
-                    '${course.subtitle}\n${course.lessonCount} lecciones · ${course.estimatedHours.toStringAsFixed(1)} h',
+                    '${course.subtitle}\n${l10n.ts('{count} lecciones', {'count': '${course.lessonCount}'})} · ${l10n.ts('{hours} h', {'hours': course.estimatedHours.toStringAsFixed(1)})}',
                 glyphKind: MysticGlyphKind.course,
                 accent: AppPalette.indigo,
               ),

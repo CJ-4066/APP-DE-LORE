@@ -103,12 +103,13 @@ class _TarotScreenState extends State<TarotScreen> {
   }
 
   void _openDailyCardDetail() {
+    final l10n = context.l10n;
     final dailyCard = widget.data.home.cardOfTheDay;
     final card = _TarotCardMeaning(
       name: dailyCard.cardName,
-      message: dailyCard.message,
-      action: dailyCard.ritual,
-      caution: _tarotSupportLine(dailyCard.cardName),
+      message: l10n.ts(dailyCard.message),
+      action: l10n.ts(dailyCard.ritual),
+      caution: _tarotSupportLine(dailyCard.cardName, l10n),
       imageUrl: dailyCard.imageUrl,
     );
 
@@ -121,7 +122,7 @@ class _TarotScreenState extends State<TarotScreen> {
         return _TarotCardDetailSheet(
           data: widget.data,
           item: _TarotDrawnCard(
-            positionLabel: 'Carta del día',
+            positionLabel: l10n.tr('cardOfDay'),
             card: card,
           ),
           focus: _TarotSpreadFocus.daily,
@@ -429,7 +430,7 @@ class _TarotHeroCard extends StatelessWidget {
               const _TarotSkeletonBox(width: 190, height: 24, radius: 12)
             else
               Text(
-                cardName,
+                l10n.ts(cardName),
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       color: AppPalette.midnight,
                       fontWeight: FontWeight.w900,
@@ -467,7 +468,7 @@ class _TarotHeroCard extends StatelessWidget {
             else
               _HeroNoteCard(
                 title: l10n.tr('tarotHeroMessageTitle'),
-                body: cardMessage,
+                body: l10n.ts(cardMessage),
                 icon: Icons.menu_book_outlined,
                 accent: AppPalette.royalViolet,
               ),
@@ -477,7 +478,7 @@ class _TarotHeroCard extends StatelessWidget {
             else
               _HeroNoteCard(
                 title: l10n.tr('tarotHeroActionTitle'),
-                body: cardRitual,
+                body: l10n.ts(cardRitual),
                 icon: Icons.bolt_outlined,
                 accent: AppPalette.flameGold,
               ),
@@ -727,7 +728,7 @@ class _DailyCompleteSpreadScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _buildDailySpreadSynthesis(_cards),
+                      _buildDailySpreadSynthesis(_cards, l10n),
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                             color: _tarotSecondaryText,
                             height: 1.48,
@@ -903,7 +904,7 @@ class _DailySpreadCarouselCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 14),
                   Text(
-                    item.card.name,
+                    context.l10n.ts(item.card.name),
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w800,
@@ -1034,7 +1035,7 @@ class _DailySpreadSequenceRow extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      item.card.name,
+                      context.l10n.ts(item.card.name),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w800,
                             color: AppPalette.midnight,
@@ -1042,7 +1043,7 @@ class _DailySpreadSequenceRow extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      _tarotSupportLine(item.card.name),
+                      _tarotSupportLine(item.card.name, context.l10n),
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: _tarotSecondaryText,
                             height: 1.38,
@@ -1333,217 +1334,218 @@ class _DailyTarotCardArtState extends State<_DailyTarotCardArt>
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                Positioned(
-                  left: 12,
-                  top: 14,
-                  child: _CardShadowLayer(
-                    palette: style,
-                    opacity: 0.12,
-                    offset: const Offset(8, 10),
-                    angle: -0.03,
+                  Positioned(
+                    left: 12,
+                    top: 14,
+                    child: _CardShadowLayer(
+                      palette: style,
+                      opacity: 0.12,
+                      offset: const Offset(8, 10),
+                      angle: -0.03,
+                    ),
                   ),
-                ),
-                Positioned(
-                  left: 4,
-                  top: 6,
-                  child: _CardShadowLayer(
-                    palette: style,
-                    opacity: 0.18,
-                    offset: const Offset(4, 5),
-                    angle: 0.02,
+                  Positioned(
+                    left: 4,
+                    top: 6,
+                    child: _CardShadowLayer(
+                      palette: style,
+                      opacity: 0.18,
+                      offset: const Offset(4, 5),
+                      angle: 0.02,
+                    ),
                   ),
-                ),
-                Positioned.fill(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(28),
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          style.paperStart,
-                          style.paperMid,
-                          style.paperEnd,
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(28),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            style.paperStart,
+                            style.paperMid,
+                            style.paperEnd,
+                          ],
+                        ),
+                        border: Border.all(
+                          color: style.border,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: style.shadow.withValues(alpha: 0.22),
+                            blurRadius: 22,
+                            offset: const Offset(0, 16),
+                          ),
                         ],
                       ),
-                      border: Border.all(
-                        color: style.border,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: style.shadow.withValues(alpha: 0.22),
-                          blurRadius: 22,
-                          offset: const Offset(0, 16),
-                        ),
-                      ],
-                    ),
-                    child: Stack(
-                      children: [
-                        Positioned(
-                          top: -18,
-                          right: -18,
-                          child: Container(
-                            width: 84,
-                            height: 84,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: style.accent.withValues(alpha: glow),
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          left: -24,
-                          bottom: 56,
-                          child: Container(
-                            width: 120,
-                            height: 120,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: style.accent.withValues(alpha: 0.05),
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(
-                            14,
-                            widget.showHeader ? 14 : 12,
-                            14,
-                            widget.showMetaFooter ? 16 : 12,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (widget.showHeader) ...[
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: Stack(
-                                    alignment: Alignment.center,
-                                    children: [
-                                      Align(
-                                        alignment: widget.centerHeader
-                                            ? Alignment.center
-                                            : Alignment.centerLeft,
-                                        child: _InfoPill(
-                                          label: context.l10n.tr(
-                                            'arcanaOfDay',
-                                          ),
-                                          accent: style.accent,
-                                        ),
-                                      ),
-                                      Positioned(
-                                        right: 0,
-                                        child: Icon(
-                                          style.icon,
-                                          color: style.accent,
-                                          size: 18,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                              ],
-                              Expanded(
-                                child: _TarotCardFace(
-                                  assetPath: assetPath,
-                                  imageUrl: resolvedImageUrl,
-                                  accent: style.accent,
-                                  borderColor:
-                                      style.accent.withValues(alpha: 0.16),
-                                  maxHeight: widget.maxFaceHeight,
-                                  imageFit: widget.imageFit,
-                                  imageScale: widget.imageScale,
-                                  aspectRatio: widget.faceAspectRatio,
-                                  fallback: _TarotCardGlyph(
-                                    cardName: widget.cardName,
-                                    icon: style.icon,
-                                    accent: style.accent,
-                                  ),
-                                ),
+                      child: Stack(
+                        children: [
+                          Positioned(
+                            top: -18,
+                            right: -18,
+                            child: Container(
+                              width: 84,
+                              height: 84,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: style.accent.withValues(alpha: glow),
                               ),
-                              if (widget.showMetaFooter) ...[
-                                const SizedBox(height: 12),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: Text(
-                                    widget.cardName,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    textAlign: widget.centerFooter
-                                        ? TextAlign.center
-                                        : TextAlign.left,
-                                    style: const TextStyle(
-                                      color: Color(0xFF35203F),
-                                      fontSize: 21,
-                                      fontWeight: FontWeight.w900,
-                                      height: 1.0,
-                                      letterSpacing: -0.2,
+                            ),
+                          ),
+                          Positioned(
+                            left: -24,
+                            bottom: 56,
+                            child: Container(
+                              width: 120,
+                              height: 120,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: style.accent.withValues(alpha: 0.05),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.fromLTRB(
+                              14,
+                              widget.showHeader ? 14 : 12,
+                              14,
+                              widget.showMetaFooter ? 16 : 12,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (widget.showHeader) ...[
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        Align(
+                                          alignment: widget.centerHeader
+                                              ? Alignment.center
+                                              : Alignment.centerLeft,
+                                          child: _InfoPill(
+                                            label: context.l10n.tr(
+                                              'arcanaOfDay',
+                                            ),
+                                            accent: style.accent,
+                                          ),
+                                        ),
+                                        Positioned(
+                                          right: 0,
+                                          child: Icon(
+                                            style.icon,
+                                            color: style.accent,
+                                            size: 18,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                ],
+                                Expanded(
+                                  child: _TarotCardFace(
+                                    assetPath: assetPath,
+                                    imageUrl: resolvedImageUrl,
+                                    accent: style.accent,
+                                    borderColor:
+                                        style.accent.withValues(alpha: 0.16),
+                                    maxHeight: widget.maxFaceHeight,
+                                    imageFit: widget.imageFit,
+                                    imageScale: widget.imageScale,
+                                    aspectRatio: widget.faceAspectRatio,
+                                    fallback: _TarotCardGlyph(
+                                      cardName: widget.cardName,
+                                      icon: style.icon,
+                                      accent: style.accent,
                                     ),
                                   ),
                                 ),
-                                if (widget.showRefreshLabel) ...[
-                                  const SizedBox(height: 8),
+                                if (widget.showMetaFooter) ...[
+                                  const SizedBox(height: 12),
                                   SizedBox(
                                     width: double.infinity,
                                     child: Text(
-                                      context.l10n.tr('tarotRefreshAtMidnight'),
+                                      context.l10n.ts(widget.cardName),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
                                       textAlign: widget.centerFooter
                                           ? TextAlign.center
                                           : TextAlign.left,
-                                      style: TextStyle(
-                                        color: _tarotMutedText.withValues(
-                                          alpha: 0.88,
-                                        ),
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w700,
+                                      style: const TextStyle(
+                                        color: Color(0xFF35203F),
+                                        fontSize: 21,
+                                        fontWeight: FontWeight.w900,
+                                        height: 1.0,
+                                        letterSpacing: -0.2,
                                       ),
                                     ),
                                   ),
-                                ],
-                                const SizedBox(height: 10),
-                                Align(
-                                  alignment: widget.centerFooter
-                                      ? Alignment.center
-                                      : Alignment.centerLeft,
-                                  child: _InfoPill(
-                                    label: hasImage
-                                        ? context.l10n.tr('tapToOpen')
-                                        : widget.cardRitual,
-                                    accent: style.accent,
+                                  if (widget.showRefreshLabel) ...[
+                                    const SizedBox(height: 8),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: Text(
+                                        context.l10n
+                                            .tr('tarotRefreshAtMidnight'),
+                                        textAlign: widget.centerFooter
+                                            ? TextAlign.center
+                                            : TextAlign.left,
+                                        style: TextStyle(
+                                          color: _tarotMutedText.withValues(
+                                            alpha: 0.88,
+                                          ),
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                  const SizedBox(height: 10),
+                                  Align(
+                                    alignment: widget.centerFooter
+                                        ? Alignment.center
+                                        : Alignment.centerLeft,
+                                    child: _InfoPill(
+                                      label: hasImage
+                                          ? context.l10n.tr('tapToOpen')
+                                          : context.l10n.ts(widget.cardRitual),
+                                      accent: style.accent,
+                                    ),
                                   ),
-                                ),
+                                ],
                               ],
-                            ],
-                          ),
-                        ),
-                        Positioned(
-                          top: 18,
-                          left: 18,
-                          child: Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: style.accent.withValues(alpha: 0.9),
                             ),
                           ),
-                        ),
-                        Positioned(
-                          bottom: 24,
-                          right: 18,
-                          child: Container(
-                            width: 10,
-                            height: 10,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: style.accent.withValues(alpha: 0.5),
+                          Positioned(
+                            top: 18,
+                            left: 18,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: style.accent.withValues(alpha: 0.9),
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                          Positioned(
+                            bottom: 24,
+                            right: 18,
+                            child: Container(
+                              width: 10,
+                              height: 10,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: style.accent.withValues(alpha: 0.5),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
                 ],
               ),
             ),
@@ -2846,9 +2848,17 @@ class _TarotCardDetailSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final userName = _displayUserName(data.user);
-    final interpretation = _tarotInterpretationLine(item.card.name, focus);
-    final keywords = _tarotKeywords(item.card.name);
-    final reflectionQuestion = _tarotReflectionQuestion(item.card.name, focus);
+    final interpretation = _tarotInterpretationLine(
+      item.card.name,
+      focus,
+      l10n,
+    );
+    final keywords = _tarotKeywords(item.card.name, l10n);
+    final reflectionQuestion = _tarotReflectionQuestion(
+      item.card.name,
+      focus,
+      l10n,
+    );
 
     return FractionallySizedBox(
       heightFactor: 0.92,
@@ -2909,14 +2919,14 @@ class _TarotCardDetailSheet extends StatelessWidget {
               const SizedBox(height: 14),
               _TarotInsightCard(
                 title: l10n.tr('tarotWhatAsksToday'),
-                body: item.card.action,
+                body: l10n.ts(item.card.action),
                 accent: AppPalette.royalViolet,
                 icon: Icons.bolt_rounded,
               ),
               const SizedBox(height: 10),
               _TarotInsightCard(
                 title: l10n.tr('tarotWhatAvoidToday'),
-                body: item.card.caution,
+                body: l10n.ts(item.card.caution),
                 accent: AppPalette.flameGold,
                 icon: Icons.visibility_outlined,
               ),
@@ -3151,8 +3161,9 @@ String _displayUserName(UserProfile user) {
 String _tarotInterpretationLine(
   String cardName,
   _TarotSpreadFocus focus,
+  AppLocalizations l10n,
 ) {
-  return switch (cardName) {
+  final text = switch (cardName) {
     'La Estrella' =>
       'Tu calma vuelve a abrirte camino y te ayuda a confiar sin correr.',
     'La Sacerdotisa' =>
@@ -3180,10 +3191,11 @@ String _tarotInterpretationLine(
     _ =>
       'Esta carta te acompaña con una señal amable para leer tu momento con más claridad.',
   };
+  return l10n.ts(text);
 }
 
-String _tarotSupportLine(String cardName) {
-  return switch (cardName) {
+String _tarotSupportLine(String cardName, AppLocalizations l10n) {
+  final text = switch (cardName) {
     'La Estrella' => 'Recupera calma y avanza con un gesto simple.',
     'La Sacerdotisa' => 'Escucha primero; la respuesta madura sola.',
     'El Mago' => 'Elige una prioridad y ejecútala hoy.',
@@ -3199,10 +3211,11 @@ String _tarotSupportLine(String cardName) {
       'Cierra el ciclo con conciencia y prepara el siguiente nivel.',
     _ => 'Avanza con un paso pequeño y coherente.',
   };
+  return l10n.ts(text);
 }
 
-List<String> _tarotKeywords(String cardName) {
-  return switch (cardName) {
+List<String> _tarotKeywords(String cardName, AppLocalizations l10n) {
+  final keywords = switch (cardName) {
     'La Estrella' => ['Calma', 'Confianza', 'Reparación'],
     'La Sacerdotisa' => ['Intuición', 'Silencio', 'Observación'],
     'El Mago' => ['Foco', 'Iniciativa', 'Recursos'],
@@ -3217,40 +3230,44 @@ List<String> _tarotKeywords(String cardName) {
     'El Mundo' => ['Cierre', 'Integración', 'Madurez'],
     _ => ['Claridad', 'Señal', 'Movimiento'],
   };
+  return keywords.map(l10n.ts).toList(growable: false);
 }
 
 String _tarotReflectionQuestion(
   String cardName,
   _TarotSpreadFocus focus,
+  AppLocalizations l10n,
 ) {
   final suffix = switch (focus) {
-    _TarotSpreadFocus.daily => 'hoy',
-    _TarotSpreadFocus.clarity => 'para ver esta situación con más claridad',
-    _TarotSpreadFocus.love => 'en este vínculo',
-    _TarotSpreadFocus.work => 'en trabajo o dinero',
+    _TarotSpreadFocus.daily => l10n.ts('hoy'),
+    _TarotSpreadFocus.clarity =>
+      l10n.ts('para ver esta situación con más claridad'),
+    _TarotSpreadFocus.love => l10n.ts('en este vínculo'),
+    _TarotSpreadFocus.work => l10n.ts('en trabajo o dinero'),
   };
 
-  return switch (cardName) {
-    'La Estrella' => '¿Qué gesto pequeño puede devolverte confianza $suffix?',
+  final text = switch (cardName) {
+    'La Estrella' => '¿Qué gesto pequeño puede devolverte confianza {suffix}?',
     'La Sacerdotisa' =>
-      '¿Qué necesitas observar un poco más antes de responder $suffix?',
+      '¿Qué necesitas observar un poco más antes de responder {suffix}?',
     'El Mago' =>
-      '¿Dónde sí tienes recursos reales y dónde te estás dispersando $suffix?',
-    'La Emperatriz' => '¿Qué necesita más cuidado para crecer mejor $suffix?',
+      '¿Dónde sí tienes recursos reales y dónde te estás dispersando {suffix}?',
+    'La Emperatriz' => '¿Qué necesita más cuidado para crecer mejor {suffix}?',
     'El Ermitaño' =>
-      '¿Qué ruido conviene bajar para escuchar mejor tu verdad $suffix?',
-    'La Rueda' => '¿Qué cambio ya empezó y te pide ajustar el paso $suffix?',
+      '¿Qué ruido conviene bajar para escuchar mejor tu verdad {suffix}?',
+    'La Rueda' => '¿Qué cambio ya empezó y te pide ajustar el paso {suffix}?',
     'La Justicia' =>
-      '¿Qué decisión se vuelve más simple si ordenas los hechos $suffix?',
+      '¿Qué decisión se vuelve más simple si ordenas los hechos {suffix}?',
     'La Fuerza' =>
-      '¿Cómo puedes sostenerte con firmeza sin endurecerte $suffix?',
-    'El Sol' => '¿Qué puedes mostrar con más naturalidad y confianza $suffix?',
+      '¿Cómo puedes sostenerte con firmeza sin endurecerte {suffix}?',
+    'El Sol' => '¿Qué puedes mostrar con más naturalidad y confianza {suffix}?',
     'La Luna' =>
-      '¿Qué emoción necesita nombre antes de tomar una decisión $suffix?',
-    'El Colgado' => '¿Desde qué otro ángulo podrías mirar esto $suffix?',
-    'El Mundo' => '¿Qué vale cerrar bien para liberar energía nueva $suffix?',
-    _ => '¿Qué te está queriendo mostrar esta carta $suffix?',
+      '¿Qué emoción necesita nombre antes de tomar una decisión {suffix}?',
+    'El Colgado' => '¿Desde qué otro ángulo podrías mirar esto {suffix}?',
+    'El Mundo' => '¿Qué vale cerrar bien para liberar energía nueva {suffix}?',
+    _ => '¿Qué te está queriendo mostrar esta carta {suffix}?',
   };
+  return l10n.ts(text, {'suffix': suffix});
 }
 
 class _TarotCardMeaning {
@@ -3410,16 +3427,26 @@ List<_TarotDrawnCard> _buildDailySpreadCards({
   );
 }
 
-String _buildDailySpreadSynthesis(List<_TarotDrawnCard> cards) {
+String _buildDailySpreadSynthesis(
+  List<_TarotDrawnCard> cards,
+  AppLocalizations l10n,
+) {
   if (cards.length < 3) {
-    return 'Tu tirada del día todavía se está preparando.';
+    return l10n.ts('Tu tirada del día todavía se está preparando.');
   }
 
   final release = cards[0];
   final pulse = cards[1];
   final action = cards[2];
 
-  return 'Hoy el recorrido empieza en ${release.card.name}, donde conviene aflojar una carga o una reacción automática; luego pasa por ${pulse.card.name}, que marca el tono emocional y mental del día; y aterriza en ${action.card.name}, que te pide una acción concreta, sobria y consciente.';
+  return l10n.ts(
+    'Hoy el recorrido empieza en {release}, donde conviene aflojar una carga o una reacción automática; luego pasa por {pulse}, que marca el tono emocional y mental del día; y aterriza en {action}, que te pide una acción concreta, sobria y consciente.',
+    {
+      'release': l10n.ts(release.card.name),
+      'pulse': l10n.ts(pulse.card.name),
+      'action': l10n.ts(action.card.name),
+    },
+  );
 }
 
 const _tarotDeck = <_TarotCardMeaning>[
